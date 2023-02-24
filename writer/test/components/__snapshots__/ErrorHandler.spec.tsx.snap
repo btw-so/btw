@@ -1,0 +1,121 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ErrorHandler should render the error and clicks 1`] = `
+.c4 {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #f44336;
+  border: 1px solid #f44336;
+  color: #fff;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  border-radius: 0px;
+  box-shadow: none;
+  cursor: pointer;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+  padding: 8px 14px;
+  -webkit-text-decoration: none;
+  text-decoration: none;
+  width: auto;
+}
+
+.c4:disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.c4:focus {
+  outline-color: #f44336;
+}
+
+.c0 {
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  position: relative;
+  width: 100%;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  min-height: 100vh;
+  vertical-align: center;
+}
+
+.c3 {
+  box-sizing: border-box;
+  line-height: 1.4;
+  margin-bottom: 0;
+  margin-top: 0;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.c2 + .c2 {
+  margin-top: 8px;
+}
+
+.c1 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c1 svg {
+  height: auto;
+  max-height: 100%;
+  width: 64px;
+}
+
+@media screen and (min-width:1024px) {
+  .c0 {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+<div
+  class="c0"
+  data-testid="ErrorHandler"
+>
+  <svg
+    class="c1"
+    height="100%"
+    src="/media/icons/exclamation-circle.svg"
+    width="64px"
+  />
+  <p
+    class="c2 c3"
+  >
+    Oh No!
+  </p>
+  <button
+    class="c4"
+    type="button"
+  >
+    Tentar novamente
+  </button>
+</div>
+`;

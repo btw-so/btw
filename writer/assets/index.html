@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title><%= htmlWebpackPlugin.options.title || 'Webpack App' %></title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=5.0, user-scalable=1"
+    />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <meta property="og:title" content="React-Redux-Saga Boilerplate" />
+    <meta property="og:url" content="https://redux-saga.react-boilerplate.com/" />
+    <meta
+      property="og:description"
+      content="Provides: react ^16.x, react-router ^4.x, redux ^3.x, redux-saga ^0.16"
+    />
+    <meta
+      property="og:image"
+      content="https://redux-saga.react-boilerplate.com/media/og-image-v1.png"
+    />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-title" content="React-Redux-Saga" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="#333333" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/media/meta-icons/favicon.ico" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="%PUBLIC_URL%/media/meta-icons/favicon-16x16.png"
+      sizes="16x16"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="%PUBLIC_URL%/media/meta-icons/favicon-32x32.png"
+      sizes="32x32"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="%PUBLIC_URL%/media/meta-icons/apple-touch-icon.png"
+    />
+    <link
+      rel="mask-icon"
+      href="%PUBLIC_URL%/media/meta-icons/safari-pinned-tab.svg"
+      color="#5bbad5"
+    />
+  </head>
+  <body>
+    <div id="root" style="min-height: 100vh;">
+      <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+        <defs>
+          <filter id="gooey">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur"></feGaussianBlur>
+            <feColorMatrix
+              in="blur"
+              mode="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
+              result="goo"
+            ></feColorMatrix>
+            <feBlend in="SourceGraphic" in2="goo"></feBlend>
+          </filter>
+        </defs>
+      </svg>
+      <div class="blob blob-0"></div>
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+      <div class="blob blob-4"></div>
+      <div class="blob blob-5"></div>
+      <style type="text/css">
+        html,
+        body {
+          font-size: 16px;
+          height: 100%;
+          width: 100%;
+        }
+
+        body {
+          background: linear-gradient(to bottom, #00b4d5, #00191e);
+        }
+
+        .blob {
+          background: rgba(255, 255, 255, 0.4);
+          border-radius: 50%;
+          height: 2rem;
+          left: calc(50% - 1rem);
+          position: absolute;
+          top: calc(50% - 1rem);
+          width: 2rem;
+        }
+
+        .blob-2 {
+          -webkit-animation: animate-to-2 1.5s infinite;
+          animation: animate-to-2 1.5s infinite;
+        }
+
+        .blob-3 {
+          -webkit-animation: animate-to-3 1.5s infinite;
+          animation: animate-to-3 1.5s infinite;
+        }
+
+        .blob-1 {
+          -webkit-animation: animate-to-1 1.5s infinite;
+          animation: animate-to-1 1.5s infinite;
+        }
+
+        .blob-4 {
+          -webkit-animation: animate-to-4 1.5s infinite;
+          animation: animate-to-4 1.5s infinite;
+        }
+
+        .blob-0 {
+          -webkit-animation: animate-to-0 1.5s infinite;
+          animation: animate-to-0 1.5s infinite;
+        }
+
+        .blob-5 {
+          -webkit-animation: animate-to-5 1.5s infinite;
+          animation: animate-to-5 1.5s infinite;
+        }
+
+        @-webkit-keyframes animate-to-2 {
+          25%,
+          75% {
+            -webkit-transform: translateX(-1.5rem) scale(0.75);
+            transform: translateX(-1.5rem) scale(0.75);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @keyframes animate-to-2 {
+          25%,
+          75% {
+            -webkit-transform: translateX(-1.5rem) scale(0.75);
+            transform: translateX(-1.5rem) scale(0.75);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @-webkit-keyframes animate-to-3 {
+          25%,
+          75% {
+            -webkit-transform: translateX(1.5rem) scale(0.75);
+            transform: translateX(1.5rem) scale(0.75);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @keyframes animate-to-3 {
+          25%,
+          75% {
+            -webkit-transform: translateX(1.5rem) scale(0.75);
+            transform: translateX(1.5rem) scale(0.75);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @-webkit-keyframes animate-to-1 {
+          25% {
+            -webkit-transform: translateX(-1.5rem) scale(0.75);
+            transform: translateX(-1.5rem) scale(0.75);
+          }
+          50%,
+          75% {
+            -webkit-transform: translateX(-4.5rem) scale(0.6);
+            transform: translateX(-4.5rem) scale(0.6);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @keyframes animate-to-1 {
+          25% {
+            -webkit-transform: translateX(-1.5rem) scale(0.75);
+            transform: translateX(-1.5rem) scale(0.75);
+          }
+          50%,
+          75% {
+            -webkit-transform: translateX(-4.5rem) scale(0.6);
+            transform: translateX(-4.5rem) scale(0.6);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @-webkit-keyframes animate-to-4 {
+          25% {
+            -webkit-transform: translateX(1.5rem) scale(0.75);
+            transform: translateX(1.5rem) scale(0.75);
+          }
+          50%,
+          75% {
+            -webkit-transform: translateX(4.5rem) scale(0.6);
+            transform: translateX(4.5rem) scale(0.6);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @keyframes animate-to-4 {
+          25% {
+            -webkit-transform: translateX(1.5rem) scale(0.75);
+            transform: translateX(1.5rem) scale(0.75);
+          }
+          50%,
+          75% {
+            -webkit-transform: translateX(4.5rem) scale(0.6);
+            transform: translateX(4.5rem) scale(0.6);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @-webkit-keyframes animate-to-0 {
+          25% {
+            -webkit-transform: translateX(-1.5rem) scale(0.75);
+            transform: translateX(-1.5rem) scale(0.75);
+          }
+          50% {
+            -webkit-transform: translateX(-4.5rem) scale(0.6);
+            transform: translateX(-4.5rem) scale(0.6);
+          }
+          75% {
+            -webkit-transform: translateX(-7.5rem) scale(0.5);
+            transform: translateX(-7.5rem) scale(0.5);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @keyframes animate-to-0 {
+          25% {
+            -webkit-transform: translateX(-1.5rem) scale(0.75);
+            transform: translateX(-1.5rem) scale(0.75);
+          }
+          50% {
+            -webkit-transform: translateX(-4.5rem) scale(0.6);
+            transform: translateX(-4.5rem) scale(0.6);
+          }
+          75% {
+            -webkit-transform: translateX(-7.5rem) scale(0.5);
+            transform: translateX(-7.5rem) scale(0.5);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @-webkit-keyframes animate-to-5 {
+          25% {
+            -webkit-transform: translateX(1.5rem) scale(0.75);
+            transform: translateX(1.5rem) scale(0.75);
+          }
+          50% {
+            -webkit-transform: translateX(4.5rem) scale(0.6);
+            transform: translateX(4.5rem) scale(0.6);
+          }
+          75% {
+            -webkit-transform: translateX(7.5rem) scale(0.5);
+            transform: translateX(7.5rem) scale(0.5);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @keyframes animate-to-5 {
+          25% {
+            -webkit-transform: translateX(1.5rem) scale(0.75);
+            transform: translateX(1.5rem) scale(0.75);
+          }
+          50% {
+            -webkit-transform: translateX(4.5rem) scale(0.6);
+            transform: translateX(4.5rem) scale(0.6);
+          }
+          75% {
+            -webkit-transform: translateX(7.5rem) scale(0.5);
+            transform: translateX(7.5rem) scale(0.5);
+          }
+          95% {
+            -webkit-transform: translateX(0) scale(1);
+            transform: translateX(0) scale(1);
+          }
+        }
+      </style>
+    </div>
+    <% if (htmlWebpackPlugin.options.window) { %>
+    <script>
+      <% for (var varName in htmlWebpackPlugin.options.window) { %>
+        window['<%= varName %>'] = <%= JSON.stringify(htmlWebpackPlugin.options.window[varName]) %>;
+        <% } %>
+    </script>
+    <% } %> <% if (htmlWebpackPlugin.options.googleAnalytics) { %>
+    <script>
+      (function(i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function() {
+          (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+          m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+      })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+      <% if (htmlWebpackPlugin.options.googleAnalytics.trackingId) { %>
+        ga('create', '<%= htmlWebpackPlugin.options.googleAnalytics.trackingId %>', 'auto');
+        <% } else {
+          throw new Error("html-webpack-template requires googleAnalytics.trackingId config");
+        } %>
+
+        <% if (htmlWebpackPlugin.options.googleAnalytics.pageViewOnLoad) { %>
+          ga('send', 'pageview');
+          <% } %>
+    </script>
+    <% } %>
+    <noscript>
+      <div
+        style="align-items: center; display: flex; font-size: 30px; justify-content: center; min-height: 100vh;"
+      >
+        This website need Javascript. Please turn it on.
+      </div>
+    </noscript>
+  </body>
+</html>

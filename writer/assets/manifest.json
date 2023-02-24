@@ -1,0 +1,31 @@
+{
+  "short_name": "React-Redux-Saga",
+  "name": "React-Redux-Saga Boilerplate",
+  "background_color": "#333333",
+  "theme_color": "#333333",
+  "icons": [
+    {
+      "src": "media/meta-icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "media/meta-icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "media/meta-icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "media/meta-icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "./?utm_source=web_app",
+  "display": "fullscreen",
+  "orientation": "portrait"
+}

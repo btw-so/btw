@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Github GITHUB_GET_REPOS should handle FAILURE 1`] = `
+Object {
+  "topics": Object {
+    "react": Object {
+      "cached": false,
+      "data": Array [],
+      "message": Object {
+        "message": "Something failed",
+      },
+      "status": "error",
+      "updatedAt": 0,
+    },
+  },
+}
+`;
+
+exports[`Github GITHUB_GET_REPOS should handle REQUEST 1`] = `
+Object {
+  "topics": Object {
+    "react": Object {
+      "cached": false,
+      "data": Array [],
+      "message": "",
+      "status": "running",
+      "updatedAt": 0,
+    },
+  },
+}
+`;
+
+exports[`Github GITHUB_GET_REPOS should handle SUCCESS 1`] = `
+Object {
+  "topics": Object {
+    "react": Object {
+      "cached": false,
+      "data": Object {
+        "data": Array [
+          Object {
+            "name": "one",
+          },
+        ],
+      },
+      "message": "",
+      "status": "success",
+      "updatedAt": 1234567890,
+    },
+  },
+}
+`;
+
+exports[`Github should return the initial state 1`] = `
+Object {
+  "topics": Object {},
+}
+`;

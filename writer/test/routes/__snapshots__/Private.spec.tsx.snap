@@ -1,0 +1,341 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Private should render properly 1`] = `
+.c0 {
+  box-sizing: border-box;
+}
+
+.c7 {
+  box-sizing: border-box;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.c13 {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #fff;
+  border: 1px solid #4e4141;
+  color: #4e4141;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  border-radius: 0px;
+  box-shadow: none;
+  cursor: pointer;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+  padding: 8px 14px;
+  -webkit-text-decoration: none;
+  text-decoration: none;
+  width: auto;
+}
+
+.c13:disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.c13:focus {
+  outline-color: #4e4141;
+}
+
+.c12 {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #4e4141;
+  border: 1px solid #4e4141;
+  color: #fff;
+  -webkit-animation: bhbJZt 0.5s linear infinite;
+  animation: bhbJZt 0.5s linear infinite;
+  background-image: repeating-linear-gradient( 45deg, rgba(255,255,255,0.4), rgba(255,255,255,0.4) 20px, transparent 20px, transparent 40px );
+  background-size: 56px 56px;
+  pointer-events: none;
+  -webkit-transition: none !important;
+  transition: none !important;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  border-radius: 0px;
+  box-shadow: none;
+  cursor: pointer;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+  padding: 8px 14px;
+  -webkit-text-decoration: none;
+  text-decoration: none;
+  width: auto;
+}
+
+.c12:disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.c12:focus {
+  outline-color: #4e4141;
+}
+
+.c11 {
+  box-sizing: border-box;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+}
+
+.c11 > button + button {
+  margin-left: -1px;
+}
+
+.c11 > button:first-of-type {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.c11 > button:last-of-type {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+}
+
+.c11 > button:not(:first-of-type):not(:last-of-type) {
+  border-radius: 0;
+}
+
+.c1 {
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  position: relative;
+  width: 100%;
+  padding-bottom: 16px;
+  padding-top: 16px;
+}
+
+.c10 {
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+
+.c9 {
+  box-sizing: border-box;
+  color: inherit;
+  display: inline-block;
+  line-height: 1.4;
+  font-size: 12px;
+}
+
+.c3 {
+  box-sizing: border-box;
+  font-size: 48px;
+  font-family: inherit;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0;
+  margin-top: 8px;
+}
+
+.c3:first-child {
+  margin-top: 0;
+}
+
+.c8 {
+  box-sizing: border-box;
+  font-size: 20px;
+  font-family: inherit;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0;
+  margin-top: 8px;
+}
+
+.c8:first-child {
+  margin-top: 0;
+}
+
+.c6 {
+  box-sizing: border-box;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  color: #4e4141;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+}
+
+.c6:visited {
+  color: #322a2a;
+}
+
+.c5 {
+  box-sizing: border-box;
+  line-height: 1.4;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.c4 + .c4 {
+  margin-top: 8px;
+}
+
+.c14 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 32px;
+  margin: 2rem auto;
+  position: relative;
+  width: 32px;
+}
+
+.c14 > div {
+  -webkit-animation: hqrBsq 1.15s infinite cubic-bezier(0.2,0.6,0.36,1);
+  animation: hqrBsq 1.15s infinite cubic-bezier(0.2,0.6,0.36,1);
+  border: 0 solid #00b4d5;
+  border-radius: 50%;
+  box-sizing: border-box;
+  height: 0;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translate(-50%,-50%);
+  -ms-transform: translate(-50%,-50%);
+  transform: translate(-50%,-50%);
+  width: 0;
+}
+
+.c2 {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+@media screen and (min-width:1024px) {
+  .c1 {
+    padding-bottom: 32px;
+    padding-top: 32px;
+  }
+}
+
+@media screen and (min-width:1024px) {
+  .c1 {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+<div
+  class="c0"
+  data-testid="Private"
+>
+  <div
+    class="c1"
+  >
+    <div
+      class="c2"
+    >
+      <h1
+        class="c3"
+      >
+        Oh hai!
+      </h1>
+      <p
+        class="c4 c5"
+      >
+        You can get this boilerplate
+         
+        <a
+          class="c6"
+          href="https://github.com/gilbarbara/react-redux-saga-boilerplate/"
+          target="_blank"
+        >
+          here
+        </a>
+      </p>
+    </div>
+    <div
+      class="c7"
+    >
+      <h5
+        class="c8"
+      >
+        Here's some GitHub data
+      </h5>
+      <span
+        class="c9"
+        font-size="1"
+      >
+        <i>
+          *Just to have some requests in the sagas...
+        </i>
+      </span>
+    </div>
+    <div
+      data-testid="GitHubWrapper"
+    >
+      <div
+        class="c10"
+      >
+        <div
+          aria-label="GitHub Selector"
+          class="c11"
+          data-testid="GitHubSelector"
+          role="group"
+        >
+          <button
+            class="c12"
+            data-value="react"
+            type="button"
+          >
+            React
+          </button>
+          <button
+            class="c13"
+            data-value="redux"
+            type="button"
+          >
+            Redux
+          </button>
+        </div>
+      </div>
+      <div
+        class="c14"
+        color="#00b4d5"
+        data-testid="Loader"
+        size="32"
+        type="grow"
+      >
+        <div />
+      </div>
+    </div>
+  </div>
+</div>
+`;

@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Icon should render properly 1`] = `
+.c0 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c0 svg {
+  height: auto;
+  max-height: 100%;
+  width: 20px;
+}
+
+<div>
+  <svg
+    class="c0"
+    height="100%"
+    src="/media/icons/check.svg"
+    width="20px"
+  />
+</div>
+`;
