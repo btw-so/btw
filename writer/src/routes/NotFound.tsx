@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Container, Heading } from 'styled-minimal';
 
@@ -21,6 +21,19 @@ const StyledContainer = styled(Container)`
 `;
 
 function NotFound() {
+  // use effect to see if this is the first time it is being displayed
+  // if it is, then redirect to "/"
+  // if it is not, then leave as is
+  let navigate = useNavigate();
+
+  useEffect(() => {
+    const firstTime = localStorage.getItem('firstTime');
+    if (!firstTime) {
+      localStorage.setItem('firstTime', 'true');
+      navigate('/');
+    }
+  }, []);
+
   return (
     <Background key="404" data-testid="NotFound">
       <StyledContainer fullScreen ySpacing>

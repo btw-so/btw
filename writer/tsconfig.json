@@ -14,5 +14,5 @@
     "skipLibCheck": true,
     "target": "es5"
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "electron-starter.js"]
 }

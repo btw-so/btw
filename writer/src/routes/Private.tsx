@@ -16,7 +16,7 @@ function Private() {
     <Box key="Private" data-testid="Private">
       <Container ySpacing>
         <Header>
-          <Heading>Oh hai!</Heading>
+          <h1 className="mt-2 text-5xl">Oh hai!</h1>
           <Paragraph>
             You can get this boilerplate{' '}
             <Link

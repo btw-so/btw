@@ -120,7 +120,6 @@
     "html-entities": "^2.3.2",
     "html-loader": "^3.1.0",
     "html-webpack-plugin": "^5.5.0",
-    "husky": "^7.0.4",
     "image-webpack-loader": "^8.1.0",
     "is-ci-cli": "^2.2.0",
     "jest": "^27.5.1",
@@ -208,7 +207,6 @@
     "publish": "node tools publish",
     "size": "npm run build && size-limit",
     "postinstall": "rm -rf node_modules/@types/react-native",
-    "prepare": "husky install",
     "electron-dev": "ELECTRON_START_URL=http://localhost:9000 electron ."
   },
   "prettier": "@gilbarbara/prettier-config",

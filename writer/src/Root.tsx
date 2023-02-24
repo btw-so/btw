@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useDispatch } from 'react-redux';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Route, Routes } from 'react-router-dom';
 import { selectUser } from 'selectors';
 import styled, { ThemeProvider } from 'styled-components';
 import { px } from 'styled-minimal';
@@ -14,14 +14,14 @@ import { name } from 'config';
 
 import { showAlert } from 'actions';
 
-import Footer from 'components/Footer';
+// import Footer from 'components/Footer';
 import Header from 'components/Header';
-import PrivateRoute from 'components/PrivateRoute';
+// import PrivateRoute from 'components/PrivateRoute';
 import PublicRoute from 'components/PublicRoute';
 import SystemAlerts from 'containers/SystemAlerts';
 import Home from 'routes/Home';
 import NotFound from 'routes/NotFound';
-import Private from 'routes/Private';
+// import Private from 'routes/Private';
 
 import { UserState } from 'types';
 
@@ -52,8 +52,21 @@ function Root() {
     }
   }, [dispatch, changed]);
 
+  // create a component that checks if the environment is electron, then it would be BrowserRouter
+  // otherwise, it would be HashRouter
+  // this is because electron does not support hash routing
+  // but the web version does
+  // so, we need to check if it is electron or not
+  // and then use the correct router
+  // this is a temporary solution
+  // we need to find a better way to do this
+  // maybe we can use a custom hook to check if it is electron or not
+  // and then use the correct router
+
+  const Router = process.env.REACT_APP_ELECTRON ? BrowserRouter : HashRouter;
+
   return (
-    <BrowserRouter>
+    <Router>
       <ThemeProvider theme={theme}>
         <AppWrapper data-testid="app">
           <Helmet
@@ -80,22 +93,22 @@ function Root() {
                 }
                 path="/"
               />
-              <Route
+              {/* <Route
                 element={
                   <PrivateRoute isAuthenticated={isAuthenticated} to="/">
                     <Private />
                   </PrivateRoute>
                 }
                 path="/private"
-              />
+              /> */}
               <Route element={<NotFound />} path="*" />
             </Routes>
           </Main>
-          <Footer />
+          {/* <Footer /> */}
           <SystemAlerts />
         </AppWrapper>
       </ThemeProvider>
-    </BrowserRouter>
+    </Router>
   );
 }
 

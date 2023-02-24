@@ -1,84 +1,37 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
-import { Button, Container, responsive, Text } from 'styled-minimal';
+// import { useDispatch } from 'react-redux';
+// import styled from 'styled-components';
+// import { Button, Container, responsive, Text } from 'styled-minimal';
+// import '../styles.css';
+// import { spacer } from 'modules/theme';
+// import { name } from 'config';
+// import { STATUS } from 'literals';
 
-import { spacer } from 'modules/theme';
+// import { login } from 'actions';
 
-import { name } from 'config';
-import { STATUS } from 'literals';
+// import Background from 'components/Background';
+// import Icon from 'components/Icon';
+// import Logo from 'components/Logo';
+import Tiptap from 'components/Tiptap';
 
-import { login } from 'actions';
-
-import Background from 'components/Background';
-import Icon from 'components/Icon';
-import Logo from 'components/Logo';
-
-import { RootState } from 'types';
-
-const Header = styled.div`
-  margin-bottom: ${spacer(3)};
-  text-align: center;
-
-  svg {
-    height: 10rem;
-    width: auto;
-
-    ${
-      /* sc-custom '@media-query' */ responsive({
-        lg: {
-          height: '15rem',
-        },
-      })
-    };
-  }
-`;
-
-const Heading = styled.h1`
-  color: #fff;
-  font-size: 3.5rem;
-  line-height: 1.4;
-  margin-bottom: ${spacer(3)};
-  margin-top: 0;
-  text-align: center;
-
-  ${
-    /* sc-custom '@media-query' */ responsive({
-      lg: {
-        fontSize: '4rem',
-      },
-    })
-  };
-`;
+// import { RootState } from 'types';
 
 function Home() {
-  const dispatch = useDispatch();
-  const status = useSelector<RootState>(({ user }) => user.status);
+  // const dispatch = useDispatch();
+  // const status = useSelector<RootState>(({ user }) => user.status);
 
-  const handleClickLogin = () => {
-    dispatch(login());
-  };
+  // const handleClickLogin = () => {
+  //   dispatch(login());
+  // };
 
   return (
-    <Background key="Home" data-testid="Home">
-      <Container fullScreen>
-        <Header>
-          <Logo />
-        </Header>
-        <Heading>{name}</Heading>
-        <Button
-          busy={status === STATUS.RUNNING}
-          data-testid="Login"
-          onClick={handleClickLogin}
-          size="xl"
-          textTransform="uppercase"
-          variant="white"
-        >
-          <Icon name="sign-in" />
-          <Text ml={2}>Start</Text>
-        </Button>
-      </Container>
-    </Background>
+    // <Background key="Home" data-testid="Home">
+    <div className="w-full h-full min-h-full">
+      <div className="m-2 p-2 border-2 focus:outline-none ring-offset-0 ring-0 mx-auto w-full max-w-5xl h-full">
+        <Tiptap className="h-full" />
+      </div>
+    </div>
+    // </Background>
   );
 }
 

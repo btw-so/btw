@@ -11,13 +11,11 @@ const GlobalStyle = createGlobalStyle`
   }
 
   html {
-    font-size: 62.5%;
     -webkit-font-smoothing: antialiased;
     height: 100%;
   }
 
   body {
-    font-family: Lato, sans-serif;
     font-size: 16px; /* stylelint-disable unit-disallowed-list */
     margin: 0;
     min-height: 100vh;
