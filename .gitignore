@@ -1,1 +1,11 @@
-writer/node_modules
+writer/.tmp
+writer/.sass-cache
+writer/.publish
+writer/coverage/
+writer/build/
+writer/dist/
+writer/node_modules/
+writer/reports/
+writer/webpack.stats.json
+
+writer/out/
