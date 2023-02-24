@@ -207,7 +207,7 @@
     "publish": "node tools publish",
     "size": "npm run build && size-limit",
     "postinstall": "rm -rf node_modules/@types/react-native",
-    "electron-dev": "ELECTRON_START_URL=http://localhost:9000 electron ."
+    "electron-dev": "REACT_APP_ELECTRON=1 ELECTRON_START_URL=http://localhost:9000 electron ."
   },
   "prettier": "@gilbarbara/prettier-config",
   "lint-staged": {
