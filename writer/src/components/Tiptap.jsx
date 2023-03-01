@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import React from 'react';
@@ -5,13 +6,13 @@ import { Color } from '@tiptap/extension-color';
 import ListItem from '@tiptap/extension-list-item';
 import TextStyle from '@tiptap/extension-text-style';
 
-const MenuBar = ({ editor }): JSX.Element | null => {
+const MenuBar = ({ editor }) => {
   if (!editor) {
     return null;
   }
 
   return (
-    <>
+    <div className="tiptap-toolbar">
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
@@ -130,7 +131,7 @@ const MenuBar = ({ editor }): JSX.Element | null => {
       >
         purple
       </button>
-    </>
+    </div>
   );
 };
 
@@ -141,15 +142,20 @@ export default () => {
       TextStyle.configure({ types: [ListItem.name] }),
       StarterKit.configure({
         bulletList: {
-          keepMarks: true,
+          keepMarks: true, // eslinet-disable-line
           keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
         },
         orderedList: {
-          keepMarks: true,
+          keepMarks: true, // eslunt-disable-line
           keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
         },
       }),
     ],
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm lg:prose m-5 focus:outline-none',
+      },
+    },
     content: `
       <h2>
         Hi there,

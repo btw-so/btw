@@ -1,0 +1,14 @@
+{
+  "singleQuote": true,
+  "overrides": [
+    {
+      "files": "*.js",
+      "options": {
+        "singleQuote": false,
+        "printWidth": 80,
+        "useTabs": false,
+        "tabWidth": 4
+      }
+    }
+  ]
+}

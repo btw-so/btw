@@ -21,8 +21,15 @@
   "dependencies": {
     "@gilbarbara/helpers": "^0.5.1",
     "@reduxjs/toolkit": "^1.8.0",
+    "@tiptap/extension-color": "^2.0.0-beta.219",
+    "@tiptap/extension-list-item": "^2.0.0-beta.219",
+    "@tiptap/extension-text-style": "^2.0.0-beta.219",
+    "@tiptap/react": "^2.0.0-beta.219",
+    "@tiptap/starter-kit": "^2.0.0-beta.219",
     "immer": "^9.0.12",
     "is-lite": "^0.8.1",
+    "nodemailer": "^6.9.1",
+    "pg": "^8.9.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-error-boundary": "^3.1.4",
@@ -207,7 +214,9 @@
     "publish": "node tools publish",
     "size": "npm run build && size-limit",
     "postinstall": "rm -rf node_modules/@types/react-native",
-    "electron-dev": "REACT_APP_ELECTRON=1 ELECTRON_START_URL=http://localhost:9000 electron ."
+    "electron-dev": "REACT_APP_ELECTRON=1 ELECTRON_START_URL=http://localhost:9000 electron .",
+    "build:css": "npx tailwindcss -i assets/styles.css -o assets/media/styles.css",
+    "build:watch": "npx tailwindcss -i assets/styles.css -o assets/media/styles.css --watch"
   },
   "prettier": "@gilbarbara/prettier-config",
   "lint-staged": {

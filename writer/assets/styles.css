@@ -10,3 +10,13 @@ html,
 body {
   font-family: 'Satoshi', sans-serif;
 }
+
+.tiptap-toolbar button {
+  border: 2px solid black;
+  padding: 5px;
+}
+
+.prose li p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}

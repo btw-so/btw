@@ -9,3 +9,7 @@ writer/reports/
 writer/webpack.stats.json
 
 writer/out/
+
+tasks/node_modules/
+
+deployment/

@@ -12,6 +12,7 @@ import React from 'react';
 // import Background from 'components/Background';
 // import Icon from 'components/Icon';
 // import Logo from 'components/Logo';
+// @ts-ignore
 import Tiptap from 'components/Tiptap';
 
 // import { RootState } from 'types';

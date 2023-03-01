@@ -12,7 +12,8 @@
       "test-utils": ["test/__setup__/test-utils"]
     },
     "skipLibCheck": true,
-    "target": "es5"
+    "target": "es5",
+    "jsx": "react"
   },
   "include": ["src/**/*", "electron-starter.js"]
 }
