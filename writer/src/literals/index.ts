@@ -15,6 +15,18 @@ export const ActionTypes = keyMirror({
   USER_LOGOUT_REQUEST: undefined,
   USER_LOGOUT_SUCCESS: undefined,
   USER_LOGOUT_FAILURE: undefined,
+  GET_USER: undefined,
+  GET_USER_SUCCESS: undefined,
+  GET_USER_FAILURE: undefined,
+  GENERATE_OTP: undefined,
+  GENERATE_OTP_SUCCESS: undefined,
+  GENERATE_OTP_FAILURE: undefined,
+  VERIFY_OTP: undefined,
+  VERIFY_OTP_SUCCESS: undefined,
+  VERIFY_OTP_FAILURE: undefined,
+  UPDATE_USER: undefined,
+  UPDATE_USER_SUCCESS: undefined,
+  UPDATE_USER_FAILURE: undefined,
 });
 
 export const STATUS: Status = {

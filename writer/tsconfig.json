@@ -13,7 +13,8 @@
     },
     "skipLibCheck": true,
     "target": "es5",
-    "jsx": "react"
+    "jsx": "react",
+    "noImplicitAny": false
   },
   "include": ["src/**/*", "electron-starter.js"]
 }

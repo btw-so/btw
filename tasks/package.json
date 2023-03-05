@@ -39,6 +39,7 @@
     "mysql": "^2.18.1",
     "newrelic": "7.5.2",
     "node-fetch": "^2.6.1",
+    "nodemailer": "^6.9.1",
     "openai": "^3.1.0",
     "pg": "^7.12.1",
     "pg-format": "^1.0.4",

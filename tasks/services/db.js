@@ -3,15 +3,12 @@ const { Pool } = require("pg");
 class DB {
     async getTasksDB() {
         if (!this.tasks_pool) {
-            console.log("Connecting to tasks postgres in Taks");
             this.tasks_pool = new Pool({
                 connectionString: process.env.TASKS_DATABASE_URL,
                 max: 10,
-                ssl: !!Number(process.env.DEBUG)
-                    ? false
-                    : {
-                          rejectUnauthorized: false,
-                      },
+                ssl: {
+                    rejectUnauthorized: false,
+                },
             });
             // the pool will emit an error on behalf of any idle clients
             // it contains if a backend error or network partition happens

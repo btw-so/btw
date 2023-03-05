@@ -9,6 +9,7 @@ const { BullAdapter } = require("@bull-board/api/bullAdapter");
 const { ExpressAdapter } = require("@bull-board/express");
 
 var indexRouter = require("./routes/index");
+var otpRouter = require("./routes/otp");
 var { baseQueue } = require("./services/queue");
 
 var app = express();
@@ -24,6 +25,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
+app.use("/otp", otpRouter);
+app.use("/user", require("./routes/user"));
 
 // Queue monitor
 const serverAdapter = new ExpressAdapter();

@@ -2,13 +2,13 @@ const db = require("../services/db");
 
 const { baseQueue } = require("../services/queue");
 
-// add a job that runs every 10 mins and removed old otps
+// add a job that runs every 2 hours and removed old otps
 baseQueue.add(
     "removeOldOTPs",
     {},
     {
         repeat: {
-            every: 10 * 60 * 1000,
+            every: 2 * 60 * 60 * 1000,
         },
     }
 );
@@ -16,9 +16,9 @@ baseQueue.add(
 baseQueue.process("removeOldOTPs", async () => {
     const tasksDB = await db.getTasksDB();
 
-    // remove all otps that are older than 10 mins
+    // remove all otps that are older than 2 hours
     await tasksDB.query(
-        `DELETE FROM btw.otp WHERE created_at < NOW() - INTERVAL '10 minutes'`
+        `DELETE FROM btw.otp WHERE created_at < NOW() - INTERVAL '120 minutes'`
     );
 });
 
@@ -40,7 +40,7 @@ async function generateOTP({ email }) {
     // check if there is an OTP for this email id that is already present in DB
     const { rows } = await tasksDB.query(
         `SELECT * FROM btw.otp WHERE processed_email = $1`,
-        [(email || "").split(".").join("")]
+        [(email || "").toLowerCase().split(".").join("")]
     );
 
     if (rows.length > 0) {
@@ -63,8 +63,13 @@ async function generateOTP({ email }) {
 
         // insert the new OTP in DB
         await tasksDB.query(
-            `INSERT INTO btw.otp (otp, processed_email) VALUES ($1, $2)`,
-            [newOTP, (email || "").split(".").join("")]
+            `INSERT INTO btw.otp (otp, email, processed_email, created_at) VALUES ($1, $2, $3, $4)`,
+            [
+                newOTP,
+                email,
+                (email || "").toLowerCase().split(".").join(""),
+                new Date(),
+            ]
         );
 
         return newOTP;
@@ -77,7 +82,7 @@ async function validateOTP({ email, otp }) {
     // check if there is an OTP for this email id that is already present in DB
     const { rows } = await tasksDB.query(
         `SELECT * FROM btw.otp WHERE processed_email = $1 AND otp = $2`,
-        [(email || "").split(".").join(""), otp]
+        [(email || "").toLowerCase().split(".").join(""), otp]
     );
 
     if (rows.length > 0) {
@@ -87,7 +92,19 @@ async function validateOTP({ email, otp }) {
     }
 }
 
-module.export = {
+async function deleteOTP({ email }) {
+    const tasksDB = await db.getTasksDB();
+
+    // delete the OTP for this email id
+    await tasksDB.query(`DELETE FROM btw.otp WHERE processed_email = $1`, [
+        (email || "").toLowerCase().split(".").join(""),
+    ]);
+
+    return true;
+}
+
+module.exports = {
     generateOTP,
     validateOTP,
+    deleteOTP,
 };
