@@ -15,7 +15,7 @@ const rootReducer = persistCombineReducers<RootState>(
     key: 'rrsb',
     stateReconciler: autoMergeLevel2,
     storage,
-    blacklist: ['user', 'otp'],
+    blacklist: ['user.otp', 'user.verifyOtp'],
     timeout: 0,
   },
   reducers,

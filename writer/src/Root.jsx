@@ -6,10 +6,12 @@ import { selectUser } from 'selectors';
 import useTreeChanges from 'tree-changes-hook';
 import { useAppSelector } from 'modules/hooks';
 
-import { getUser, showAlert } from 'actions';
-import SystemAlerts from 'containers/SystemAlerts';
+import toast, { Toaster } from 'react-hot-toast';
+
+import { getUser } from 'actions';
 // import Home from 'routes/Home';
 import Login from './routes/Login';
+import Dash from './routes/Dash';
 import NotFound from 'routes/NotFound';
 import PublicRoute from './components/PublicRoute';
 import PrivateRoute from './components/PrivateRoute';
@@ -29,7 +31,7 @@ function Root() {
 
   useEffect(() => {
     if (changed('user.isLoggedIn', true) && isLoggedIn) {
-      dispatch(showAlert('Welcome!', { variant: 'success', icon: 'bell', timeout: 10 }));
+      toast.success('Logged In!');
     }
   }, [dispatch, changed]);
 
@@ -45,6 +47,8 @@ function Root() {
   // and then use the correct router
 
   const Router = process.env.REACT_APP_ELECTRON ? HashRouter : BrowserRouter;
+
+  console.log('user', user);
 
   return (
     <Router>
@@ -68,7 +72,7 @@ function Root() {
           <Route
             element={
               <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
-                Dash
+                <Dash userId={user.data.id} />
               </PrivateRoute>
             }
             path="/dash"
@@ -91,9 +95,9 @@ function Root() {
           />
           <Route element={<NotFound />} path="*" />
         </Routes>
+        <Toaster />
         {/* </Main> */}
         {/* <Footer /> */}
-        <SystemAlerts />
       </div>
     </Router>
   );

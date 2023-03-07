@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:11
+FROM --platform=linux/amd64 node:16
 # FROM node:11.12.0-alpine
 
 # create an app directory and use it as working directory

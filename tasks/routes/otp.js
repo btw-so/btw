@@ -97,7 +97,7 @@ router.post(
                 ? {
                       domain: `.${process.env.ROOT_DOMAIN}`,
                       secure: true,
-                      httpOnly: true,
+                      //   httpOnly: true,
                   }
                 : {}),
         });

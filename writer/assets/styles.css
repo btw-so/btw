@@ -16,7 +16,12 @@ body {
   padding: 5px;
 }
 
-.prose li p {
+.tiptap-editor li p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.tiptap-editor li {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
@@ -27,4 +32,141 @@ body {
     -webkit-appearance: none;
     margin: 0;
   }
+}
+
+hr.ProseMirror-selectednode {
+  border-top: 1px solid #68cef8;
+}
+
+.tiptap-editor mark {
+  background-color: #ffe066;
+  border-radius: 0.25em;
+  box-decoration-break: clone;
+  padding: 0.125em 0;
+}
+
+.tiptap-editor .items {
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0px 10px 20px rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 0.9rem;
+  overflow: hidden;
+  padding: 0.2rem;
+  position: relative;
+}
+
+.tiptap-editor .item {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.4rem;
+  display: block;
+  margin: 0;
+  padding: 0.2rem 0.4rem;
+  text-align: left;
+  width: 100%;
+}
+
+.tiptap-editor .mention {
+  border: 1px solid #000;
+  border-radius: 0.4rem;
+  box-decoration-break: clone;
+  padding: 0.1rem 0.3rem;
+}
+
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap-editor .item .is-selected {
+  border-color: #000;
+}
+
+/* Give a remote user a caret */
+.tiptap-editor .collaboration-cursor__caret {
+  border-left: 1px solid #0d0d0d;
+  border-right: 1px solid #0d0d0d;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+
+/* Render the username above the caret */
+.tiptap-editor .collaboration-cursor__label {
+  border-radius: 3px 3px 3px 0;
+  color: #0d0d0d;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  left: -1px;
+  line-height: normal;
+  padding: 0.1rem 0.3rem;
+  position: absolute;
+  top: -1.4em;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.tiptap-editor .menu-item {
+  background-color: transparent;
+  border: none;
+  border-radius: 0.4rem;
+  color: #0d0d0d;
+  height: 1.75rem;
+  margin-right: 0.25rem;
+  padding: 0.25rem;
+  width: 1.75rem;
+}
+
+.tiptap-editor .menu-item svg {
+  fill: currentColor;
+  height: 100%;
+  width: 100%;
+}
+
+.tiptap-editor .menu-item:hover,
+.tiptap-editor .menu-item .is-active {
+  background-color: #0d0d0d;
+  color: #fff;
+}
+
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #ced4da;
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap-editor h1 {
+  @apply text-2xl mb-2;
+}
+
+.tiptap-editor ul[data-type='taskList'] {
+  list-style: none;
+  padding: 0;
+}
+.tiptap-editor ul[data-type='taskList'] p {
+  margin: 0;
+}
+.tiptap-editor ul[data-type='taskList'] li {
+  display: flex;
+}
+.tiptap-editor ul[data-type='taskList'] li > label {
+  flex: 0 0 auto;
+  margin-right: 0.5rem;
+  user-select: none;
+}
+.tiptap-editor ul[data-type='taskList'] li > div {
+  flex: 1 1 auto;
+  margin-bottom: 0 !important;
+}
+.tiptap-editor ul[data-type='taskList'] li > label {
+  margin-top: 0 !important;
 }

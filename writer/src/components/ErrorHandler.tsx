@@ -19,7 +19,7 @@ export default function ErrorHandler({ error, resetErrorBoundary }: Props) {
       <Paragraph my={3}>{error.message}</Paragraph>
 
       <Button onClick={handleClickReset} variant="red">
-        Tentar novamente
+        Error
       </Button>
     </Container>
   );

@@ -15,9 +15,10 @@ baseQueue.add(
 
 baseQueue.process("removeOldOTPs", async () => {
     const tasksDB = await db.getTasksDB();
+    const client = await tasksDB.connect();
 
     // remove all otps that are older than 2 hours
-    await tasksDB.query(
+    await client.query(
         `DELETE FROM btw.otp WHERE created_at < NOW() - INTERVAL '120 minutes'`
     );
 });
@@ -36,14 +37,16 @@ function uniqueOTP() {
 
 async function generateOTP({ email }) {
     const tasksDB = await db.getTasksDB();
+    const client = await tasksDB.connect();
 
     // check if there is an OTP for this email id that is already present in DB
-    const { rows } = await tasksDB.query(
+    const { rows } = await client.query(
         `SELECT * FROM btw.otp WHERE processed_email = $1`,
         [(email || "").toLowerCase().split(".").join("")]
     );
 
     if (rows.length > 0) {
+        client.release();
         return rows[0].otp;
     } else {
         // generate a new OTP until the newly generated OTP is not present in DB
@@ -72,18 +75,23 @@ async function generateOTP({ email }) {
             ]
         );
 
+        client.release();
+
         return newOTP;
     }
 }
 
 async function validateOTP({ email, otp }) {
     const tasksDB = await db.getTasksDB();
+    const client = await tasksDB.connect();
 
     // check if there is an OTP for this email id that is already present in DB
-    const { rows } = await tasksDB.query(
+    const { rows } = await client.query(
         `SELECT * FROM btw.otp WHERE processed_email = $1 AND otp = $2`,
         [(email || "").toLowerCase().split(".").join(""), otp]
     );
+
+    client.release();
 
     if (rows.length > 0) {
         return true;
@@ -94,11 +102,14 @@ async function validateOTP({ email, otp }) {
 
 async function deleteOTP({ email }) {
     const tasksDB = await db.getTasksDB();
+    const client = await tasksDB.connect();
 
     // delete the OTP for this email id
-    await tasksDB.query(`DELETE FROM btw.otp WHERE processed_email = $1`, [
+    await client.query(`DELETE FROM btw.otp WHERE processed_email = $1`, [
         (email || "").toLowerCase().split(".").join(""),
     ]);
+
+    client.release();
 
     return true;
 }
