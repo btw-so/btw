@@ -9,6 +9,7 @@
     "@babel/runtime": "^7.16.7",
     "@bull-board/api": "^3.2.8",
     "@bull-board/express": "^3.2.8",
+    "@hocuspocus/extension-database": "^1.1.1",
     "@hocuspocus/server": "1.1.1",
     "@hocuspocus/transformer": "1.1.1",
     "@supabase/supabase-js": "^2.8.0",

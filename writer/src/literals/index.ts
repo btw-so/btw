@@ -27,6 +27,12 @@ export const ActionTypes = keyMirror({
   UPDATE_USER: undefined,
   UPDATE_USER_SUCCESS: undefined,
   UPDATE_USER_FAILURE: undefined,
+  GET_NOTES: undefined,
+  GET_NOTES_SUCCESS: undefined,
+  GET_NOTES_FAILURE: undefined,
+  UPSERT_NOTE: undefined,
+  UPSERT_NOTE_SUCCESS: undefined,
+  UPSERT_NOTE_FAILURE: undefined,
 });
 
 export const STATUS: Status = {

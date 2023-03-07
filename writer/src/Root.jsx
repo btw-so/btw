@@ -48,11 +48,9 @@ function Root() {
 
   const Router = process.env.REACT_APP_ELECTRON ? HashRouter : BrowserRouter;
 
-  console.log('user', user);
-
   return (
     <Router>
-      <div>
+      <div className="w-full h-full flex-grow flex flex-col">
         <Helmet
           defaultTitle={'btw ∴'}
           defer={false}

@@ -39,9 +39,11 @@ const { Underline } = require("@tiptap/extension-underline");
 const CustomDocument = Document.extend({
     content: "heading block*",
 });
+var { Database } = require("@hocuspocus/extension-database");
 var { Server } = require("@hocuspocus/server");
+var { generateHTML } = require("@tiptap/html");
 var { TiptapTransformer } = require("@hocuspocus/transformer");
-var MyTipTapTransformer = TiptapTransformer.extensions([
+var extensions = [
     CustomDocument,
     Paragraph,
     Text,
@@ -84,11 +86,15 @@ var MyTipTapTransformer = TiptapTransformer.extensions([
             class: "mention",
         },
     }),
-]);
+];
+var MyTipTapTransformer = TiptapTransformer.extensions(extensions);
+var MyTipTapTransformerHTML = (json) => generateHTML(json, extensions);
 
 var indexRouter = require("./routes/index");
 var otpRouter = require("./routes/otp");
+var notesRouter = require("./routes/notes");
 var { baseQueue } = require("./services/queue");
+var { upsertNote, getNote } = require("./logic/notes");
 
 var {
     getUserFromToken,
@@ -96,6 +102,7 @@ var {
     createUser,
     setUserDetails,
 } = require("./logic/user");
+var db = require("./services/db");
 
 var app = express();
 
@@ -111,6 +118,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/otp", otpRouter);
+app.use("/notes", notesRouter);
 app.use("/user", require("./routes/user"));
 
 // Queue monitor
@@ -153,12 +161,28 @@ const yjsServer = Server.configure({
             throw new Error("Not authorized!");
         }
 
-        const ownerOfDoc = documentName.split("note.")[1].split(".")[0];
+        const userAccordingToUI = documentName.split("note.")[1].split(".")[0];
 
-        console.log(documentName, ownerOfDoc, user.id);
+        var userFromDB;
+
+        try {
+            const note = await getNote({
+                id: documentName.split("note.")[1].split(".")[1],
+                user_id: user.id,
+            });
+            if (note) {
+                userFromDB = note.user_id;
+            }
+        } catch (e) {
+            // can be a new note. for now supporting new notes direct authentication
+            console.log(e);
+        }
 
         // We might have shareable docs later on. For now we only allow the owner
-        if ("" + user.id !== ownerOfDoc) {
+        if (
+            (userFromDB && user.id !== userFromDB) ||
+            "" + user.id !== userAccordingToUI
+        ) {
             throw new Error("Not authorized!");
         }
 
@@ -167,52 +191,35 @@ const yjsServer = Server.configure({
             user,
         };
     },
-    async onLoadDocument(data) {
-        // The Tiptap collaboration extension uses shared types of a single y-doc
-        // to store different fields in the same document.
-        // The default field in Tiptap is simply called "default"
-        const fieldName = "default";
-
-        // Check if the given field already exists in the given y-doc.
-        // Important: Only import a document if it doesn't exist in the primary data storage!
-        if (!data.document.isEmpty(fieldName)) {
-            return;
-        }
-
-        // Get the document from somwhere. In a real world application this would
-        // probably be a database query or an API call
-        // const prosemirrorJSON = JSON.parse(
-        //     readFileSync(`/path/to/your/documents/${data.documentName}.json`) ||
-        //         "{}"
-        // );
-
-        // Convert the editor format to a y-doc. The TiptapTransformer requires you to pass the list
-        // of extensions you use in the frontend to create a valid document
-        // return MyTipTapTransformer.toYdoc(prosemirrorJSON, fieldName);
-    },
     async onChange(data) {
         const save = () => {
             // Convert the y-doc to something you can actually use in your views.
             // In this example we use the TiptapTransformer to get JSON from the given
             // ydoc.
-            const prosemirrorJSON = MyTipTapTransformer.fromYdoc(data.document);
+            const prosemirrorJSON = MyTipTapTransformer.fromYdoc(
+                data.document,
+                "default"
+            );
 
-            console.log(prosemirrorJSON);
+            var html = MyTipTapTransformerHTML(prosemirrorJSON);
 
-            // Save your document. In a real-world app this could be a database query
-            // a webhook or something else
-            // writeFile(
-            //     `/path/to/your/documents/${data.documentName}.json`,
-            //     prosemirrorJSON
-            // );
+            const user_id = data.context.user.id;
+            const id = data.documentName.split("note.")[1].split(".")[1];
+
+            upsertNote({
+                id,
+                user_id,
+                json: prosemirrorJSON,
+                html,
+            });
 
             // Maybe you want to store the user who changed the document?
             // Guess what, you have access to your custom context from the
             // onAuthenticate hook here. See authorization & authentication for more
             // details
-            console.log(
-                `Document ${data.documentName} changed by ${data.context.user.id}`
-            );
+            // console.log(
+            //     `Document ${data.documentName} changed by ${data.context.user.id}`
+            // );
         };
 
         debounced[data.documentName] && debounced[data.documentName].clear();
@@ -220,6 +227,59 @@ const yjsServer = Server.configure({
         debounced[data.documentName]();
     },
     port: Number(process.env.YJS_PORT),
+    extensions: [
+        new Database({
+            // Return a Promise to retrieve data …
+            fetch: async ({ documentName }) => {
+                // console.log("fetching", documentName);
+                const id = documentName.split("note.")[1].split(".")[1];
+                const user_id = documentName.split("note.")[1].split(".")[0];
+
+                return new Promise((resolve, reject) => {
+                    resolve(
+                        db.getTasksDB().then((db) => {
+                            return db
+                                .query(
+                                    `SELECT ydoc from btw.notes where id = $1 and user_id = $2`,
+                                    [id, Number(user_id)]
+                                )
+                                .then(({ rows }) => {
+                                    // console.log("Found", rows.length);
+                                    if (rows.length > 0) {
+                                        return rows[0]?.ydoc;
+                                    } else {
+                                        throw new Error("Not found");
+                                    }
+                                });
+                        })
+                    );
+                });
+            },
+            // … and a Promise to store data:
+            store: async ({ documentName, state }) => {
+                // console.log("storing", documentName);
+                const id = documentName.split("note.")[1].split(".")[1];
+                const user_id = documentName.split("note.")[1].split(".")[0];
+
+                return new Promise((resolve, reject) => {
+                    resolve(
+                        db.getTasksDB().then((db) => {
+                            return db.query(
+                                `INSERT INTO btw.notes (id, user_id, ydoc, created_at, updated_at) VALUES($1, $2, $3, $4, $5) ON CONFLICT(id, user_id) DO UPDATE SET ydoc = $3, updated_at = $4 RETURNING ydoc`,
+                                [
+                                    id,
+                                    Number(user_id),
+                                    state,
+                                    new Date(),
+                                    new Date(),
+                                ]
+                            );
+                        })
+                    );
+                });
+            },
+        }),
+    ],
 });
 
 yjsServer.listen();

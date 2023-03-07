@@ -74,14 +74,6 @@ hr.ProseMirror-selectednode {
   padding: 0.1rem 0.3rem;
 }
 
-.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
-  color: #adb5bd;
-  content: attr(data-placeholder);
-  float: left;
-  height: 0;
-  pointer-events: none;
-}
-
 .tiptap-editor .item .is-selected {
   border-color: #000;
 }
@@ -136,7 +128,7 @@ hr.ProseMirror-selectednode {
   color: #fff;
 }
 
-.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+.tiptap-editor .ProseMirror h1.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
   color: #ced4da;
@@ -146,6 +138,7 @@ hr.ProseMirror-selectednode {
 
 .tiptap-editor h1 {
   @apply text-2xl mb-2;
+  font-weight: 700;
 }
 
 .tiptap-editor ul[data-type='taskList'] {
@@ -162,11 +155,17 @@ hr.ProseMirror-selectednode {
   flex: 0 0 auto;
   margin-right: 0.5rem;
   user-select: none;
+  display: flex;
+  /* align-items: center; */
 }
 .tiptap-editor ul[data-type='taskList'] li > div {
   flex: 1 1 auto;
   margin-bottom: 0 !important;
 }
 .tiptap-editor ul[data-type='taskList'] li > label {
-  margin-top: 0 !important;
+  margin-top: 0.5rem !important;
+}
+.tiptap-editor ul[data-type='taskList'] li > div > ul[data-type='taskList'] {
+  margin-top: 0rem !important;
+  margin-bottom: 0rem !important;
 }

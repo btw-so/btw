@@ -64,7 +64,7 @@ class Tiptap extends React.Component {
 
     const ydoc = new Y.Doc();
 
-    console.log(`${props.token}:::${genFingerprint()}`);
+    console.log('YDOC RECREATING', props);
 
     this.provider = new HocuspocusProvider({
       url: `ws://${process.env.REACT_APP_YJS_DOMAIN}`,
@@ -133,7 +133,7 @@ class Tiptap extends React.Component {
       ],
       editorProps: {
         attributes: {
-          class: 'prose prose-sm lg:prose-lg focus:outline-none',
+          class: 'prose prose-sm lg:prose-lg focus:outline-none flex-grow p-2 mt-2',
         },
       },
       content: ``,
@@ -159,9 +159,16 @@ class Tiptap extends React.Component {
 
   render() {
     return (
-      <div className="tiptap-editor">
+      <div className="tiptap-editor flex flex-col flex-grow">
         <MenuBar editor={this.editor} />
-        <EditorContent editor={this.editor} />
+        <EditorContent
+          editor={this.editor}
+          className="flex-grow"
+          onClick={e => {
+            // get the editor in focus
+            this.editor.commands.focus();
+          }}
+        />
         <div className="character-count text-xs text-gray-400">
           {this.state.chars || '0'}/{limit} characters
           <br />
