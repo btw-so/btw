@@ -154,7 +154,7 @@ function get_map(fingerprint) {
     .replace(/::/g, '~');
 }
 
-export default function final_fingerprint() {
+function final_fingerprint() {
   fingerprint = get_fingerprint(true);
   fingerprint_hash = md5(fingerprint);
 
@@ -163,4 +163,4 @@ export default function final_fingerprint() {
   return fingerprint_hash + map_hash;
 }
 
-module.exports = final_fingerprint;
+export default final_fingerprint;

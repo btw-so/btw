@@ -142,7 +142,7 @@ md5._ii = function (a, b, c, d, x, s, t) {
 md5._blocksize = 16;
 md5._digestsize = 16;
 
-export default function md5Fn(message, options) {
+function md5Fn(message, options) {
   if (message === undefined || message === null) throw new Error('Illegal argument ' + message);
 
   var digestbytes = crypt.wordsToBytes(md5(message, options));
@@ -153,4 +153,4 @@ export default function md5Fn(message, options) {
     : crypt.bytesToHex(digestbytes);
 }
 
-module.exports = md5Fn;
+export default md5Fn;
