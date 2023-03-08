@@ -78,7 +78,7 @@ class Tiptap extends React.Component {
     const ydoc = new Y.Doc();
 
     this.provider = new HocuspocusProvider({
-      url: `ws://${process.env.REACT_APP_YJS_DOMAIN}`,
+      url: process.env.REACT_APP_YJS_DOMAIN,
       name: `note.${props.userId}.${props.docId}`,
       document: ydoc,
       token: `${props.token}:::${genFingerprint()}`,
