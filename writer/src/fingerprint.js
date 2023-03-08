@@ -47,12 +47,12 @@ function baseName(tempFileName) {
  * @return string
  */
 function fingerprint_software() {
-  t = '';
-  isFirst = true;
+  var t = '';
+  var isFirst = true;
 
   if (window.navigator.plugins.length > 0) {
     for (i = 0; i < window.navigator.plugins.length; i++) {
-      plugin = window.navigator.plugins[i];
+      var plugin = window.navigator.plugins[i];
       if (isFirst == true) {
         t += baseName(plugin.filename);
         isFirst = false;
@@ -62,7 +62,7 @@ function fingerprint_software() {
     }
   } else if (window.navigator.mimeTypes.length > 0) {
     for (i = 0; i < window.navigator.mimeTypes.length; i++) {
-      mimeType = window.navigator.mimeTypes[i];
+      var mimeType = window.navigator.mimeTypes[i];
       if (isFirst == true) {
         t += mimeType.type;
         isFirst = false;
@@ -71,7 +71,7 @@ function fingerprint_software() {
       }
     }
   } else if (ie) {
-    components = new Array(
+    var components = new Array(
       '7790769C-0471-11D2-AF11-00C04FA35D02',
       '89820200-ECBD-11CF-8B85-00AA005B4340',
       '283807B5-2C60-11D0-A31D-00AA00B92C03',
@@ -120,7 +120,7 @@ function fingerprint_software() {
  * @return string
  */
 function get_fingerprint(hash) {
-  data = new Array(
+  var data = new Array(
     window.navigator.userAgent.toLowerCase(), // User Agent Information
     [screen.width, screen.height, screen.colorDepth].join(SEP), // Screen Information
     new Date().getTimezoneOffset(), // Time Zone Information
@@ -158,8 +158,8 @@ function final_fingerprint() {
   fingerprint = get_fingerprint(true);
   fingerprint_hash = md5(fingerprint);
 
-  map = get_map(fingerprint);
-  map_hash = md5(map);
+  var map = get_map(fingerprint);
+  var map_hash = md5(map);
   return fingerprint_hash + map_hash;
 }
 

@@ -72,7 +72,11 @@ function Root() {
           <Route
             element={
               <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
-                <Dash userId={user.data.id} name={user.data.name} email={user.data.email} />
+                <Dash
+                  userId={user && user.data ? user.data.id : null}
+                  name={user && user.data ? user.data.name : null}
+                  email={user && user.data ? user.data.email : null}
+                />
               </PrivateRoute>
             }
             path="/dash"
