@@ -155,8 +155,8 @@ function get_map(fingerprint) {
 }
 
 function final_fingerprint() {
-  fingerprint = get_fingerprint(true);
-  fingerprint_hash = md5(fingerprint);
+  var fingerprint = get_fingerprint(true);
+  var fingerprint_hash = md5(fingerprint);
 
   var map = get_map(fingerprint);
   var map_hash = md5(map);
