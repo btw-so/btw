@@ -19,7 +19,7 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-import genFingerprint from './fingerprint';
+import genFingerprint from '../fingerprint';
 
 // import FingerprintJS from '@fingerprintjs/fingerprintjs';
 

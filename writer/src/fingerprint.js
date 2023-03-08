@@ -1,4 +1,4 @@
-var md5 = require('./md5');
+var md5 = require('./sagas/md5');
 
 var SEP = '|';
 var ua = window.navigator.userAgent.toLowerCase();

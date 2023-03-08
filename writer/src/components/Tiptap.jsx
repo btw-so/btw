@@ -51,7 +51,7 @@ import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 
 import * as Y from 'yjs';
 import { HocuspocusProvider } from '@hocuspocus/provider';
-import genFingerprint from '../sagas/fingerprint';
+import genFingerprint from '../fingerprint';
 import MenuBar from './TipTapMenuBar';
 
 const limit = 10000;
