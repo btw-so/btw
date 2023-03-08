@@ -1,5 +1,5 @@
 import crypt from 'crypt';
-import utf8 from 'charenc/utf8';
+import { utf8 } from 'charenc';
 import isBuffer from 'is-buffer';
 import { bin } from 'charenc';
 
