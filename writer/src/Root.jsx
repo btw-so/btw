@@ -48,6 +48,8 @@ function Root() {
 
   const Router = process.env.REACT_APP_ELECTRON ? HashRouter : BrowserRouter;
 
+  console.log('user', user);
+
   return (
     <Router>
       <div className="w-full h-full flex-grow flex flex-col">
@@ -70,7 +72,7 @@ function Root() {
           <Route
             element={
               <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
-                <Dash userId={user.data.id} />
+                <Dash userId={user.data.id} name={user.data.name} email={user.data.email} />
               </PrivateRoute>
             }
             path="/dash"

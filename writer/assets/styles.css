@@ -169,3 +169,13 @@ hr.ProseMirror-selectednode {
   margin-top: 0rem !important;
   margin-bottom: 0rem !important;
 }
+
+.tiptap-editor ol > li > ol {
+  margin-top: 0rem !important;
+  margin-bottom: 0rem !important;
+}
+
+.tiptap-editor ul > li > ul {
+  margin-top: 0rem !important;
+  margin-bottom: 0rem !important;
+}

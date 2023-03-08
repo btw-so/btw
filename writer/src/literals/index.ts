@@ -33,6 +33,9 @@ export const ActionTypes = keyMirror({
   UPSERT_NOTE: undefined,
   UPSERT_NOTE_SUCCESS: undefined,
   UPSERT_NOTE_FAILURE: undefined,
+  CREATE_NEW_NOTE: undefined,
+  SELECT_NOTE: undefined,
+  SAVE_NOTE_CONTENT: undefined,
 });
 
 export const STATUS: Status = {

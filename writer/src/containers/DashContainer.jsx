@@ -6,12 +6,15 @@ import { useAppSelector } from 'modules/hooks';
 import useInterval from 'beautiful-react-hooks/useInterval';
 import { useDispatch } from 'react-redux';
 import { STATUS } from '../literals';
-import { getNotes } from '../actions';
+import { getNotes, createNewNote, selectNote, saveNoteContent } from '../actions';
+import 'remixicon/fonts/remixicon.css';
 
 function Dash(props) {
   const [token, setToken] = useCookie('btw_uuid', '');
   const notesState = useAppSelector(selectNotes);
   const dispatch = useDispatch();
+
+  console.log(notesState);
 
   useInterval(() => {
     if (token && notesState.notesList.status !== STATUS.RUNNING) {
@@ -37,8 +40,8 @@ function Dash(props) {
     return (
       <div className="w-full h-full flex flex-col flex-grow">
         <div className="w-full h-full flex flex-grow">
-          <div className="w-64 p-4 border-r-2 border-gray-200">
-            <ul className="text-black">
+          <div className="w-64 p-4 border-r-2 border-gray-200 flex flex-col">
+            <ul className="text-black flex-grow">
               <span className="font-bold">All notes</span>
               {notesState.notesList.data.map(id => {
                 let note = notesState.notesMap[id];
@@ -51,12 +54,19 @@ function Dash(props) {
                 });
                 return (
                   <li
-                    className={`mb-2 py-2 px-3 text-gray-500 hover:bg-gray-200 pl-2 ${
+                    className={`mb-2 py-2 px-3 text-gray-500 cursor-pointer hover:bg-gray-200 pl-2 ${
                       notesState.selectedNoteId === id
                         ? 'border-l-2 border-solid border-blue-500'
                         : ''
                     }`}
                     key={id}
+                    onClick={() => {
+                      dispatch(
+                        selectNote({
+                          id,
+                        }),
+                      );
+                    }}
                   >
                     <span
                       className={`text-sm block ${
@@ -70,16 +80,50 @@ function Dash(props) {
                 );
               })}
             </ul>
+            <div className="w-full border-t-2 border-gray-200">
+              <button
+                className={`w-full p-2 flex items-center hover:font-extrabold hover:text-blue-500`}
+                onClick={() => {
+                  dispatch(
+                    createNewNote({
+                      user_id: props.userId,
+                    }),
+                  );
+                }}
+              >
+                <svg className="remix w-5 h-5 mr-1">
+                  <use xlinkHref={`/media/icons/remixicon.symbol.svg#ri-add-line`} />
+                </svg>
+                <span className="font-bold text-sm">New note</span>
+              </button>
+            </div>
           </div>
           <div className="flex-grow p-2 flex flex-col">
             {token && props.userId && notesState.selectedNoteId ? (
               <Tiptap
                 className="h-full"
+                key={notesState.selectedNoteId}
                 token={token}
                 userId={props.userId}
+                email={props.userEmail}
+                name={props.userName}
                 docId={notesState.selectedNoteId}
+                savedContent={notesState.notesMap[notesState.selectedNoteId].content}
                 onChange={html => {
-                  //   console.log(html);
+                  const isEmpty = content => !content || content == '<h1></h1>';
+                  if (
+                    (isEmpty(html) &&
+                      isEmpty(notesState.notesMap[notesState.selectedNoteId].content)) ||
+                    html === notesState.notesMap[notesState.selectedNoteId].content
+                  ) {
+                    return;
+                  }
+                  dispatch(
+                    saveNoteContent({
+                      id: notesState.selectedNoteId,
+                      content: html,
+                    }),
+                  );
                 }}
               />
             ) : null}

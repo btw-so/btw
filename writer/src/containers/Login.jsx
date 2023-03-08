@@ -47,8 +47,6 @@ function Login() {
 
   useEffect(() => {
     if (changed('otp.status', STATUS.SUCCESS)) {
-      console.log('OTP sent');
-
       setMode('enter-otp');
     } else if (changed('otp.status', STATUS.ERROR)) {
       setMode('enter-email');
@@ -95,7 +93,6 @@ function Login() {
                       maxLength={1}
                       value={otp2}
                       onChange={e => {
-                        console.log(e);
                         setOtp2(e.target.value);
                         // move to next input
                         if (e.target.value) {
@@ -107,7 +104,6 @@ function Login() {
                         // }
                       }}
                       onKeyDown={e => {
-                        console.log(e);
                         if (e.key === 'Backspace' && !otp2) {
                           otp1Ref.current.focus();
                         }
@@ -131,7 +127,6 @@ function Login() {
                         // }
                       }}
                       onKeyDown={e => {
-                        console.log(e);
                         if (e.key === 'Backspace' && !otp3) {
                           otp2Ref.current.focus();
                         }
@@ -154,7 +149,6 @@ function Login() {
                         // }
                       }}
                       onKeyDown={e => {
-                        console.log(e);
                         if (e.key === 'Backspace' && !otp4) {
                           otp3Ref.current.focus();
                         }
@@ -177,7 +171,6 @@ function Login() {
                         // }
                       }}
                       onKeyDown={e => {
-                        console.log(e);
                         if (e.key === 'Backspace' && !otp5) {
                           otp4Ref.current.focus();
                         }
@@ -196,7 +189,6 @@ function Login() {
                         // }
                       }}
                       onKeyDown={e => {
-                        console.log(e);
                         if (e.key === 'Backspace' && !otp6) {
                           otp5Ref.current.focus();
                         }

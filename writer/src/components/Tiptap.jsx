@@ -62,9 +62,20 @@ class Tiptap extends React.Component {
 
     this.state = {};
 
-    const ydoc = new Y.Doc();
+    this.setupEditor(props);
 
-    console.log('YDOC RECREATING', props);
+    this.interval = setInterval(() => {
+      if (this.editor) {
+        this.setState({
+          chars: this.editor.storage.characterCount.characters(),
+          words: this.editor.storage.characterCount.words(),
+        });
+      }
+    }, 300);
+  }
+
+  setupEditor(props) {
+    const ydoc = new Y.Doc();
 
     this.provider = new HocuspocusProvider({
       url: `ws://${process.env.REACT_APP_YJS_DOMAIN}`,
@@ -74,6 +85,7 @@ class Tiptap extends React.Component {
     });
 
     this.editor = new Editor({
+      autofocus: true,
       extensions: [
         CustomDocument,
         Paragraph,
@@ -128,7 +140,7 @@ class Tiptap extends React.Component {
         }),
         CollaborationCursor.configure({
           provider: this.provider,
-          user: { name: 'John Doe', color: '#ffcc00' },
+          user: { name: props.name || props.email || 'You', color: '#ffcc00' },
         }),
       ],
       editorProps: {
@@ -136,22 +148,19 @@ class Tiptap extends React.Component {
           class: 'prose prose-sm lg:prose-lg focus:outline-none flex-grow p-2 mt-2',
         },
       },
-      content: ``,
+      content: '',
     });
-
-    this.interval = setInterval(() => {
-      this.setState({
-        chars: this.editor.storage.characterCount.characters(),
-        words: this.editor.storage.characterCount.words(),
-      });
-    }, 300);
 
     this.editor.on('update', () => {
       this.props.onChange(this.editor.getHTML());
     });
   }
 
-  componentDidMount() {}
+  componentDidUpdate(prevProps) {
+    // if (prevProps.docId !== this.props.docId) {
+    //   this.setupEditor(this.props);
+    // }
+  }
 
   componentWillUnmount() {
     clearInterval(this.interval);

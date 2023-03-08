@@ -1410,6 +1410,10 @@ input[type='number']::-webkit-inner-spin-button,
   margin-bottom: 1rem;
 }
 
+.mr-1 {
+  margin-right: 0.25rem;
+}
+
 .mr-2 {
   margin-right: 0.5rem;
 }
@@ -1524,6 +1528,10 @@ input[type='number']::-webkit-inner-spin-button,
   animation: spin 1s linear infinite;
 }
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
 .appearance-none {
   appearance: none;
 }
@@ -1562,6 +1570,10 @@ input[type='number']::-webkit-inner-spin-button,
 
 .border-r-2 {
   border-right-width: 2px;
+}
+
+.border-t-2 {
+  border-top-width: 2px;
 }
 
 .border-solid {
@@ -1955,6 +1967,16 @@ hr.ProseMirror-selectednode {
   margin-bottom: 0rem !important;
 }
 
+.tiptap-editor ol > li > ol {
+  margin-top: 0rem !important;
+  margin-bottom: 0rem !important;
+}
+
+.tiptap-editor ul > li > ul {
+  margin-top: 0rem !important;
+  margin-bottom: 0rem !important;
+}
+
 @media (min-width: 1024px) {
   .lg\:prose-lg {
     font-size: 1.125rem;
@@ -2179,6 +2201,15 @@ hr.ProseMirror-selectednode {
 .hover\:bg-gray-200:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(229 231 235 / var(--tw-bg-opacity));
+}
+
+.hover\:font-extrabold:hover {
+  font-weight: 800;
+}
+
+.hover\:text-blue-500:hover {
+  --tw-text-opacity: 1;
+  color: rgb(59 130 246 / var(--tw-text-opacity));
 }
 
 .focus\:outline-none:focus {

@@ -11,6 +11,9 @@ import {
   upsertNote,
   upsertNoteSuccess,
   upsertNoteFailure,
+  createNewNote,
+  selectNote,
+  saveNoteContent,
 } from 'actions';
 
 export const notesState = {
@@ -43,7 +46,7 @@ export default {
             created_at = new Date(created_at).getTime();
             updated_at = new Date(updated_at).getTime();
 
-            if (draft.notesMap[id].updated_at > updated_at) {
+            if (draft.notesMap[id] && draft.notesMap[id].updated_at > updated_at) {
               updated_at = draft.notesMap[id].updated_at;
             }
 
@@ -76,13 +79,36 @@ export default {
             };
             draft.notesList.data.push(draft.selectedNoteId);
           } else {
-            draft.selectedNoteId = draft.notesList.data[0].id;
+            draft.selectedNoteId = draft.notesList.data[0];
           }
         }
       })
       .addCase(getNotesFailure, (draft, { payload }) => {
         draft.notesList.status = STATUS.ERROR;
         draft.notesList.error = payload.error;
+      })
+      .addCase(createNewNote, (draft, { payload }) => {
+        const newId = uuidv4();
+        // insert this random new uuid element into notesMap and notesList
+        draft.notesMap[newId] = {
+          status: STATUS.IDLE,
+          error: null,
+          created_at: Date.now(),
+          user_id: payload.user_id,
+          title: 'New note',
+          id: newId,
+        };
+        draft.notesList.data.push(newId);
+        draft.selectedNoteId = newId;
+      })
+      .addCase(selectNote, (draft, { payload }) => {
+        draft.selectedNoteId = payload.id;
+      })
+      .addCase(saveNoteContent, (draft, { payload }) => {
+        draft.notesMap[payload.id] = Object.assign({}, draft.notesMap[payload.id] || {}, {
+          content: payload.content,
+          updated_at: Date.now(),
+        });
       });
 
     builder
