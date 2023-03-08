@@ -1,7 +1,7 @@
-var crypt = require('crypt'),
-  utf8 = require('charenc').utf8,
-  isBuffer = require('is-buffer'),
-  bin = require('charenc').bin;
+import crypt from 'crypt';
+import utf8 from 'charenc/utf8';
+import isBuffer from 'is-buffer';
+import { bin } from 'charenc';
 
 // The core
 var md5 = function (message, options) {
