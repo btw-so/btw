@@ -106,6 +106,10 @@ var db = require("./services/db");
 
 var app = express();
 
+if (process.env.NODE_ENV == "production") {
+    app.set("trust proxy", 1);
+}
+
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "hbs");
@@ -248,7 +252,7 @@ const yjsServer = Server.configure({
                                     if (rows.length > 0) {
                                         return rows[0]?.ydoc;
                                     } else {
-                                        throw new Error("Not found");
+                                        return null;
                                     }
                                 });
                         })
