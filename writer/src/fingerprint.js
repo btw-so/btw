@@ -51,7 +51,7 @@ function fingerprint_software() {
   var isFirst = true;
 
   if (window.navigator.plugins.length > 0) {
-    for (i = 0; i < window.navigator.plugins.length; i++) {
+    for (var i = 0; i < window.navigator.plugins.length; i++) {
       var plugin = window.navigator.plugins[i];
       if (isFirst == true) {
         t += baseName(plugin.filename);
@@ -61,7 +61,7 @@ function fingerprint_software() {
       }
     }
   } else if (window.navigator.mimeTypes.length > 0) {
-    for (i = 0; i < window.navigator.mimeTypes.length; i++) {
+    for (var i = 0; i < window.navigator.mimeTypes.length; i++) {
       var mimeType = window.navigator.mimeTypes[i];
       if (isFirst == true) {
         t += mimeType.type;
@@ -93,7 +93,7 @@ function fingerprint_software() {
       'D27CDB6E-AE6D-11CF-96B8-444553540000',
       '2A202491-F00D-11CF-87CC-0020AFEECF20',
     );
-    for (i = 0; i < components.length; i++) {
+    for (var i = 0; i < components.length; i++) {
       ver = activeXDetect(components[i]);
 
       if (ver !== null) {
