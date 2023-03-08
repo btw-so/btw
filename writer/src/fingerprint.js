@@ -133,10 +133,10 @@ function get_fingerprint(hash) {
     fingerprint_software(), // Plugins Information
   );
 
-  fingerprint = data.join('');
+  var fingerprint = data.join('');
   if (hash) {
     fingerprint = '';
-    for (idx in data) {
+    for (var idx in data) {
       fingerprint += md5(data[idx].toString().toLowerCase());
     }
   }
