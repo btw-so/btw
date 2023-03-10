@@ -42,7 +42,7 @@ export default {
         if (payload.notes) {
           // loop through notes and merge them into notesMap
           payload.notes.forEach(note => {
-            let { id, user_id, title, created_at, updated_at } = note;
+            let { ydoc, id, user_id, title, created_at, updated_at } = note;
             created_at = new Date(created_at).getTime();
             updated_at = new Date(updated_at).getTime();
 
@@ -56,6 +56,7 @@ export default {
               title,
               created_at,
               updated_at,
+              ydoc,
             });
           });
         }

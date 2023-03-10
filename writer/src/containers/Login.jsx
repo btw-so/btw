@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useUpdateEffect } from 'react-use';
-import { selectUser } from '../selectors';
+import { selectUser, selectOtp } from '../selectors';
 import useTreeChanges from 'tree-changes-hook';
 
 import { useAppSelector } from 'modules/hooks';
@@ -13,10 +13,12 @@ import { getUser, generateOtp, verifyOtp } from '../actions';
 function Login() {
   const dispatch = useDispatch();
   const user = useAppSelector(selectUser);
+  const otp = useAppSelector(selectOtp);
 
   const [email, setEmail] = useState('');
   const [mode, setMode] = useState('enter-email');
   const { changed } = useTreeChanges(user);
+  const { changed: changedOtpState } = useTreeChanges(otp);
 
   const [otp1, setOtp1] = useState('');
   const [otp2, setOtp2] = useState('');
@@ -46,9 +48,9 @@ function Login() {
   }, [otp1, otp2, otp3, otp4, otp5, otp6]);
 
   useEffect(() => {
-    if (changed('otp.status', STATUS.SUCCESS)) {
+    if (changedOtpState('otp.status', STATUS.SUCCESS)) {
       setMode('enter-otp');
-    } else if (changed('otp.status', STATUS.ERROR)) {
+    } else if (changedOtpState('otp.status', STATUS.ERROR)) {
       setMode('enter-email');
     }
   });
@@ -198,14 +200,14 @@ function Login() {
                   </div>
                 </form>
                 <small className="text-xs">
-                  {user.verifyOtp.status === STATUS.RUNNING
+                  {otp.verifyOtp.status === STATUS.RUNNING
                     ? 'Verifying...'
                     : 'Can’t find the code? Please check your spam folder.'}
                 </small>
-                {user.verifyOtp.status === STATUS.ERROR ? (
+                {otp.verifyOtp.status === STATUS.ERROR ? (
                   <div>
                     <strong className="font-bold text-xs mt-2 text-red-500">
-                      {user.verifyOtp.error}
+                      {otp.verifyOtp.error}
                     </strong>
                   </div>
                 ) : null}
@@ -230,7 +232,7 @@ function Login() {
                         // sanitize email and check that it is in right format
                         // if not, show error
                         // if yes, then dispatch action to generate otp
-                        if (email && email.length > 0 && user.otp.status !== STATUS.RUNNING) {
+                        if (email && email.length > 0 && otp.otp.status !== STATUS.RUNNING) {
                           dispatch(generateOtp({ email }));
                         }
                       }
@@ -239,8 +241,8 @@ function Login() {
                   <p className="text-xs mt-2">
                     We’ll send you a magic code (6-digit) for a password-free login experience.
                   </p>
-                  {user.otp.status === STATUS.ERROR ? (
-                    <p className="text-red-500 text-xs mt-2">{user.otp.error}</p>
+                  {otp.otp.status === STATUS.ERROR ? (
+                    <p className="text-red-500 text-xs mt-2">{otp.otp.error}</p>
                   ) : null}
                   <div className="flex justify-end">
                     <button
@@ -250,12 +252,12 @@ function Login() {
                         // sanitize email and check that it is in right format
                         // if not, show error
                         // if yes, then dispatch action to generate otp
-                        if (email && email.length > 0 && user.otp.status !== STATUS.RUNNING) {
+                        if (email && email.length > 0 && otp.otp.status !== STATUS.RUNNING) {
                           dispatch(generateOtp({ email }));
                         }
                       }}
                     >
-                      {user.otp.status === STATUS.RUNNING ? (
+                      {otp.otp.status === STATUS.RUNNING ? (
                         <svg
                           className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                           xmlns="http://www.w3.org/2000/svg"
@@ -277,7 +279,7 @@ function Login() {
                           ></path>
                         </svg>
                       ) : null}
-                      {user.otp.status === STATUS.RUNNING ? 'Sending OTP...' : 'Submit'}
+                      {otp.otp.status === STATUS.RUNNING ? 'Sending OTP...' : 'Submit'}
                     </button>
                   </div>
                 </div>

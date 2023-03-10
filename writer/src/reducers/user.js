@@ -28,6 +28,9 @@ export const userState = {
     error: null,
     isLoggedIn: false,
   },
+};
+
+export const otpState = {
   otp: {
     status: STATUS.IDLE,
     data: null,
@@ -59,6 +62,21 @@ export default {
       });
 
     builder
+      .addCase(updateUser, draft => {
+        draft.user.status = STATUS.RUNNING;
+        draft.user.error = null;
+      })
+      .addCase(updateUserSuccess, (draft, { payload }) => {
+        draft.user.status = STATUS.SUCCESS;
+      })
+      .addCase(updateUserFailure, (draft, { payload }) => {
+        draft.user.status = STATUS.ERROR;
+        draft.user.error = payload.error;
+      });
+  }),
+
+  otp: createReducer(otpState, builder => {
+    builder
       .addCase(generateOtp, draft => {
         draft.otp.status = STATUS.RUNNING;
         draft.otp.error = null;
@@ -82,19 +100,6 @@ export default {
       .addCase(verifyOtpFailure, (draft, { payload }) => {
         draft.verifyOtp.status = STATUS.ERROR;
         draft.verifyOtp.error = payload.error;
-      });
-
-    builder
-      .addCase(updateUser, draft => {
-        draft.user.status = STATUS.RUNNING;
-        draft.user.error = null;
-      })
-      .addCase(updateUserSuccess, (draft, { payload }) => {
-        draft.user.status = STATUS.SUCCESS;
-      })
-      .addCase(updateUserFailure, (draft, { payload }) => {
-        draft.user.status = STATUS.ERROR;
-        draft.user.error = payload.error;
       });
   }),
 };

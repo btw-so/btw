@@ -2,6 +2,7 @@ import alerts, { alertsState } from './alerts';
 import app, { appState } from './app';
 import github, { githubState } from './github';
 import user, { userState } from './user';
+import otp, { otpState } from './user';
 import notes, { notesState } from './notes';
 
 export const initialState = {
@@ -10,6 +11,7 @@ export const initialState = {
   github: githubState,
   user: userState,
   notes: notesState,
+  otp: otpState,
 };
 
 export default {
@@ -18,4 +20,5 @@ export default {
   ...github,
   ...user,
   ...notes,
+  ...otp,
 };

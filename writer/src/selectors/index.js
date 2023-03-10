@@ -19,3 +19,8 @@ export const selectNotes = createSelector(
   state => state.notes,
   notes => notes,
 );
+
+export const selectOtp = createSelector(
+  state => state.otp,
+  otp => otp,
+);

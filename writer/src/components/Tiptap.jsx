@@ -74,8 +74,19 @@ class Tiptap extends React.Component {
     }, 300);
   }
 
+  base64ToArrayBuffer(base64) {
+    var binary_string = window.atob(base64);
+    var len = binary_string.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) {
+      bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+
   setupEditor(props) {
     const ydoc = new Y.Doc();
+    Y.applyUpdate(ydoc, Uint8Array.from(props.note?.ydoc?.data));
 
     this.provider = new HocuspocusProvider({
       url: process.env.REACT_APP_YJS_DOMAIN,

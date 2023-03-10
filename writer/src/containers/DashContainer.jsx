@@ -14,8 +14,6 @@ function Dash(props) {
   const notesState = useAppSelector(selectNotes);
   const dispatch = useDispatch();
 
-  console.log(notesState);
-
   useInterval(() => {
     if (token && notesState.notesList.status !== STATUS.RUNNING) {
       dispatch(
@@ -102,6 +100,7 @@ function Dash(props) {
             {token && props.userId && notesState.selectedNoteId ? (
               <Tiptap
                 className="h-full"
+                note={notesState.notesMap[notesState.selectedNoteId]}
                 key={notesState.selectedNoteId}
                 token={token}
                 userId={props.userId}

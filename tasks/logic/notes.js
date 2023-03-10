@@ -76,7 +76,7 @@ async function getNotes({ user_id, page, limit, after = 0 }) {
     limit = Number(limit);
     after = new Date(after);
     const { rows } = await pool.query(
-        `SELECT id, user_id, title, created_at, updated_at FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
+        `SELECT id, user_id, title, created_at, updated_at, ydoc FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
         [user_id, after, after, limit, (page - 1) * limit]
     );
 

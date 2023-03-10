@@ -249,7 +249,7 @@
     "yargs": "^17.4.0"
   },
   "scripts": {
-    "start": "electron-forge start",
+    "start": "node tools/start",
     "build": "node tools/build",
     "build:serve": "npm run build && npm run serve",
     "analyze": "NODE_ENV=production webpack --config config/webpack.config.js --profile --json > webpack.stats.json",
