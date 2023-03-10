@@ -114,7 +114,7 @@ class Tiptap extends React.Component {
         Placeholder.configure({
           placeholder: ({ node }) => {
             if (node.type.name === 'heading') {
-              return 'What’s the title?';
+              return 'What’s the Title?';
             }
 
             return 'Write something...';

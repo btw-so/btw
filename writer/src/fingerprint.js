@@ -154,13 +154,28 @@ function get_map(fingerprint) {
     .replace(/::/g, '~');
 }
 
-function final_fingerprint() {
-  var fingerprint = get_fingerprint(true);
-  var fingerprint_hash = md5(fingerprint);
+// function final_fingerprint() {
+//   var fingerprint = get_fingerprint(true);
+//   var fingerprint_hash = md5(fingerprint);
 
-  var map = get_map(fingerprint);
-  var map_hash = md5(map);
-  return fingerprint_hash + map_hash;
+//   var map = get_map(fingerprint);
+//   var map_hash = md5(map);
+//   return fingerprint_hash + map_hash;
+// }
+
+function final_fingerprint() {
+  var key = 'fingerprint_uuid';
+  // check if there is a uuid in local storage, then return it
+  // create a random uuid and save it in local storage
+  // return the uuid
+  var uuid = localStorage.getItem(key);
+  if (uuid) {
+    return uuid;
+  }
+  uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+  localStorage.setItem(key, uuid);
+  return uuid;
 }
 
 export default final_fingerprint;

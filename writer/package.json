@@ -18,6 +18,7 @@
     "ES6"
   ],
   "main": "electron-starter.js",
+  "homepage": "./",
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^3.4.0",
     "@gilbarbara/helpers": "^0.5.1",
@@ -64,6 +65,7 @@
     "beautiful-react-hooks": "^3.12.2",
     "charenc": "^0.0.2",
     "crypt": "^0.0.2",
+    "electron-squirrel-startup": "^1.0.0",
     "immer": "^9.0.12",
     "is-buffer": "~1.1.6",
     "is-lite": "^0.8.1",
@@ -118,6 +120,12 @@
     "@babel/preset-react": "^7.16.7",
     "@babel/preset-typescript": "^7.16.7",
     "@babel/runtime": "^7.17.8",
+    "@electron-forge/cli": "^6.0.5",
+    "@electron-forge/maker-deb": "^6.0.5",
+    "@electron-forge/maker-rpm": "^6.0.5",
+    "@electron-forge/maker-squirrel": "^6.0.5",
+    "@electron-forge/maker-zip": "^6.0.5",
+    "@electron-forge/publisher-github": "^6.0.5",
     "@gilbarbara/eslint-config": "^0.2.0",
     "@gilbarbara/prettier-config": "^0.1.0",
     "@gilbarbara/tsconfig": "^0.1.0",
@@ -241,7 +249,7 @@
     "yargs": "^17.4.0"
   },
   "scripts": {
-    "start": "node tools/start",
+    "start": "electron-forge start",
     "build": "node tools/build",
     "build:serve": "npm run build && npm run serve",
     "analyze": "NODE_ENV=production webpack --config config/webpack.config.js --profile --json > webpack.stats.json",
@@ -263,7 +271,9 @@
     "postinstall": "rm -rf node_modules/@types/react-native",
     "electron-dev": "REACT_APP_ELECTRON=1 ELECTRON_START_URL=http://localhost:9000 electron .",
     "build:css": "npx tailwindcss -i assets/styles.css -o assets/media/styles.css",
-    "build:watch": "npx tailwindcss -i assets/styles.css -o assets/media/styles.css --watch"
+    "build:watch": "npx tailwindcss -i assets/styles.css -o assets/media/styles.css --watch",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "prettier": "@gilbarbara/prettier-config",
   "lint-staged": {
