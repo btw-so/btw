@@ -17,6 +17,7 @@ const rootReducer = persistCombineReducers<RootState>(
     storage,
     blacklist: ['otp'],
     timeout: 0,
+    version: 1,
   },
   reducers,
 );

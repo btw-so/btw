@@ -86,7 +86,9 @@ class Tiptap extends React.Component {
 
   setupEditor(props) {
     const ydoc = new Y.Doc();
-    Y.applyUpdate(ydoc, Uint8Array.from(props.note?.ydoc?.data));
+    if (props.note?.ydoc?.data) {
+      Y.applyUpdate(ydoc, Uint8Array.from(props.note?.ydoc?.data));
+    }
 
     this.provider = new HocuspocusProvider({
       url: process.env.REACT_APP_YJS_DOMAIN,
