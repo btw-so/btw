@@ -47,6 +47,39 @@ async function emailOTP({ email, otp }) {
     console.log("Message sent: %s", info.messageId);
 }
 
+// async..await is not allowed in global scope, must use a wrapper
+async function emailImportComplete({ email }) {
+    console.log({
+        from: `"Support" <${process.env.SMTP_FROM}>`, // sender address
+        to: email, // list of receivers
+        subject: "btw - Import Complete", // Subject line
+        html: `<p><b>Hello!</b><br/><br/>All imported documents are processed.<br/></p> 
+						Cheers<br/>
+						Team btw`,
+        text: `Hello! All imported documents are processed. Cheers, Team btw`,
+        creds: [
+            process.env.SMTP_FROM,
+            process.env.SMTP_HOST,
+            process.env.SMTP_PORT,
+            process.env.SMTP_USER,
+            process.env.SMTP_PASS,
+        ],
+    });
+    // send mail with defined transport object
+    let info = await transporter.sendMail({
+        from: `"Support" <${process.env.SMTP_FROM}>`, // sender address
+        to: email, // list of receivers
+        subject: "btw- Import Complete", // Subject line
+        html: `<p><b>Hello!</b><br/><br/>All imported documents are processed.<br/></p> 
+						Cheers<br/>
+						Team btw`,
+        text: `Hello! All imported documents are processed. Cheers, Team btw`,
+    });
+
+    console.log("Message sent: %s", info.messageId);
+}
+
 module.exports = {
     emailOTP,
+    emailImportComplete,
 };

@@ -6,6 +6,7 @@
 var app = require('../app');
 var debug = require('debug')('tasks:server');
 var http = require('http');
+const companion = require('@uppy/companion');
 
 /**
  * Get port from environment and store in Express.
@@ -24,6 +25,27 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 server.listen(port);
+const UPPY_OPTIONS = {
+  filePath: '/',
+  server: {
+    protocol: !!Number(process.env.DEBUG) ? 'http' : 'https',
+    host: process.env.DOMAIN,
+    path: '/companion',
+  },
+  secret: process.env.SECRET,
+  debug: !!Number(process.env.DEBUG),
+  s3: {
+    getKey: (req, fileName) => `${Date.now()}/${fileName.split(' ').join('_')}`,
+    key: process.env.S3_KEY,
+    secret: process.env.S3_SECRET,
+    bucket: process.env.S3_BUCKET,
+    endpoint: process.env.S3_ENDPOINT,
+    region: 'us-east-1',
+    acl: process.env.COMPANION_AWS_ACL || 'public-read',
+  },
+  corsOrigins: process.env.COMPANION_CLIENT_ORIGINS,
+};
+companion.socket(server);
 server.on('error', onError);
 server.on('listening', onListening);
 

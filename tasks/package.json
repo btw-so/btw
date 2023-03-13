@@ -6,6 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.289.0",
     "@babel/runtime": "^7.16.7",
     "@bull-board/api": "^3.2.8",
     "@bull-board/express": "^3.2.8",
@@ -51,6 +52,7 @@
     "@tiptap/starter-kit": "^2.0.0-beta.219",
     "@tiptap/suggestion": "^2.0.0-beta.220",
     "@tryghost/content-api": "^1.5.13",
+    "@uppy/companion": "^4.3.0",
     "aws-sdk": "^2.504.0",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
@@ -73,6 +75,7 @@
     "hbs": "~4.0.4",
     "http": "0.0.1-security",
     "http-errors": "~1.6.3",
+    "jsdom": "^21.1.1",
     "lodash": "4.17.11",
     "lowlight": "^2.8.1",
     "moment": "^2.29.1",
@@ -81,6 +84,7 @@
     "mysql": "^2.18.1",
     "newrelic": "7.5.2",
     "node-fetch": "^2.6.1",
+    "node-html-parser": "^6.1.5",
     "nodemailer": "^6.9.1",
     "openai": "^3.1.0",
     "pg": "^8.0.3",

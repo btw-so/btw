@@ -4,6 +4,7 @@ require("newrelic");
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
+var cors = require("cors");
 var logger = require("morgan");
 const { createBullBoard } = require("@bull-board/api");
 const { BullAdapter } = require("@bull-board/api/bullAdapter");
@@ -41,7 +42,7 @@ const CustomDocument = Document.extend({
 });
 var { Database } = require("@hocuspocus/extension-database");
 var { Server } = require("@hocuspocus/server");
-var { generateHTML } = require("@tiptap/html");
+var { generateHTML, generateJSON } = require("@tiptap/html");
 var { TiptapTransformer } = require("@hocuspocus/transformer");
 var extensions = [
     CustomDocument,
@@ -89,6 +90,7 @@ var extensions = [
 ];
 var MyTipTapTransformer = TiptapTransformer.extensions(extensions);
 var MyTipTapTransformerHTML = (json) => generateHTML(json, extensions);
+var MyTipTapTransformerJSON = (html) => generateJSON(html, extensions);
 
 var indexRouter = require("./routes/index");
 var otpRouter = require("./routes/otp");
@@ -133,6 +135,36 @@ const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
 });
 serverAdapter.setBasePath("/admin/queues");
 app.use("/admin/queues", serverAdapter.getRouter());
+
+const companion = require("@uppy/companion");
+const UPPY_OPTIONS = {
+    filePath: "/",
+    server: {
+        protocol: !!Number(process.env.DEBUG) ? "http" : "https",
+        host: process.env.DOMAIN,
+        path: "/companion",
+    },
+    secret: process.env.SECRET,
+    debug: !!Number(process.env.DEBUG),
+    s3: {
+        getKey: (req, fileName) =>
+            `${Date.now()}/${fileName.split(" ").join("_")}`,
+        key: process.env.S3_KEY,
+        secret: process.env.S3_SECRET,
+        bucket: process.env.S3_BUCKET,
+        endpoint: process.env.S3_ENDPOINT,
+        region: "us-east-1",
+        acl: process.env.COMPANION_AWS_ACL || "public-read",
+        object_url: { public: true },
+    },
+    object_url: { public: true },
+    corsOrigins: process.env.COMPANION_CLIENT_ORIGINS,
+};
+const { app: companionApp } = companion.app(UPPY_OPTIONS);
+
+console.log("process.env.COMPANION_AWS_ACL", process.env.COMPANION_AWS_ACL);
+
+app.use("/companion", companionApp);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -250,7 +282,18 @@ const yjsServer = Server.configure({
                                 .then(({ rows }) => {
                                     // console.log("Found", rows.length);
                                     if (rows.length > 0) {
-                                        return rows[0]?.ydoc;
+                                        if (rows[0].ydoc) {
+                                            return rows[0]?.ydoc;
+                                        } else if (rows[0]?.html) {
+                                            const json =
+                                                MyTipTapTransformerJSON(
+                                                    rows[0].html
+                                                );
+                                            return MyTipTapTransformer.toYdoc(
+                                                json,
+                                                "default"
+                                            );
+                                        }
                                     } else {
                                         return null;
                                     }

@@ -1,20 +1,27 @@
-import React, { useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { useDispatch } from 'react-redux';
-import { BrowserRouter, HashRouter, Route, Routes, useNavigate } from 'react-router-dom';
-import { selectUser } from 'selectors';
-import useTreeChanges from 'tree-changes-hook';
-import { useAppSelector } from 'modules/hooks';
+import React, { useEffect } from "react";
+import { Helmet } from "react-helmet-async";
+import { useDispatch } from "react-redux";
+import {
+  BrowserRouter,
+  HashRouter,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
+import { selectUser } from "selectors";
+import useTreeChanges from "tree-changes-hook";
+import { useAppSelector } from "modules/hooks";
 
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 
-import { getUser } from 'actions';
+import { getUser } from "actions";
 // import Home from 'routes/Home';
-import Login from './routes/Login';
-import Dash from './routes/Dash';
-import NotFound from 'routes/NotFound';
-import PublicRoute from './components/PublicRoute';
-import PrivateRoute from './components/PrivateRoute';
+import Login from "./routes/Login";
+import Dash from "./routes/Dash";
+import NotFound from "routes/NotFound";
+import PublicRoute from "./components/PublicRoute";
+import PrivateRoute from "./components/PrivateRoute";
+import Settings from "./routes/Settings";
 
 function Root() {
   const dispatch = useDispatch();
@@ -30,8 +37,8 @@ function Root() {
   }, []);
 
   useEffect(() => {
-    if (changed('user.isLoggedIn', true) && isLoggedIn) {
-      toast.success('Logged In!');
+    if (changed("user.isLoggedIn", true) && isLoggedIn) {
+      toast.success("Logged In!");
     }
   }, [dispatch, changed]);
 
@@ -48,17 +55,15 @@ function Root() {
 
   const Router = process.env.REACT_APP_ELECTRON ? HashRouter : BrowserRouter;
 
-  console.log('user', user);
-
   return (
     <Router>
       <div className="w-full h-full flex-grow flex flex-col">
         <Helmet
-          defaultTitle={'btw ∴'}
+          defaultTitle={"btw ∴"}
           defer={false}
           encodeSpecialCharacters
-          htmlAttributes={{ lang: 'pt-br' }}
-          titleAttributes={{ itemprop: 'name', lang: 'en-en' }}
+          htmlAttributes={{ lang: "pt-br" }}
+          titleAttributes={{ itemprop: "name", lang: "en-en" }}
           titleTemplate={`%s | btw ∴`}
         >
           <link
@@ -80,6 +85,18 @@ function Root() {
               </PrivateRoute>
             }
             path="/dash"
+          />
+          <Route
+            element={
+              <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
+                <Settings
+                  userId={user && user.data ? user.data.id : null}
+                  name={user && user.data ? user.data.name : null}
+                  email={user && user.data ? user.data.email : null}
+                />
+              </PrivateRoute>
+            }
+            path="/settings"
           />
           <Route
             element={

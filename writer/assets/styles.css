@@ -8,12 +8,7 @@ div:focus-visible {
 
 html,
 body {
-  font-family: 'Satoshi', sans-serif;
-}
-
-.tiptap-toolbar button {
-  border: 2px solid black;
-  padding: 5px;
+  font-family: "Satoshi", sans-serif;
 }
 
 .tiptap-editor li p {
@@ -27,8 +22,8 @@ body {
 }
 
 @layer base {
-  input[type='number']::-webkit-inner-spin-button,
-  input[type='number']::-webkit-outer-spin-button {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
@@ -105,7 +100,7 @@ hr.ProseMirror-selectednode {
   white-space: nowrap;
 }
 
-.tiptap-editor .menu-item {
+.editor__header .menu-item {
   background-color: transparent;
   border: none;
   border-radius: 0.4rem;
@@ -114,21 +109,34 @@ hr.ProseMirror-selectednode {
   margin-right: 0.25rem;
   padding: 0.25rem;
   width: 1.75rem;
+  display: block;
 }
 
-.tiptap-editor .menu-item svg {
+.editor__header button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor__header i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor__header .menu-item i {
   fill: currentColor;
   height: 100%;
   width: 100%;
 }
 
-.tiptap-editor .menu-item:hover,
-.tiptap-editor .menu-item .is-active {
+.editor__header .menu-item:hover,
+.editor__header .menu-item .is-active {
   background-color: #0d0d0d;
   color: #fff;
 }
 
-.tiptap-editor .ProseMirror h1.is-editor-empty:first-child::before {
+.editor__header .ProseMirror h1.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
   color: #ced4da;
@@ -141,31 +149,46 @@ hr.ProseMirror-selectednode {
   font-weight: 700;
 }
 
-.tiptap-editor ul[data-type='taskList'] {
+.tiptap-editor h2 {
+  @apply text-xl mb-2;
+  font-weight: 700;
+}
+
+.tiptap-editor h3 {
+  @apply text-lg mb-2;
+  font-weight: 700;
+}
+
+.tiptap-editor h4 {
+  @apply text-base mb-2;
+  font-weight: 700;
+}
+
+.tiptap-editor ul[data-type="taskList"] {
   list-style: none;
   padding: 0;
 }
-.tiptap-editor ul[data-type='taskList'] p {
+.tiptap-editor ul[data-type="taskList"] p {
   margin: 0;
 }
-.tiptap-editor ul[data-type='taskList'] li {
+.tiptap-editor ul[data-type="taskList"] li {
   display: flex;
 }
-.tiptap-editor ul[data-type='taskList'] li > label {
+.tiptap-editor ul[data-type="taskList"] li > label {
   flex: 0 0 auto;
   margin-right: 0.5rem;
   user-select: none;
   display: flex;
   /* align-items: center; */
 }
-.tiptap-editor ul[data-type='taskList'] li > div {
+.tiptap-editor ul[data-type="taskList"] li > div {
   flex: 1 1 auto;
   margin-bottom: 0 !important;
 }
-.tiptap-editor ul[data-type='taskList'] li > label {
+.tiptap-editor ul[data-type="taskList"] li > label {
   margin-top: 0.5rem !important;
 }
-.tiptap-editor ul[data-type='taskList'] li > div > ul[data-type='taskList'] {
+.tiptap-editor ul[data-type="taskList"] li > div > ul[data-type="taskList"] {
   margin-top: 0rem !important;
   margin-bottom: 0rem !important;
 }

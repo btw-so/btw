@@ -194,7 +194,7 @@ module.exports = webpackEnv => {
     entry: paths.appIndex,
     output: {
       chunkFilename: isEnvProduction
-        ? 'static/js/[name].[git-hash].chunk.js'
+        ? 'static/js/[name].[hash:8].chunk.js'
         : 'static/js/[name].chunk.js',
       // Point sourcemap entries to original disk location (format as URL on Windows)
       devtoolModuleFilenameTemplate: isEnvProduction
@@ -202,7 +202,7 @@ module.exports = webpackEnv => {
         : info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
       // There will be one main bundle, and one file per asynchronous chunk.
       // In development, it does not produce real files.
-      filename: isEnvProduction ? 'static/js/[name].[git-hash].js' : 'static/js/bundle.js',
+      filename: isEnvProduction ? 'static/js/[name].[hash:8].js' : 'static/js/bundle.js',
       path: paths.appBuild,
       pathinfo: isEnvDevelopment,
       publicPath: paths.publicUrlOrPath,
@@ -422,16 +422,9 @@ module.exports = webpackEnv => {
               test: /\.svg$/,
               use: [
                 {
-                  loader: '@svgr/webpack',
-                  options: {
-                    icon: true,
-                    typescript: true,
-                  },
-                },
-                {
                   loader: 'file-loader',
                   options: {
-                    name: 'static/[name].[git-hash].[ext]',
+                    name: 'static/[name].[hash:8].[ext]',
                   },
                 },
               ],
@@ -453,7 +446,7 @@ module.exports = webpackEnv => {
               // by webpacks internal loaders.
               exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
               options: {
-                name: 'static/[name].[git-hash].[ext]',
+                name: 'static/[name].[hash:8].[ext]',
               },
             },
             // ** STOP ** Are you adding a new loader?
@@ -486,8 +479,8 @@ module.exports = webpackEnv => {
         new InlineChunkHtmlPlugin(HtmlPlugin, [/runtime~.+\.js/]),
       isEnvProduction &&
         new MiniCssExtractPlugin({
-          filename: 'css/bundle.[git-hash].css',
-          chunkFilename: 'css/bundle.[git-hash].chunk.css',
+          filename: 'css/bundle.[hash:8].css',
+          chunkFilename: 'css/bundle.[hash:8].chunk.css',
         }),
       isEnvDevelopment &&
         new CircularDependencyPlugin({

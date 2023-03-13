@@ -1,23 +1,19 @@
-import React, { Fragment, useCallback } from 'react';
-import 'remixicon/fonts/remixicon.css';
-// import remixiconUrl from 'remixicon/fonts/remixicon.symbol.svg';
+import React, { Fragment, useCallback } from "react";
 
 const MenuItem = ({ icon, title, action, isActive = null }) => (
   <button
-    className={` menu-item${isActive && isActive() ? ' is-active' : ''}`}
+    className={` menu-item${isActive && isActive() ? " is-active" : ""}`}
     onClick={action}
     title={title}
   >
-    <svg className="remix w-6 h-6">
-      <use xlinkHref={`/media/icons/remixicon.symbol.svg#ri-${icon}`} />
-    </svg>
+    <i className={`remix ri-${icon} w-6 h-6`}></i>
   </button>
 );
 
 export default ({ editor }) => {
   const setLink = useCallback(() => {
-    const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('URL', previousUrl);
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("URL", previousUrl);
 
     // cancelled
     if (url === null) {
@@ -25,153 +21,159 @@ export default ({ editor }) => {
     }
 
     // empty
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+    if (url === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
 
       return;
     }
 
     // update link
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   }, [editor]);
 
   const items = [
     {
-      icon: 'bold',
-      title: 'Bold',
+      icon: "bold",
+      title: "Bold",
       action: () => editor.chain().focus().toggleBold().run(),
-      isActive: () => editor.isActive('bold'),
+      isActive: () => editor.isActive("bold"),
     },
     {
-      icon: 'italic',
-      title: 'Italic',
+      icon: "italic",
+      title: "Italic",
       action: () => editor.chain().focus().toggleItalic().run(),
-      isActive: () => editor.isActive('italic'),
+      isActive: () => editor.isActive("italic"),
     },
     {
-      icon: 'strikethrough',
-      title: 'Strike',
+      icon: "strikethrough",
+      title: "Strike",
       action: () => editor.chain().focus().toggleStrike().run(),
-      isActive: () => editor.isActive('strike'),
+      isActive: () => editor.isActive("strike"),
     },
     {
-      icon: 'underline',
-      title: 'Underline',
+      icon: "underline",
+      title: "Underline",
       action: () => editor.chain().focus().toggleUnderline().run(),
-      isActive: () => editor.isActive('underline'),
+      isActive: () => editor.isActive("underline"),
     },
     {
-      icon: 'links-line',
-      title: 'Link',
+      icon: "links-line",
+      title: "Link",
       action: () => setLink(),
-      isActive: () => editor.isActive('link'),
+      isActive: () => editor.isActive("link"),
     },
     {
-      icon: 'code-view',
-      title: 'Code',
+      icon: "code-view",
+      title: "Code",
       action: () => editor.chain().focus().toggleCode().run(),
-      isActive: () => editor.isActive('code'),
+      isActive: () => editor.isActive("code"),
     },
     {
-      icon: 'mark-pen-line',
-      title: 'Highlight',
+      icon: "mark-pen-line",
+      title: "Highlight",
       action: () => editor.chain().focus().toggleHighlight().run(),
-      isActive: () => editor.isActive('highlight'),
+      isActive: () => editor.isActive("highlight"),
     },
     {
-      type: 'divider',
+      type: "divider",
     },
     {
-      icon: 'h-1',
-      title: 'Heading 1',
+      icon: "h-1",
+      title: "Heading 1",
       action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-      isActive: () => editor.isActive('heading', { level: 1 }),
+      isActive: () => editor.isActive("heading", { level: 1 }),
     },
     {
-      icon: 'h-2',
-      title: 'Heading 2',
+      icon: "h-2",
+      title: "Heading 2",
       action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-      isActive: () => editor.isActive('heading', { level: 2 }),
+      isActive: () => editor.isActive("heading", { level: 2 }),
     },
     {
-      icon: 'paragraph',
-      title: 'Paragraph',
+      icon: "paragraph",
+      title: "Paragraph",
       action: () => editor.chain().focus().setParagraph().run(),
-      isActive: () => editor.isActive('paragraph'),
+      isActive: () => editor.isActive("paragraph"),
     },
     {
-      icon: 'list-unordered',
-      title: 'Bullet List',
+      icon: "list-unordered",
+      title: "Bullet List",
       action: () => editor.chain().focus().toggleBulletList().run(),
-      isActive: () => editor.isActive('bulletList'),
+      isActive: () => editor.isActive("bulletList"),
     },
     {
-      icon: 'list-ordered',
-      title: 'Ordered List',
+      icon: "list-ordered",
+      title: "Ordered List",
       action: () => editor.chain().focus().toggleOrderedList().run(),
-      isActive: () => editor.isActive('orderedList'),
+      isActive: () => editor.isActive("orderedList"),
     },
     {
-      icon: 'list-check-2',
-      title: 'Task List',
+      icon: "list-check-2",
+      title: "Task List",
       action: () => editor.chain().focus().toggleTaskList().run(),
-      isActive: () => editor.isActive('taskList'),
+      isActive: () => editor.isActive("taskList"),
     },
     {
-      icon: 'code-box-line',
-      title: 'Code Block',
+      icon: "code-box-line",
+      title: "Code Block",
       action: () => editor.chain().focus().toggleCodeBlock().run(),
-      isActive: () => editor.isActive('codeBlock'),
+      isActive: () => editor.isActive("codeBlock"),
     },
     {
-      type: 'divider',
+      type: "divider",
     },
     {
-      icon: 'double-quotes-l',
-      title: 'Blockquote',
+      icon: "double-quotes-l",
+      title: "Blockquote",
       action: () => editor.chain().focus().toggleBlockquote().run(),
-      isActive: () => editor.isActive('blockquote'),
+      isActive: () => editor.isActive("blockquote"),
     },
     {
-      icon: 'separator',
-      title: 'Horizontal Rule',
+      icon: "separator",
+      title: "Horizontal Rule",
       action: () => editor.chain().focus().setHorizontalRule().run(),
     },
     {
-      type: 'divider',
+      type: "divider",
     },
     {
-      icon: 'text-wrap',
-      title: 'Hard Break',
+      icon: "text-wrap",
+      title: "Hard Break",
       action: () => editor.chain().focus().setHardBreak().run(),
     },
     {
-      icon: 'format-clear',
-      title: 'Clear Format',
+      icon: "format-clear",
+      title: "Clear Format",
       action: () => editor.chain().focus().clearNodes().unsetAllMarks().run(),
     },
     {
-      type: 'divider',
+      type: "divider",
     },
     {
-      icon: 'arrow-go-back-line',
-      title: 'Undo',
+      icon: "arrow-go-back-line",
+      title: "Undo",
       action: () => editor.chain().focus().undo().run(),
     },
     {
-      icon: 'arrow-go-forward-line',
-      title: 'Redo',
+      icon: "arrow-go-forward-line",
+      title: "Redo",
       action: () => editor.chain().focus().redo().run(),
     },
   ];
 
   return (
-    <div className="editor__header flex">
-      {items.map((item, index) => (
-        <Fragment key={index}>
-          {item.type === 'divider' ? <div className="divider" /> : <MenuItem {...item} />}
-        </Fragment>
-      ))}
+    <div className="flex">
+      <div className="editor__header flex flex-wrap">
+        {items.map((item, index) => (
+          <Fragment key={index}>
+            {item.type === "divider" ? (
+              <div className="divider" />
+            ) : (
+              <MenuItem {...item} />
+            )}
+          </Fragment>
+        ))}
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
-import { keyMirror } from '@gilbarbara/helpers';
+import { keyMirror } from "@gilbarbara/helpers";
 
-import { Status } from 'types';
+// import { Status } from "types";
 
 export const ActionTypes = keyMirror({
   GITHUB_GET_REPOS_REQUEST: undefined,
@@ -36,12 +36,13 @@ export const ActionTypes = keyMirror({
   CREATE_NEW_NOTE: undefined,
   SELECT_NOTE: undefined,
   SAVE_NOTE_CONTENT: undefined,
+  IMPORT_NOTES: undefined,
 });
 
-export const STATUS: Status = {
-  IDLE: 'idle',
-  RUNNING: 'running',
-  READY: 'ready',
-  SUCCESS: 'success',
-  ERROR: 'error',
+export const STATUS = {
+  IDLE: "idle",
+  RUNNING: "running",
+  READY: "ready",
+  SUCCESS: "success",
+  ERROR: "error",
 };

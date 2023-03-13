@@ -2,7 +2,75 @@ var express = require("express");
 var router = express.Router();
 var cors = require("cors");
 var { getUserFromToken } = require("../logic/user");
-var { getNotes, upsertNote } = require("../logic/notes");
+var { getNotes, upsertNote, importNote } = require("../logic/notes");
+
+router.options(
+    "/import",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/import",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        let { fingerprint, urls } = req.body || {};
+
+        // HACK. for some reason DO us adding S3 endpoint twice in its urls
+        // so we need to remove the first one
+        // If the URL has process.env.S3_ENDPOINT + "/" +  process.env.S3_ENDPOINT, remove the first one
+        if (process.env.S3_ENDPOINT) {
+            urls = (urls || []).map((url, index) => {
+                return url
+                    .split(
+                        `${process.env.S3_ENDPOINT}/${process.env.S3_ENDPOINT}`
+                    )
+                    .join(process.env.S3_ENDPOINT);
+            });
+        }
+
+        // get loginToken as btw_uuid cookie
+        const loginToken = req.cookies.btw_uuid;
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            (urls || []).map((url) => {
+                importNote({
+                    user_id: user.id,
+                    url,
+                    job: "import",
+                    email: user.email,
+                });
+            });
+
+            importNote({
+                user_id: user.id,
+                job: "notify",
+                email: user.email,
+            });
+
+            res.json({
+                success: true,
+                data: {},
+            });
+        } catch (e) {
+            res.json({
+                success: false,
+                data: {},
+                error: e,
+            });
+            return;
+        }
+    }
+);
 
 router.options(
     "/get",
