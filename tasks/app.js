@@ -159,6 +159,7 @@ const UPPY_OPTIONS = {
     },
     object_url: { public: true },
     corsOrigins: process.env.COMPANION_CLIENT_ORIGINS,
+    uploadUrls: process.env.COMANION_UPLOAD_URLS,
 };
 const { app: companionApp } = companion.app(UPPY_OPTIONS);
 
