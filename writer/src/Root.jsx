@@ -42,6 +42,7 @@ function Root() {
     }
   }, [dispatch, changed]);
 
+  // THOUGHTS 101
   // create a component that checks if the environment is electron, then it would be BrowserRouter
   // otherwise, it would be HashRouter
   // this is because electron does not support hash routing
@@ -53,7 +54,11 @@ function Root() {
   // maybe we can use a custom hook to check if it is electron or not
   // and then use the correct router
 
-  const Router = process.env.REACT_APP_ELECTRON ? HashRouter : BrowserRouter;
+  // THOUGHTS 102
+  // For some reason, hard refresh on the urls is giving 404 if we use BrowserRouter in production
+
+  // const Router = process.env.REACT_APP_ELECTRON ? HashRouter : BrowserRouter;
+  const Router = HashRouter;
 
   return (
     <Router>
