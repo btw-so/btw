@@ -1,21 +1,21 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { ErrorBoundary } from 'react-error-boundary';
-import { HelmetProvider } from 'react-helmet-async';
-import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/lib/integration/react';
-import { configStore } from 'store';
+import React from "react";
+import ReactDOM from "react-dom";
+import { ErrorBoundary } from "react-error-boundary";
+import { HelmetProvider } from "react-helmet-async";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/lib/integration/react";
+import { configStore } from "store";
 
-import { showAlert } from 'actions';
+import { showAlert } from "actions";
 
-import ErrorHandler from 'components/ErrorHandler';
-import Loader from 'components/Loader';
-import Reload from 'components/Reload';
-import GlobalStyles from 'containers/GlobalStyles';
+import ErrorHandler from "components/ErrorHandler";
+import Loader from "components/Loader";
+import Reload from "components/Reload";
+import GlobalStyles from "containers/GlobalStyles";
 
-import reportWebVitals from './reportWebVitals';
-import Root from './Root';
-import { register } from './serviceWorkerRegistration';
+import reportWebVitals from "./reportWebVitals";
+import Root from "./Root";
+import { register } from "./serviceWorkerRegistration";
 
 const { persistor, store } = configStore();
 
@@ -32,15 +32,15 @@ ReactDOM.render(
       <GlobalStyles />
     </PersistGate>
   </Provider>,
-  document.getElementById('root'),
+  document.getElementById("root")
 );
 
 /* istanbul ignore next */
-register({
-  onUpdate: () => {
-    store.dispatch(showAlert(<Reload />, { id: 'sw-update', icon: 'bolt', timeout: 0 }));
-  },
-});
+// register({
+//   onUpdate: () => {
+//     store.dispatch(showAlert(<Reload />, { id: 'sw-update', icon: 'bolt', timeout: 0 }));
+//   },
+// });
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
