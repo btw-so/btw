@@ -105,7 +105,6 @@ export function* upsertNote({ html, id, user_id }) {
 }
 
 export function* importNotes({ payload }) {
-  console.log("AAA", payload);
   const { urls } = payload;
   const fingerprint = yield call(getFingerPrint);
 

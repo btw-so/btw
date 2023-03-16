@@ -38,7 +38,7 @@ RUN cp -a /teemp/node_modules /writer/node_modules
 # allow port 3006 to be publicly available
 EXPOSE 9200
 
-RUN npm run build
+# RUN npm run build
 
 # run command
 CMD pm2 start pm2-prod.json && tail -f /dev/null

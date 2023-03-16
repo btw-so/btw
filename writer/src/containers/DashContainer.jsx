@@ -14,7 +14,6 @@ import {
 } from "../actions";
 
 function Dash(props) {
-  console.log("AA", props);
   const [token, setToken] = useCookie("btw_uuid", "");
   const notesState = useAppSelector(selectNotes);
   const dispatch = useDispatch();
