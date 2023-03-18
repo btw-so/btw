@@ -54,7 +54,7 @@ import { HocuspocusProvider } from "@hocuspocus/provider";
 import genFingerprint from "../fingerprint";
 import MenuBar from "./TipTapMenuBar";
 
-const limit = 10000;
+const limit = 100000;
 
 class Tiptap extends React.Component {
   constructor(props) {
@@ -159,7 +159,7 @@ class Tiptap extends React.Component {
       editorProps: {
         attributes: {
           class:
-            "prose prose-sm lg:prose-lg focus:outline-none flex-grow p-2 mt-2",
+            "prose prose-sm lg:prose-lg focus:outline-none flex-grow p-2 mt-2 max-w-full",
         },
       },
       content: "",
