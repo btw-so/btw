@@ -11,5 +11,6 @@ writer/webpack.stats.json
 writer/out/
 
 tasks/node_modules/
+publisher/node_modules/
 
 deployment/
