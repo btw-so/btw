@@ -120,7 +120,12 @@ app.use(async (req, res, next) => {
     }
   }
 
-  console.log("A", res.locals.customDomain, res.locals.domainSlug);
+  console.log(
+    "A",
+    req.hostname,
+    res.locals.customDomain,
+    res.locals.domainSlug
+  );
 
   if (!res.locals.domainSlug) {
     res.status(404);
