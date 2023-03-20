@@ -100,16 +100,22 @@ app.use(async (req, res, next) => {
   // if domain slug is found, then set it in res.locals.domainSlug
   // then call next()
 
-  if (process.env.DEBUG) {
+  if (!!Number(process.env.DEBUG)) {
     res.locals.domainSlug = req.query[process.env.DOMAIN_QUERY_PARAM];
   } else {
     // check if the domain is part of root domain or is it a custom domain
     // if it is a custom domain, then set res.locals.customDomain to true
     // else set it to false
-    if (req.hostname.split(".")[1] === process.env.ROOT_DOMAIN) {
+
+    // split the hostname at the first dot
+    const dotIndex = req.hostname.indexOf(".");
+    const firstPart = req.hostname.slice(0, dotIndex);
+    const secondPart = req.hostname.slice(dotIndex + 1);
+
+    if (secondPart === process.env.ROOT_DOMAIN) {
       res.locals.customDomain = false;
 
-      res.locals.domainSlug = req.hostname.split(".")[0];
+      res.locals.domainSlug = firstPart;
 
       if (res.locals.domainSlug === "publish") {
         res.locals.domainSlug = req.query[process.env.DOMAIN_QUERY_PARAM];
