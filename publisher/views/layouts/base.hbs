@@ -9,6 +9,10 @@
       <link rel="canonical" href="{{canonicalUrl}}" />
     {{/if}}
 
+    {{#not customDomain}}
+    <meta name="robots" content="noindex">
+    {{/not}}
+
     {{#block "custom-meta-block"}}
     {{/block}}
 

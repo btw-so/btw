@@ -56,6 +56,7 @@ router.get("/", async (req, res, next) => {
     canonicalUrl: mainUrl(res),
     title: user.name || user.email,
     notes,
+    customDomain: res.locals.customDomain,
   });
 });
 
@@ -102,6 +103,7 @@ router.get("/:slug", async (req, res, next) => {
     note,
     mainUrl: mainUrl(res),
     siteTitle: user.name || user.email,
+    customDomain: res.locals.customDomain,
   });
 });
 
