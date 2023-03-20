@@ -37,6 +37,16 @@ export const ActionTypes = keyMirror({
   SELECT_NOTE: undefined,
   SAVE_NOTE_CONTENT: undefined,
   IMPORT_NOTES: undefined,
+  ADD_CUSTOM_DOMAIN: undefined,
+  ADD_CUSTOM_DOMAIN_SUCCESS: undefined,
+  ADD_CUSTOM_DOMAIN_FAILURE: undefined,
+  RESET_STATE: undefined,
+  PUBLISH_NOTE: undefined,
+  PUBLISH_NOTE_SUCCESS: undefined,
+  PUBLISH_NOTE_FAILURE: undefined,
+  GET_NOTE: undefined,
+  GET_NOTE_SUCCESS: undefined,
+  GET_NOTE_FAILURE: undefined,
 });
 
 export const STATUS = {

@@ -1,0 +1,303 @@
+{{#content "custom-meta-block"}}
+  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <meta property="article:published_time" content="{{post.published_at}}" />
+  <meta property="article:modified_time" content="{{post.updated_at}}" />
+  <meta property="article:tag" content="{{post.primary_tag.name}}" />
+  <meta property="og:updated_time" content="{{post.updated_at}}" />
+  <script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "item": {
+          "@id": "{{i18nurl categoryUrl languageId}}",
+          "name": "{{primary_tag.name}}"
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "{{i18nurl originalUrl languageId}}"
+    },
+    "headline": "{{#if post.meta_title}}{{post.meta_title}}{{else}}{{post.title}}{{/if}}",
+    {{#if featureImage}}"image": [
+      "{{featureImage}}"
+    ],{{/if}}
+    "datePublished": "{{post.published_at}}",
+    "dateModified": "{{post.updated_at}}",
+    {{#if post.primary_author }}"author": {
+      "@type": "Person",
+      "name": "{{post.primary_author.name}}"
+    },{{/if}}
+    "publisher": {
+      "@type": "Organization",
+      "name": "btw",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://res.cloudinary.com/dxxri2trj/image/upload/v1612250900/btw-icon_evq0qt.png"
+      }
+    }
+  }
+  </script>
+{{/content}}
+
+
+{{#content "body"}}
+  <div class="progress-bar-container w-screen fixed top-0 left-0 z-10" style="height: 2px">
+    <div class="progress-bar-container__progress bg-secondary-500 h-full float-left"></div>
+  </div>
+  <div class="mx-auto max-w-6xl px-6 lg:px-8 ">
+    <div class="flex post-full-content">
+      <article class="post-content mb-10">
+        <header class="text-left pt-10 mb-10">
+          <div class="mt-20 mb-8">
+            <a
+              target="_blank"
+              class="text-left font-black uppercase hover:underline hover:text-secondary-900 transition duration-200 tracking-tight text-secondary-500"
+              href="{{i18nurl categoryUrl languageId}}"
+            >
+              {{post.primary_tag.name}}
+            </a>
+          </div>
+          <h1 class="text-left">{{post.title}}</h1>
+        </header>
+        <section class="">
+          <div class="post-content" style="position: unset">
+            {{#if post.primary_author}}
+              {{#if post.primary_author.profile_image}}
+                <div class="my-4">
+                  <a
+                    target="_blank"
+                    href="{{i18nurl post.primary_author.url languageId}}"
+                    class="inline-flex"
+                  >
+                    <img
+                        class="w-16 h-16 object-cover block rounded-full mr-4 "
+                        src="{{post.primary_author.profile_image}}"
+                        alt="{{post.primary_author.name}} profile image"
+                    />
+                    <div class="flex flex-col justify-center">
+                      <span class="text-xs uppercase font-black">BY {{post.primary_author.name}}</span>
+                      <div>
+                        <p class="text-primary-300 m-0 text-sm border-b-2 border-solid border-secondary-900">
+                          {{post.primary_author.bio}}
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              {{/if}}
+            {{/if}}
+            <div class="post-html-content">
+              {{{post.html}}}
+            </div>
+          </div>
+        </section>
+        {{#if relatedPosts.posts.[0]}}
+          <div>
+            <hr class="mt-20 mb-10">
+            <h2>Related Stories</h2>
+            <div class="px-4 py-4">
+              {{#each relatedPosts.posts}}
+                <a
+                  class="pt-4 px-2 w-full block"
+                  href="{{i18nurl url languageId}}"
+                >
+                  <h3 class="hover:text-secondary-500 transition duration-200">{{title}}</h3>
+                  <div class="pl-0 flex">
+                    <span class="text-secondary-500">View Post</span>
+                    <svg class="w-6 h-6 text-secondary-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                </a>
+              {{/each}}
+              <a
+                class="pt-4 px-2 w-full block"
+                href="{{i18nurl post.primary_tag.url languageId}}"
+              >
+                <h3 class="hover:text-secondary-500 transition duration-200"> Check out all {{relatedPosts.meta.pagination.total}} {{post.primary_tag.name}} Posts</h3>
+                <div class="flex">
+                  <span class="text-secondary-500">View</span>
+                  <svg class="w-6 h-6 text-secondary-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              </a>
+            </div>
+          </div>
+        {{/if}}
+      </article>
+
+      <div class="post-side-wrapper flex-shrink-0 flex-grow-1 relative w-full max-w-xs hidden sm:block pl-8">
+        <div class="post-side sticky" style="top:165px">
+          <div>
+            <div class="p-6 mb-6 bg-tertiary-200 email-form" data-emailfor="newsletter">
+              <div><span class="font-medium text-lg" >P.S. Join your peers.</span></div>
+              <div><span class="font-medium">Subscribe to the newsletter for hypergrowth.</span></div>
+              <div class="mt-10 z-10">
+                <p class="py-2 hidden text-error error-message" >Please enter corrrect email id</p>
+                <p class="py-2 hidden text-success success-message" >Cool- you are now subscribed to the newsletter!</p>
+                <form onsubmit="return false;">
+                <div class="flex flex-col m-auto justify-center">
+                  <input x-model="email" type="email" required="" placeholder="Enter your email" class="email-input block text-sm w-full px-3 py-1 text-primary-900 appearance-none border border-gray-300 shadow-none bg-white rounded-md placeholder-gray-500 focus:outline-none focus:shadow-outline-blue focus:border-secondary-500"/>
+                  <button class="email-submit-button mt-2 relative block w-full sm:w-auto border border-transparent px-3 py-1 font-semibold bg-primary-900 text-white rounded-md shadow-md focus:outline-none transition ease-in-out duration-150">
+                    <span class="text-white text-sm">Join now</span>
+                  </button>
+                </div>
+                </form>
+              </div>
+          </div>
+          <div class="blog-post-todos bg-tertiary-200 p-6 text-sm"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+{{/content}}
+
+
+{{#content "eob-block"}}
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-60199cf0bc73bd54"></script>
+
+  <script>
+
+    function addFancyAnchors(el) { 
+      $(el).find("a").each(function(x) {
+        var e = $(this);
+        if (!e.hasClass("ignore-underline")) {
+          e.addClass("fancy-underline");
+        }
+      })
+    }
+
+    function addBlogTodos() {
+      window.addEventListener(
+        "load",
+        (event) => {
+          var headings = $(".post-content h2");
+          if (headings.length < 2) {
+            if (headings.length == 0) {
+              headings = $(".post-content h3");
+              if (headings.length < 2) {
+                $(".blog-post-todos").addClass("hidden");
+                return;
+              }
+            } else {
+              $(".blog-post-todos").addClass("hidden");
+              return;
+            }
+          } else if (headings.length > 15) {
+            $(".blog-post-todos").addClass("hidden");
+            return;
+          }
+          $(".blog-post-todos").append(
+            "<div class='blog-todos space-y-3'><div><span class='text-base font-semibold'>Get the most out of this post</span></div></div>"
+          );
+          var texts = [];
+          for (var i = 0; i < headings.length; i++) {
+            var heading = headings[i].innerText;
+            texts.push(heading);
+            if (!$(headings[i]).hasClass("remove-from-navigation")) {
+              $(".blog-todos").append(
+                "<div class='blog-todo-item flex cursor-pointer' id='todoheading" +
+                  i +
+                  "'><svg class='to-do-done flex-shrink-0 hidden w-5 h-5 stroke-current text-secondary-500' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' ><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' /></svg><svg class='yet-to-do flex-shrink-0 block w-5 h-5 stroke-current' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' ><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' /></svg>\
+                  <span class='pl-2 hover:text-secondary-500'>" +
+                  heading +
+                  "</span></div>"
+              );
+              (function (i) {
+                $("#todoheading" + i).click(function () {
+                  headings[i].scrollIntoView();
+                  $("#todoheading" + i + " .to-do-done").removeClass("hidden").addClass("block");
+                  $("#todoheading" + i + " .yet-to-do").removeClass("block").addClass("hidden");
+                });
+
+                if (
+                  !("IntersectionObserver" in window) ||
+                  !("IntersectionObserverEntry" in window) ||
+                  !(
+                    "intersectionRatio" in
+                    window.IntersectionObserverEntry.prototype
+                  )
+                ) {
+                  // load polyfill now
+                } else {
+                  let observer = new IntersectionObserver(
+                    function (entries) {
+                      if (entries.length > 0 && entries[0].isVisible) {
+                        $("#todoheading" + i + " .to-do-done").removeClass("hidden").addClass("block");
+                        $("#todoheading" + i + " .yet-to-do").removeClass("block").addClass("hidden");
+                      }
+                    },
+                    {
+                      trackVisibility: true,
+                      delay: 100,
+                      threshold: 0,
+                    }
+                  );
+
+                  observer.observe(headings[i]);
+                }
+              })(i);
+            }
+          }
+        },
+        false
+      );
+    }
+
+
+    // function to check scroll position and update scroll progress bar accordingly
+    function _updateScrollProgressBar() {
+      
+      var progressContainerEl = document.querySelector("html");
+      // get full scroll height
+      var scrollHeight =
+        document.querySelector(".post-full-content").scrollHeight -
+        _heightInViewport(progressContainerEl);
+      // get current scroll position
+      var scrollPosition = progressContainerEl.scrollTop;
+      // get scroll percentage and set width of progress bar
+      var scrollPercentage = (scrollPosition / scrollHeight) * 100;
+      document.querySelector(".progress-bar-container__progress").style.width =
+        scrollPercentage + "%";
+
+      document.querySelector(".post-side").style.top =
+        Math.max(165 - scrollPosition, 25) + "px";
+    }
+
+    // function to get visible height in viewport
+    // some code taken from user Roko C. Buljan on https://stackoverflow.com/questions/24768795/get-the-visible-height-of-a-div-with-jquery
+    function _heightInViewport(el) {
+      var elH = el.offsetHeight,
+        H = document.body.offsetHeight,
+        r = el.getBoundingClientRect(),
+        t = r.top,
+        b = r.bottom;
+      return Math.max(0, t > 0 ? Math.min(elH, H - t) : Math.min(b, H));
+    }
+
+    function addReadingBar() {
+      // bind window onload and onscroll events to update scroll progress bar width
+      window.addEventListener("scroll", _updateScrollProgressBar);
+      window.addEventListener("load", _updateScrollProgressBar);
+    }
+
+    addBlogTodos();
+    addReadingBar();
+    addFancyAnchors($(".post-html-content p"));
+    addFancyAnchors($(".post-html-content ul"));
+    addFancyAnchors($(".post-html-content li"));
+  </script>
+
+{{/content }}

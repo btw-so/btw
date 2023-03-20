@@ -1,6 +1,6 @@
-import { createReducer } from '@reduxjs/toolkit';
+import { createReducer } from "@reduxjs/toolkit";
 
-import { STATUS } from 'literals';
+import { STATUS } from "literals";
 
 import {
   login,
@@ -19,7 +19,11 @@ import {
   updateUser,
   updateUserSuccess,
   updateUserFailure,
-} from 'actions';
+  resetState,
+  addCustomDomain,
+  addCustomDomainSuccess,
+  addCustomDomainFailure,
+} from "actions";
 
 export const userState = {
   user: {
@@ -41,12 +45,29 @@ export const otpState = {
     data: null,
     error: null,
   },
+  addCustomDomain: {
+    status: STATUS.IDLE,
+    data: null,
+    error: null,
+  },
 };
 
 export default {
-  user: createReducer(userState, builder => {
+  user: createReducer(userState, (builder) => {
+    builder.addCase(resetState, (draft) => {
+      if (
+        !(draft.user.state !== STATUS.IDLE) &&
+        !(draft.user.state !== STATUS.SUCCESS)
+      ) {
+        draft.user.status = STATUS.IDLE;
+        draft.user.data = null;
+        draft.user.error = null;
+        draft.user.isLoggedIn = false;
+      }
+    });
+
     builder
-      .addCase(getUser, draft => {
+      .addCase(getUser, (draft) => {
         draft.user.status = STATUS.RUNNING;
         draft.user.error = null;
       })
@@ -62,7 +83,7 @@ export default {
       });
 
     builder
-      .addCase(updateUser, draft => {
+      .addCase(updateUser, (draft) => {
         draft.user.status = STATUS.RUNNING;
         draft.user.error = null;
       })
@@ -75,9 +96,9 @@ export default {
       });
   }),
 
-  otp: createReducer(otpState, builder => {
+  otp: createReducer(otpState, (builder) => {
     builder
-      .addCase(generateOtp, draft => {
+      .addCase(generateOtp, (draft) => {
         draft.otp.status = STATUS.RUNNING;
         draft.otp.error = null;
       })
@@ -90,16 +111,31 @@ export default {
       });
 
     builder
-      .addCase(verifyOtp, draft => {
+      .addCase(verifyOtp, (draft) => {
         draft.verifyOtp.status = STATUS.RUNNING;
         draft.verifyOtp.error = null;
       })
       .addCase(verifyOtpSuccess, (draft, { payload }) => {
         draft.verifyOtp.status = STATUS.SUCCESS;
+        draft.verifyOtp.error = null;
       })
       .addCase(verifyOtpFailure, (draft, { payload }) => {
         draft.verifyOtp.status = STATUS.ERROR;
         draft.verifyOtp.error = payload.error;
+      });
+
+    builder
+      .addCase(addCustomDomain, (draft) => {
+        draft.addCustomDomain.status = STATUS.RUNNING;
+        draft.addCustomDomain.error = null;
+      })
+      .addCase(addCustomDomainSuccess, (draft, { payload }) => {
+        draft.addCustomDomain.status = STATUS.SUCCESS;
+        draft.addCustomDomain.error = null;
+      })
+      .addCase(addCustomDomainFailure, (draft, { payload }) => {
+        draft.addCustomDomain.status = STATUS.ERROR;
+        draft.addCustomDomain.error = payload.error;
       });
   }),
 };

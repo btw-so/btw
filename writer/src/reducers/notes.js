@@ -1,8 +1,8 @@
-import { createReducer } from '@reduxjs/toolkit';
+import { createReducer } from "@reduxjs/toolkit";
 
-import { STATUS } from 'literals';
+import { STATUS } from "literals";
 
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 import {
   getNotes,
@@ -14,7 +14,13 @@ import {
   createNewNote,
   selectNote,
   saveNoteContent,
-} from 'actions';
+  getNote,
+  getNoteSuccess,
+  getNoteFailure,
+  publishNote,
+  publishNoteSuccess,
+  publishNoteFailure,
+} from "actions";
 
 export const notesState = {
   notesMap: {},
@@ -26,10 +32,17 @@ export const notesState = {
   selectedNoteId: null,
 };
 
+export const actionState = {
+  publishNote: {
+    status: STATUS.IDLE,
+    data: null,
+  },
+};
+
 export default {
-  notes: createReducer(notesState, builder => {
+  notes: createReducer(notesState, (builder) => {
     builder
-      .addCase(getNotes, draft => {
+      .addCase(getNotes, (draft) => {
         draft.notesList.status = STATUS.RUNNING;
         draft.notesList.error = null;
         draft.notesList.lastFetchedAt = Date.now();
@@ -41,12 +54,15 @@ export default {
 
         if (payload.notes) {
           // loop through notes and merge them into notesMap
-          payload.notes.forEach(note => {
+          payload.notes.forEach((note) => {
             let { ydoc, id, user_id, title, created_at, updated_at } = note;
             created_at = new Date(created_at).getTime();
             updated_at = new Date(updated_at).getTime();
 
-            if (draft.notesMap[id] && draft.notesMap[id].updated_at > updated_at) {
+            if (
+              draft.notesMap[id] &&
+              draft.notesMap[id].updated_at > updated_at
+            ) {
               updated_at = draft.notesMap[id].updated_at;
             }
 
@@ -65,7 +81,10 @@ export default {
           return draft.notesMap[b].updated_at - draft.notesMap[a].updated_at;
         });
 
-        if (!draft.selectedNoteId) {
+        if (
+          !draft.selectedNoteId &&
+          typeof draft.selectedNoteId !== "undefined"
+        ) {
           if (draft.notesList.data.length === 0) {
             // create a random new uuid
             draft.selectedNoteId = uuidv4();
@@ -75,7 +94,7 @@ export default {
               error: null,
               created_at: Date.now(),
               user_id: payload.user_id,
-              title: '',
+              title: "",
               id: draft.selectedNoteId,
             };
             draft.notesList.data.push(draft.selectedNoteId);
@@ -96,7 +115,7 @@ export default {
           error: null,
           created_at: Date.now(),
           user_id: payload.user_id,
-          title: 'New note',
+          title: "New note",
           id: newId,
         };
         draft.notesList.data.push(newId);
@@ -106,10 +125,14 @@ export default {
         draft.selectedNoteId = payload.id;
       })
       .addCase(saveNoteContent, (draft, { payload }) => {
-        draft.notesMap[payload.id] = Object.assign({}, draft.notesMap[payload.id] || {}, {
-          content: payload.content,
-          updated_at: Date.now(),
-        });
+        draft.notesMap[payload.id] = Object.assign(
+          {},
+          draft.notesMap[payload.id] || {},
+          {
+            content: payload.content,
+            updated_at: Date.now(),
+          }
+        );
       });
 
     builder
@@ -136,6 +159,39 @@ export default {
       .addCase(upsertNoteFailure, (draft, { payload }) => {
         draft.notesMap[payload.id].status = STATUS.ERROR;
         draft.notesMap[payload.id].error = payload.error;
+      })
+      .addCase(getNote, (draft, { payload }) => {
+        draft.notesMap[payload.id].status = STATUS.RUNNING;
+        draft.notesMap[payload.id].error = null;
+      })
+      .addCase(getNoteSuccess, (draft, { payload }) => {
+        draft.notesMap[payload.id].status = STATUS.SUCCESS;
+        draft.notesMap[payload.id].error = null;
+        draft.notesMap[payload.id].ydoc = payload.ydoc;
+        draft.notesMap[payload.id].title = payload.title;
+        draft.notesMap[payload.id].updated_at = payload.updated_at;
+        draft.notesMap[payload.id].created_at = payload.created_at;
+        draft.notesMap[payload.id].published_at = payload.published_at;
+        draft.notesMap[payload.id].publish = payload.publish;
+      })
+      .addCase(getNoteFailure, (draft, { payload }) => {
+        draft.notesMap[payload.id].status = STATUS.ERROR;
+        draft.notesMap[payload.id].error = payload.error;
+      });
+  }),
+  actions: createReducer(actionState, (builder) => {
+    builder
+      .addCase(publishNote, (draft) => {
+        draft.publishNote.status = STATUS.RUNNING;
+        draft.publishNote.error = null;
+      })
+      .addCase(publishNoteSuccess, (draft, { payload }) => {
+        draft.publishNote.status = STATUS.SUCCESS;
+        draft.publishNote.error = null;
+      })
+      .addCase(publishNoteFailure, (draft, { payload }) => {
+        draft.publishNote.status = STATUS.ERROR;
+        draft.publishNote.error = payload.error;
       });
   }),
 };

@@ -53,3 +53,34 @@ export const saveNoteContent = createAction(
 export const importNotes = createAction(ActionTypes.IMPORT_NOTES, (data) => ({
   payload: data,
 }));
+
+export const publishNote = createAction(ActionTypes.PUBLISH_NOTE, (data) => ({
+  payload: data,
+}));
+export const publishNoteSuccess = createAction(
+  ActionTypes.PUBLISH_NOTE_SUCCESS,
+  (data) => ({
+    payload: data,
+  })
+);
+export const publishNoteFailure = createAction(
+  ActionTypes.PUBLISH_NOTE_FAILURE,
+  (data) => ({
+    payload: data,
+  })
+);
+export const getNote = createAction(ActionTypes.GET_NOTE, (data) => ({
+  payload: data,
+}));
+export const getNoteSuccess = createAction(
+  ActionTypes.GET_NOTE_SUCCESS,
+  (data) => ({
+    payload: data,
+  })
+);
+export const getNoteFailure = createAction(
+  ActionTypes.GET_NOTE_FAILURE,
+  (data) => ({
+    payload: data,
+  })
+);

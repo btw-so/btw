@@ -78,7 +78,7 @@ async function getNotes({ user_id, page, limit, after = 0 }) {
     limit = Number(limit);
     after = new Date(after);
     const { rows } = await pool.query(
-        `SELECT id, user_id, title, created_at, updated_at, ydoc FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
+        `SELECT id, user_id, title, created_at, updated_at, published_at, publish, slug, ydoc FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
         [user_id, after, after, limit, (page - 1) * limit]
     );
 
@@ -93,6 +93,57 @@ async function getNotes({ user_id, page, limit, after = 0 }) {
         total: totalRows.length > 1 ? totalRows[0].count : 0,
         page,
         limit,
+    };
+}
+
+async function unpublishNote({ user_id, id }) {
+    const pool = await db.getTasksDB();
+
+    await pool.query(
+        `UPDATE btw.notes SET publish = false WHERE id = $1 AND user_id = $2`,
+        [id, user_id]
+    );
+
+    return {
+        success: true,
+    };
+}
+
+async function publishNote({ user_id, id }) {
+    // get the note from db
+    // create slug for it
+    // set published to true
+    // set published_at to now
+
+    const pool = await db.getTasksDB();
+
+    const { rows } = await pool.query(
+        `SELECT * FROM btw.notes WHERE id = $1 AND user_id = $2`,
+        [id, user_id]
+    );
+
+    if (rows.length === 0) {
+        return {
+            success: false,
+            error: "Note not found",
+        };
+    }
+
+    const note = rows[0];
+
+    const slug = note.title
+        .toLowerCase()
+        .replace(/ /g, "-")
+        .replace(/[^\w-]+/g, "");
+
+    await pool.query(
+        `UPDATE btw.notes SET publish = true, published_at = $1, slug = $2 WHERE id = $3 AND user_id = $4`,
+        [new Date(), slug, id, user_id]
+    );
+
+    return {
+        success: true,
+        slug,
     };
 }
 
@@ -155,4 +206,6 @@ module.exports = {
     upsertNote,
     getNotes,
     importNote,
+    unpublishNote,
+    publishNote,
 };

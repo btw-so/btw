@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: https://www.btw.so/sitemap.xml

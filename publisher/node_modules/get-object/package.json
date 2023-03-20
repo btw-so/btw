@@ -1,0 +1,79 @@
+{
+  "name": "get-object",
+  "description": "Get a property from an object using dot (object path) notation.",
+  "version": "0.2.0",
+  "homepage": "https://github.com/jonschlinkert/get-object",
+  "author": {
+    "name": "Jon Schlinkert",
+    "url": "https://github.com/jonschlinkert"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jonschlinkert/get-object.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jonschlinkert/get-object/issues"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "is-number": "^2.0.2",
+    "isobject": "^0.2.0"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "should": "*"
+  },
+  "keywords": [
+    "check",
+    "dot",
+    "find",
+    "has",
+    "hasOwn",
+    "is",
+    "is-object",
+    "isobject",
+    "javascript",
+    "js",
+    "key",
+    "keys",
+    "node.js",
+    "notation",
+    "object",
+    "pick",
+    "prop",
+    "properties",
+    "property",
+    "props",
+    "string",
+    "type",
+    "type-of",
+    "typeof",
+    "util",
+    "utilities",
+    "utility",
+    "utils",
+    "value"
+  ],
+  "verb": {
+    "related": {
+      "list": [
+        "get-value",
+        "set-value",
+        "union-value",
+        "unset-value",
+        "upsert-value",
+        "del-value"
+      ]
+    }
+  },
+  "files": [
+    "index.js"
+  ]
+}

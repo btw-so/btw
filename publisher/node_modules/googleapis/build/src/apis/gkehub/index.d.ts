@@ -1,0 +1,32 @@
+/*! THIS FILE IS AUTO-GENERATED */
+import { AuthPlus } from 'googleapis-common';
+import { gkehub_v1 } from './v1';
+import { gkehub_v1alpha } from './v1alpha';
+import { gkehub_v1alpha2 } from './v1alpha2';
+import { gkehub_v1beta } from './v1beta';
+import { gkehub_v1beta1 } from './v1beta1';
+export declare const VERSIONS: {
+    v1: typeof gkehub_v1.Gkehub;
+    v1alpha: typeof gkehub_v1alpha.Gkehub;
+    v1alpha2: typeof gkehub_v1alpha2.Gkehub;
+    v1beta: typeof gkehub_v1beta.Gkehub;
+    v1beta1: typeof gkehub_v1beta1.Gkehub;
+};
+export declare function gkehub(version: 'v1'): gkehub_v1.Gkehub;
+export declare function gkehub(options: gkehub_v1.Options): gkehub_v1.Gkehub;
+export declare function gkehub(version: 'v1alpha'): gkehub_v1alpha.Gkehub;
+export declare function gkehub(options: gkehub_v1alpha.Options): gkehub_v1alpha.Gkehub;
+export declare function gkehub(version: 'v1alpha2'): gkehub_v1alpha2.Gkehub;
+export declare function gkehub(options: gkehub_v1alpha2.Options): gkehub_v1alpha2.Gkehub;
+export declare function gkehub(version: 'v1beta'): gkehub_v1beta.Gkehub;
+export declare function gkehub(options: gkehub_v1beta.Options): gkehub_v1beta.Gkehub;
+export declare function gkehub(version: 'v1beta1'): gkehub_v1beta1.Gkehub;
+export declare function gkehub(options: gkehub_v1beta1.Options): gkehub_v1beta1.Gkehub;
+declare const auth: AuthPlus;
+export { auth };
+export { gkehub_v1 };
+export { gkehub_v1alpha };
+export { gkehub_v1alpha2 };
+export { gkehub_v1beta };
+export { gkehub_v1beta1 };
+export { AuthPlus, GlobalOptions, APIRequestContext, GoogleConfigurable, StreamMethodOptions, GaxiosPromise, MethodOptions, BodyResponseCallback, } from 'googleapis-common';

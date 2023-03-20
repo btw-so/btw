@@ -1,0 +1,61 @@
+{
+  "name": "self-closing-tags",
+  "description": "HTML void elements are not the only self-closing tags. This includes common SVG self-closing elements as well.",
+  "version": "1.0.1",
+  "homepage": "https://github.com/jonschlinkert/self-closing-tags",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "repository": "jonschlinkert/self-closing-tags",
+  "bugs": {
+    "url": "https://github.com/jonschlinkert/self-closing-tags/issues"
+  },
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "engines": {
+    "node": ">=0.12.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "gulp-format-md": "^1.0.0",
+    "mocha": "^3.2.0"
+  },
+  "keywords": [
+    "closing",
+    "element",
+    "elements",
+    "html",
+    "self",
+    "self-closing",
+    "svg",
+    "tag",
+    "tags",
+    "void",
+    "xml"
+  ],
+  "verb": {
+    "toc": false,
+    "layout": "default",
+    "tasks": [
+      "readme"
+    ],
+    "plugins": [
+      "gulp-format-md"
+    ],
+    "related": {
+      "list": [
+        "breakdance",
+        "html-tag",
+        "html-toc",
+        "is-self-closing",
+        "remarkable"
+      ]
+    },
+    "lint": {
+      "reflinks": true
+    }
+  }
+}

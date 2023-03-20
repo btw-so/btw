@@ -79,7 +79,34 @@ async function emailImportComplete({ email }) {
     console.log("Message sent: %s", info.messageId);
 }
 
+async function customDomainSetupEmail({ email, domain }) {
+    // email process.env.ADMIN_EMAIL that someone has requested a custom domain
+    // send mail with defined transport object
+
+    let info = await transporter.sendMail({
+        from: `"Support" <${process.env.SMTP_FROM}>`, // sender address
+        to: process.env.ADMIN_EMAIL, // list of receivers
+        subject: "btw - Custom Domain Setup Request", // Subject line
+        html: `<p><b>Hello!</b><br/><br/>${email} has requested to setup a custom domain.<br/>Domain: ${domain}<br/></p>Cheers<br/>Team btw`,
+        text: `Hello! ${email} has requested to setup a custom domain. Domain: ${domain} Cheers, Team btw`,
+    });
+
+    console.log("Message sent: %s", info.messageId);
+
+    // send mail to user that we have received the request
+    info = await transporter.sendMail({
+        from: `"Support" <${process.env.SMTP_FROM}>`, // sender address
+        to: email, // list of receivers
+        subject: "btw - Custom Domain Setup Request", // Subject line
+        html: `<p><b>Hello!</b><br/><br/>We have received your request to setup a custom domain. You will receive further details soon. <br/>Domain: ${domain}<br/></p>Cheers<br/>Team btw`,
+        text: `Hello! We have received your request to setup a custom domain. You will receive further details soon. Domain: ${domain} Cheers, Team btw`,
+    });
+
+    console.log("Message sent: %s", info.messageId);
+}
+
 module.exports = {
     emailOTP,
     emailImportComplete,
+    customDomainSetupEmail,
 };

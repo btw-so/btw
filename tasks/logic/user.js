@@ -3,6 +3,7 @@ const db = require("../services/db");
 const { v4: uuidv4 } = require("uuid");
 
 const { baseQueue } = require("../services/queue");
+const { customDomainSetupEmail } = require("../logic/email");
 
 // add a job that runs every 2 hours and removed old login tokens
 baseQueue.add(
@@ -131,38 +132,112 @@ async function createUser({ email }) {
     client.release();
 }
 
-async function setUserDetails({ email, name, slug }) {
+async function setUserDetails({ name, slug, user_id }) {
     const tasksDB = await db.getTasksDB();
-    const client = await tasksDB.connect();
 
-    if (name) {
-        // UPSERT name
-        await client.query(
-            `INSERT INTO btw.users (processed_email, name) VALUES ($1, $2) ON CONFLICT (processed_email) DO UPDATE SET name = $2`,
-            [email.toLowerCase().split(".").join(""), name]
-        );
+    console.log("setUserDetails", name, slug, user_id);
+
+    if (!slug) {
+        slug = null;
     }
 
     if (slug) {
-        // Check if there is already a row with this slug
-        const { rows } = await client.query(
-            `SELECT * FROM btw.users WHERE slug = $1 and processed_email <> $2`,
-            [slug, (email || "").toLowerCase().split(".").join("")]
+        // check that the slug is unique
+        const { rows } = await tasksDB.query(
+            `SELECT * FROM btw.users WHERE slug = $1 AND id != $2`,
+            [slug, user_id]
         );
 
         if (rows.length > 0) {
-            client.release();
-            throw new Error("Slug already exists");
+            return {
+                success: false,
+                error: "Slug is not unique",
+            };
         }
-
-        // UPSERT slug
-        await client.query(
-            `INSERT INTO btw.users (processed_email, slug) VALUES ($1, $2) ON CONFLICT (processed_email) DO UPDATE SET slug = $2`,
-            [(email || "").toLowerCase().split(".").join(""), slug]
-        );
     }
 
-    client.release();
+    console.log("A");
+
+    try {
+        await tasksDB.query(
+            `UPDATE btw.users SET name = $1, slug = $2 WHERE id = $3`,
+            [name, slug, user_id]
+        );
+
+        console.log("B");
+        return {
+            success: true,
+        };
+    } catch (e) {
+        console.log(e);
+        console.log("C");
+        return {
+            success: false,
+            error: e.message,
+        };
+    }
+}
+
+async function getDomains({ user_id }) {
+    const tasksDB = await db.getTasksDB();
+
+    try {
+        const { rows } = await tasksDB.query(
+            `SELECT * FROM btw.custom_domains WHERE user_id = $1`,
+            [user_id]
+        );
+
+        return {
+            success: true,
+            domains: rows,
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            success: false,
+            error: e,
+        };
+    }
+}
+
+/*
+    TODO: (SG) Adding domain has to be synced with Cloudflare APIs
+    we should maintain the verification process + verification done/not done flag in DB
+*/
+async function addUserDomain({ domain, user_id }) {
+    const tasksDB = await db.getTasksDB();
+
+    try {
+        await tasksDB.query(
+            `INSERT INTO btw.custom_domains (domain, user_id) VALUES ($1, $2)`,
+            [domain, user_id]
+        );
+
+        // get user email
+        const { rows: users } = await tasksDB.query(
+            `SELECT * FROM btw.users WHERE id = $1`,
+            [user_id]
+        );
+
+        if (users.length > 0) {
+            const user = users[0];
+
+            customDomainSetupEmail({
+                email: user.email,
+                domain,
+            });
+        }
+
+        return {
+            success: true,
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            success: false,
+            error: e,
+        };
+    }
 }
 
 module.exports = {
@@ -170,4 +245,6 @@ module.exports = {
     createLoginToken,
     createUser,
     setUserDetails,
+    addUserDomain,
+    getDomains,
 };

@@ -78,8 +78,9 @@ function Root() {
         </Helmet>
         {/* {isLoggedIn && <Login />} */}
         {/* <Main isAuthenticated={isAuthenticated}> */}
-        <Routes>
+        <Routes className="flex flex-grow">
           <Route
+            className="flex flex-grow"
             element={
               <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
                 <Dash
@@ -92,6 +93,7 @@ function Root() {
             path="/dash"
           />
           <Route
+            className="flex flex-grow"
             element={
               <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
                 <Settings

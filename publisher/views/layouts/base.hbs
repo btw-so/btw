@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1,viewport-fit=cover,user-scalable=no">
+    <title>{{site_title}}</title>
+    <meta name="description" content="{{site_description}}">
+    {{#if canonicalUrl}}
+      <link rel="canonical" href="{{canonicalUrl}}" />
+    {{/if}}
+
+    {{#block "custom-meta-block"}}
+    {{/block}}
+
+    {{#and site_logo site_url}}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "url": "{{site_url}}",
+        "logo": "{{site_logo}}"
+    }
+    </script>
+    {{/and}}
+
+</script>
+
+    <!--Add twitter meta data-->
+    
+    {{#if site_title}}<meta property="og:site_name" content="{{site_title}}">{{/if}}
+    <meta property="og:type" content="website">
+    {{#or site_url canonical_url}}<meta property="og:url" content="{{#if site_url}}{{site_url}}{{else}}{{canonical_url}}{{/if}}">{{/or}}
+    {{#if site_title}}<meta property="og:title" content="{{site_title}}">{{/if}}
+    {{#if site_discription}}<meta property="og:description" content="{{site_description}}">{{/if}}
+    <meta property="og:locale" content="en_US">
+    {{#if site_image}}
+        <meta property="og:image" content="{{site_image}}">
+    {{/if}}
+    {{#or site_url canonical_url}}<meta property="twitter:url" content="{{#if site_url}}{{site_url}}{{else}}{{canonical_url}}{{/if}}">{{/or}}
+    {{#if site_discription}}<meta property="twitter:description" content="{{site_description}}">{{/if}}
+    {{#if site_title}}<meta property="twitter:title" content="{{site_title}}">{{/if}}
+    {{#if site_image}}
+        <meta property="twitter:image" content="{{site_image}}">
+    {{/if}}
+    {{#if site_url}}
+    <link rel="dns-prefetch" href="{{site_url}}">
+    {{/if}}
+
+    {{#if site_icon}}
+    <link rel="shortcut icon" href="{{site_icon}}">
+    {{/if}}
+    <link rel="stylesheet" href="/stylesheets/styles_generated.css" type="text/css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,301,701,300,501,401,901,400&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="text-base">
+    <div id="btw-app">
+      <div id="btw-app-inner">
+        {{#block "body"}}
+        {{/block}}
+      </div>
+    </div>
+
+    {{!-- jQuery --}}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    {{!-- Lazy load images --}}
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@15.1.1/dist/lazyload.min.js"></script>
+    <script>
+       var lazyLoadInstance = new LazyLoad({
+         elements_selector: ".lazy"
+      });
+    </script>
+
+    {{!-- Overrideable block --}}
+    {{#block "eob-block"}}
+    {{/block}}
+  </body> 
+</html>
+

@@ -1,6 +1,15 @@
-import { all, delay, put, takeLatest, call, takeEvery } from 'redux-saga/effects';
+import {
+  all,
+  delay,
+  put,
+  takeLatest,
+  call,
+  takeEvery,
+} from "redux-saga/effects";
 
-import { ActionTypes } from 'literals';
+import toast from "react-hot-toast";
+
+import { ActionTypes } from "literals";
 
 import {
   getUserSuccess,
@@ -11,15 +20,17 @@ import {
   verifyOtpFailure,
   updateUserSuccess,
   updateUserFailure,
-} from 'actions';
+  addCustomDomainSuccess,
+  addCustomDomainFailure,
+} from "actions";
 
-import axios from 'axios';
+import axios from "axios";
 const axiosInstance = axios.create({
   timeout: 20000,
   withCredentials: true,
 });
 
-import genFingerprint from '../fingerprint';
+import genFingerprint from "../fingerprint";
 
 // import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
@@ -42,11 +53,11 @@ export function* getUserSaga() {
   const { data: res } = yield call(() =>
     axiosInstance.request({
       url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/user/details`,
-      method: 'POST',
+      method: "POST",
       data: {
         fingerprint,
       },
-    }),
+    })
   );
 
   const { success, data, error } = res;
@@ -54,7 +65,7 @@ export function* getUserSaga() {
   if (success && data.user && data.isLoggedIn) {
     yield put(getUserSuccess(data.user));
   } else {
-    yield put(getUserFailure({ error: error || 'Something went wrong' }));
+    yield put(getUserFailure({ error: error || "Something went wrong" }));
   }
 }
 
@@ -65,12 +76,12 @@ export function* generateOtp({ payload }) {
   const { data } = yield call(() =>
     axiosInstance.request({
       url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/otp/generate`,
-      method: 'POST',
+      method: "POST",
       data: {
         email,
         fingerprint,
       },
-    }),
+    })
   );
 
   const { success, error } = data;
@@ -78,7 +89,7 @@ export function* generateOtp({ payload }) {
   if (success) {
     yield put(generateOtpSuccess({ success, error }));
   } else {
-    yield put(generateOtpFailure({ error: error || 'Something went wrong' }));
+    yield put(generateOtpFailure({ error: error || "Something went wrong" }));
   }
 }
 
@@ -89,13 +100,13 @@ export function* verifyOtp({ payload }) {
   const { data: res } = yield call(() =>
     axiosInstance.request({
       url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/otp/validate`,
-      method: 'POST',
+      method: "POST",
       data: {
         email,
         otp,
         fingerprint,
       },
-    }),
+    })
   );
 
   const { success, data, error } = res;
@@ -111,7 +122,7 @@ export function* verifyOtp({ payload }) {
 
     yield put(verifyOtpSuccess());
   } else {
-    yield put(verifyOtpFailure({ error: error || 'Something went wrong' }));
+    yield put(verifyOtpFailure({ error: error || "Something went wrong" }));
   }
 }
 
@@ -119,16 +130,18 @@ export function* updateUser({ payload }) {
   const fingerprint = yield call(getFingerPrint);
   const { name, slug } = payload || {};
 
+  const toastId = toast.loading("Updating user details");
+
   const { data: res } = yield call(() =>
     axiosInstance.request({
       url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/user/update`,
-      method: 'POST',
+      method: "POST",
       data: {
         fingerprint,
         name,
         slug,
       },
-    }),
+    })
   );
 
   const { success, error } = res;
@@ -138,8 +151,55 @@ export function* updateUser({ payload }) {
 
     // call getUserSaga to update the user in the store
     yield call(getUserSaga);
+
+    toast.success("Profile updated", {
+      id: toastId,
+    });
   } else {
-    yield put(updateUserFailure({ error: error || 'Something went wrong' }));
+    yield put(updateUserFailure({ error: error || "Something went wrong" }));
+
+    toast.error(`Error: ${error}`, {
+      id: toastId,
+    });
+  }
+}
+
+export function* addCustomDomain({ payload }) {
+  const fingerprint = yield call(getFingerPrint);
+  const { domain } = payload || {};
+
+  const toastId = toast.loading("Adding custom domain");
+
+  const { data: res } = yield call(() =>
+    axiosInstance.request({
+      url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/user/add/domain`,
+      method: "POST",
+      data: {
+        fingerprint,
+        domain,
+      },
+    })
+  );
+
+  const { success, error } = res;
+
+  if (success) {
+    yield put(addCustomDomainSuccess());
+
+    toast.success(`Add domain: ${domain}`, {
+      id: toastId,
+    });
+
+    // call getUserSaga to update the user in the store
+    yield call(getUserSaga);
+  } else {
+    yield put(
+      addCustomDomainFailure({ error: error || "Something went wrong" })
+    );
+
+    toast.error(`Error: ${error}`, {
+      id: toastId,
+    });
   }
 }
 
@@ -149,5 +209,6 @@ export default function* root() {
     takeEvery(ActionTypes.GENERATE_OTP, generateOtp),
     takeEvery(ActionTypes.VERIFY_OTP, verifyOtp),
     takeEvery(ActionTypes.UPDATE_USER, updateUser),
+    takeEvery(ActionTypes.ADD_CUSTOM_DOMAIN, addCustomDomain),
   ]);
 }

@@ -2,7 +2,14 @@ var express = require("express");
 var router = express.Router();
 var cors = require("cors");
 var { getUserFromToken } = require("../logic/user");
-var { getNotes, upsertNote, importNote } = require("../logic/notes");
+var {
+    getNotes,
+    getNote,
+    upsertNote,
+    importNote,
+    publishNote,
+    unpublishNote,
+} = require("../logic/notes");
 
 router.options(
     "/import",
@@ -65,6 +72,49 @@ router.post(
             res.json({
                 success: false,
                 data: {},
+                error: e,
+            });
+            return;
+        }
+    }
+);
+
+router.options(
+    "/get-by-id",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/get-by-id",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, id } = req.body || {};
+
+        // get loginToken as btw_uuid cookie
+        const loginToken = req.cookies.btw_uuid;
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+            const note = await getNote({
+                user_id: user.id,
+                id,
+            });
+            res.json({
+                success: true,
+                data: { note },
+            });
+        } catch (e) {
+            res.json({
+                success: false,
+                data: { note: null },
                 error: e,
             });
             return;
@@ -149,7 +199,7 @@ router.post(
 
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators
-            if (user._id !== user_id) {
+            if (user.id !== user_id) {
                 res.json({
                     success: false,
                     data: { notes: [] },
@@ -168,6 +218,66 @@ router.post(
                 success: false,
                 data: { notes: [] },
                 error: e,
+            });
+            return;
+        }
+    }
+);
+
+router.options(
+    "/update/publish",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/update/publish",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, id, user_id, publish } = req.body || {};
+
+        // get loginToken as btw_uuid cookie
+        const loginToken = req.cookies.btw_uuid;
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            // access check. for now the access check requires user to own the note
+            // in future, we can add collaborators
+            if (user.id !== user_id) {
+                res.json({
+                    success: false,
+                    error: "Access denied",
+                });
+                return;
+            }
+
+            if (publish) {
+                res.send(
+                    await publishNote({
+                        id,
+                        user_id,
+                    })
+                );
+            } else {
+                res.send(
+                    await unpublishNote({
+                        id,
+                        user_id,
+                    })
+                );
+            }
+        } catch (e) {
+            res.json({
+                success: false,
+                error: e.message,
             });
             return;
         }

@@ -1,0 +1,61 @@
+{
+  "name": "gpt3-tokenizer",
+  "version": "1.1.5",
+  "license": "MIT",
+  "author": "Simon Liang <simon@x-tech.io>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xanthous-tech/gpt3-tokenizer.git"
+  },
+  "main": "dist/index.js",
+  "browser": "dist-browser/gpt3-tokenizer.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "dist-browser",
+    "src"
+  ],
+  "engines": {
+    "node": ">=12"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "npm run build:browser && tsdx build --target node --format cjs",
+    "build:browser": "rimraf dist-browser && tsdx build --target browser --format esm",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "npm run build",
+    "size": "size-limit"
+  },
+  "peerDependencies": {},
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "module": "dist/gpt3-tokenizer.cjs.production.min.js",
+  "size-limit": [
+    {
+      "path": "dist-browser/gpt3-tokenizer.js",
+      "limit": "1024 KB"
+    }
+  ],
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^8.1.2",
+    "husky": "^8.0.3",
+    "rimraf": "^4.1.2",
+    "size-limit": "^8.1.2",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.5.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "array-keyed-map": "^2.1.3"
+  }
+}

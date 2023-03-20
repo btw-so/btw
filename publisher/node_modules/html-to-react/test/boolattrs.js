@@ -1,0 +1,32 @@
+'use strict';
+
+// Boolean HTML attributes, in the case React expects.
+const booleanAttrs = [
+  'allowFullScreen',
+  'allowpaymentrequest',
+  'async',
+  'autoFocus',
+  'autoPlay',
+  'checked',
+  'controls',
+  'default',
+  'disabled',
+  'formNoValidate',
+  'hidden',
+  'ismap',
+  'itemScope',
+  'loop',
+  'multiple',
+  'muted',
+  'nomodule',
+  'noValidate',
+  'open',
+  'playsinline',
+  'readOnly',
+  'required',
+  'reversed',
+  'selected',
+  'truespeed',
+];
+
+module.exports = booleanAttrs;

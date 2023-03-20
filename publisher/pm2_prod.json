@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "publisher",
+      "script": "npm",
+      "args": ["run", "serve"]
+    }
+  ]
+}

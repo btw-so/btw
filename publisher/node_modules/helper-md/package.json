@@ -1,0 +1,91 @@
+{
+  "name": "helper-md",
+  "description": "Markdown template helper. Uses remarkable to render markdown in templates. Should work with Handlebars, Lo-Dash or any template engine that supports helper functions.",
+  "version": "0.2.2",
+  "homepage": "https://github.com/helpers/helper-md",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "contributors": [
+    "Jon Higgins (http://www.jonhiggins.co.uk)",
+    "Jon Schlinkert <jon.schlinkert@sellside.com> (http://twitter.com/jonschlinkert)",
+    "Scott Polhemus <scott@polhem.us> (http://polhem.us)"
+  ],
+  "repository": "helpers/helper-md",
+  "bugs": {
+    "url": "https://github.com/helpers/helper-md/issues"
+  },
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "ent": "^2.2.0",
+    "extend-shallow": "^2.0.1",
+    "fs-exists-sync": "^0.1.0",
+    "remarkable": "^1.6.2"
+  },
+  "devDependencies": {
+    "engine-base": "^0.1.2",
+    "gulp-format-md": "^0.1.9",
+    "handlebars": "^4.0.5",
+    "highlight.js": "^9.3.0",
+    "lodash": "^4.12.0",
+    "mocha": "^2.4.5",
+    "templates": "^0.17.2"
+  },
+  "keywords": [
+    "block",
+    "engine",
+    "expression",
+    "function",
+    "handlebars",
+    "helper",
+    "helpers",
+    "lodash",
+    "markdown",
+    "md",
+    "remarkable",
+    "template"
+  ],
+  "verb": {
+    "toc": false,
+    "layout": "default",
+    "tasks": [
+      "readme"
+    ],
+    "data": {
+      "nickname": "md"
+    },
+    "plugins": [
+      "gulp-format-md"
+    ],
+    "related": {
+      "list": [
+        "assemble",
+        "handlebars-helpers",
+        "helper-markdown",
+        "templates",
+        "verb"
+      ]
+    },
+    "reflinks": [
+      "assemble",
+      "generator-verb",
+      "handlebars",
+      "handlebars-helpers",
+      "lodash",
+      "templates",
+      "underscore",
+      "verb"
+    ],
+    "lint": {
+      "reflinks": true
+    }
+  }
+}

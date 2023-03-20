@@ -181,24 +181,26 @@ class Tiptap extends React.Component {
   }
 
   render() {
-    return [
-      <MenuBar editor={this.editor} />,
-      <div className="tiptap-editor flex flex-col flex-grow overflow-y-scroll">
-        <EditorContent
-          editor={this.editor}
-          className="flex-grow"
-          onClick={(e) => {
-            // get the editor in focus
-            this.editor.commands.focus();
-          }}
-        />
-      </div>,
-      <div className="character-count text-xs text-gray-400">
-        {this.state.chars || "0"}/{limit} characters
-        <br />
-        {this.state.words || "0"} words
-      </div>,
-    ];
+    return (
+      <div className="p-2 h-full flex flex-grow flex-col">
+        <MenuBar editor={this.editor} />
+        <div className="tiptap-editor flex flex-col flex-grow overflow-y-scroll">
+          <EditorContent
+            editor={this.editor}
+            className="flex-grow"
+            onClick={(e) => {
+              // get the editor in focus
+              this.editor.commands.focus();
+            }}
+          />
+        </div>
+        <div className="character-count text-xs text-gray-400">
+          {this.state.chars || "0"}/{limit} characters
+          <br />
+          {this.state.words || "0"} words
+        </div>
+      </div>
+    );
   }
 }
 

@@ -1,7 +1,12 @@
 var express = require("express");
 var router = express.Router();
 var cors = require("cors");
-var { getUserFromToken, setUserDetails } = require("../logic/user");
+var {
+    getUserFromToken,
+    setUserDetails,
+    addUserDomain,
+    getDomains,
+} = require("../logic/user");
 
 // API to fetch user data
 // also tells if user is logged in currently or not
@@ -25,16 +30,24 @@ router.post(
         const loginToken = req.cookies.btw_uuid;
 
         try {
-            const user = await getUserFromToken({
+            let user = await getUserFromToken({
                 token: loginToken,
                 fingerprint,
             });
+
+            const { domains, success } = await getDomains({ user_id: user.id });
+            if (success) {
+                user.domains = domains;
+            } else {
+                user.domains = [];
+            }
+
             res.json({ success: true, data: { user, isLoggedIn: true } });
         } catch (e) {
             res.json({
                 success: false,
                 data: { user: null, isLoggedIn: false },
-                error: e,
+                error: e.message,
             });
             return;
         }
@@ -59,16 +72,16 @@ router.post(
         const { fingerprint, name, slug } = req.body || {};
 
         // get loginToken as btw_uuid cookie
-        const loginToken = req.cookies.btw_uuid;
+        const token = req.cookies.btw_uuid;
 
         try {
             const user = await getUserFromToken({
-                loginToken,
+                token,
                 fingerprint,
             });
 
             await setUserDetails({
-                userId: user.id,
+                user_id: user.id,
                 name,
                 slug,
             });
@@ -77,8 +90,51 @@ router.post(
         } catch (e) {
             res.json({
                 success: false,
-                error: e,
+                error: e.message,
             });
+            return;
+        }
+    }
+);
+
+// API to add custom domain
+router.options(
+    "/add/domain",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/add/domain",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, domain } = req.body || {};
+
+        // get loginToken as btw_uuid cookie
+        const token = req.cookies.btw_uuid;
+
+        try {
+            const user = await getUserFromToken({
+                token,
+                fingerprint,
+            });
+
+            res.send(
+                await addUserDomain({
+                    user_id: user.id,
+                    domain,
+                })
+            );
+        } catch (e) {
+            res.json({
+                success: false,
+                error: e.message,
+            });
+
             return;
         }
     }

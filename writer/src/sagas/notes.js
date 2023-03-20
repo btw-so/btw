@@ -14,6 +14,10 @@ import {
   getNotesFailure,
   upsertNoteSuccess,
   upsertNoteFailure,
+  publishNoteSuccess,
+  publishNoteFailure,
+  getNoteSuccess,
+  getNoteFailure,
 } from "actions";
 
 import axios from "axios";
@@ -126,10 +130,121 @@ export function* importNotes({ payload }) {
   }
 }
 
+export function* getNote({ payload }) {
+  const { id } = payload;
+  const fingerprint = yield call(getFingerPrint);
+
+  const { data: res } = yield call(() =>
+    axiosInstance.request({
+      url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/get-by-id`,
+      method: "POST",
+      data: {
+        fingerprint,
+        id,
+      },
+    })
+  );
+
+  const { success, data, error } = res;
+  if (success && !error && data.note) {
+    yield put(getNoteSuccess({ ...data.note }));
+  } else {
+    yield put(
+      getNoteFailure({
+        error: error || "Something went wrong updating the note",
+      })
+    );
+
+    toast.error("Something went wrong updating the note. Try again.");
+
+    return;
+  }
+}
+
+export function* publishNote({ payload }) {
+  const { id, publish, user_id } = payload;
+  const fingerprint = yield call(getFingerPrint);
+
+  const toastId = toast.loading(
+    `${publish ? "Publishing" : "Unpublishing"} note...`
+  );
+
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/update/publish`,
+
+        method: "POST",
+        data: {
+          fingerprint,
+          id,
+          publish,
+          user_id,
+        },
+      })
+    );
+
+    const { success, data, error } = res;
+    if (success && !error) {
+      toast.success(`Note ${publish ? "published" : "unpublished"}`, {
+        id: toastId,
+      });
+
+      yield call(() => getNote({ payload: { id } }));
+
+      yield put(publishNoteSuccess(data));
+    } else {
+      toast.error(
+        `Something went wrong ${
+          publish ? "publishing" : "unpublishing"
+        } the note. Try again.`,
+        { id: toastId }
+      );
+
+      yield call(() => getNote({ payload: { id } }));
+
+      yield put(
+        publishNoteFailure({
+          error:
+            error ||
+            `Something went wrong ${
+              publish ? "publishing" : "unpublishing"
+            } the note`,
+        })
+      );
+      return;
+    }
+  } catch (e) {
+    console.log(e);
+    toast.error(
+      `Something went wrong ${
+        publish ? "publishing" : "unpublishing"
+      } the note. Try again.`,
+      { id: toastId }
+    );
+
+    yield call(() => getNote({ payload: { id } }));
+
+    yield put(
+      publishNoteFailure({
+        error:
+          e.message ||
+          `Something went wrong ${
+            publish ? "publishing" : "unpublishing"
+          } the note`,
+      })
+    );
+
+    return;
+  }
+}
+
 export default function* root() {
   yield all([
     takeEvery(ActionTypes.GET_NOTES, getNotesSaga),
     takeEvery(ActionTypes.UPSERT_NOTE, upsertNote),
     takeEvery(ActionTypes.IMPORT_NOTES, importNotes),
+    takeEvery(ActionTypes.PUBLISH_NOTE, publishNote),
+    takeEvery(ActionTypes.GET_NOTE, getNote),
   ]);
 }

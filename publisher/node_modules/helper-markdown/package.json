@@ -1,0 +1,85 @@
+{
+  "name": "helper-markdown",
+  "description": "Markdown template helper. Uses remarkable to render markdown in templates. Should work with Handlebars, Lo-Dash or any template engine that supports helper functions.",
+  "version": "1.0.0",
+  "homepage": "https://github.com/helpers/helper-markdown",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "contributors": [
+    "Brian Woodward (https://twitter.com/doowb)",
+    "Jon Schlinkert (http://twitter.com/jonschlinkert)",
+    "Pedro De almeida (www.almeida.ch)"
+  ],
+  "repository": "helpers/helper-markdown",
+  "bugs": {
+    "url": "https://github.com/helpers/helper-markdown/issues"
+  },
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "handlebars-utils": "^1.0.2",
+    "highlight.js": "^9.12.0",
+    "remarkable": "^1.7.1"
+  },
+  "devDependencies": {
+    "gulp-format-md": "^1.0.0",
+    "handlebars": "^4.0.10",
+    "lodash": "^4.17.4",
+    "mocha": "^3.4.2"
+  },
+  "keywords": [
+    "block",
+    "compile",
+    "engine",
+    "expression",
+    "function",
+    "handlebars",
+    "helper",
+    "helpers",
+    "lodash",
+    "markdown",
+    "md",
+    "remarkable",
+    "render",
+    "template",
+    "templates"
+  ],
+  "verb": {
+    "toc": true,
+    "layout": "default",
+    "tasks": [
+      "readme"
+    ],
+    "plugins": [
+      "gulp-format-md"
+    ],
+    "related": {
+      "list": [
+        "assemble",
+        "handlebars",
+        "lodash",
+        "template",
+        "underscore",
+        "verb"
+      ]
+    },
+    "reflinks": [
+      "assemble",
+      "handlebars",
+      "templates",
+      "underscore",
+      "verb"
+    ],
+    "lint": {
+      "reflinks": true
+    }
+  }
+}
