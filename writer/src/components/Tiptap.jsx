@@ -182,7 +182,10 @@ class Tiptap extends React.Component {
 
   render() {
     return (
-      <div className="p-2 h-full flex flex-grow flex-col">
+      <div
+        className="p-2 h-full flex flex-grow flex-col"
+        style={{ minHeight: 0 }}
+      >
         <MenuBar editor={this.editor} />
         <div className="tiptap-editor flex flex-col flex-grow overflow-y-scroll">
           <EditorContent

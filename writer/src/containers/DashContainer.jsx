@@ -45,7 +45,7 @@ function Dash(props) {
     return (
       <AppWrapper {...props}>
         {token && props.userId && notesState.selectedNoteId ? (
-          <div className="flex flex-grow flex-col">
+          <div className="flex flex-grow flex-col max-h-screen">
             <div className="mb-2 px-2 border-b-2 border-gray-200 py-2 flex">
               <div className="flex flex-grow"></div>
               <div>
