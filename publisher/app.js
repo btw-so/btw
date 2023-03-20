@@ -1,4 +1,3 @@
-// var createError = require("http-errors");
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
@@ -73,6 +72,10 @@ app.use(
     },
   })
 );
+
+if (process.env.NODE_ENV == "production") {
+  app.set("trust proxy", 1);
+}
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
