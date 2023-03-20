@@ -6,7 +6,7 @@ var { getAllNotes, getNoteBySlug, getUserBySlug } = require("../logic/notes");
 const mainUrl = (res) => {
   return res.locals.customDomain
     ? res.locals.customDomain
-    : process.env.DEBUG
+    : !!Number(process.env.DEBUG)
     ? `${process.env.ROOT_DOMAIN}/?${process.env.DOMAIN_QUERY_PARAM}=${res.locals.domainSlug}`
     : res.locals.domainSlug + "." + process.env.ROOT_DOMAIN;
 };
@@ -18,7 +18,7 @@ const createSubUrlWithPath = (res, path) => {
     }${path}`;
   }
 
-  if (process.env.DEBUG) {
+  if (!!Number(process.env.DEBUG)) {
     return `http${!!Number(process.env.HTTPS_DOMAIN) ? "s" : ""}://${
       process.env.ROOT_DOMAIN
     }${path}?${process.env.DOMAIN_QUERY_PARAM}=${res.locals.domainSlug}`;
