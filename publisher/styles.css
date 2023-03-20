@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 div:focus-visible {
   @apply ring-offset-0 ring-0 outline-none;
 }
@@ -205,4 +201,9 @@ hr.ProseMirror-selectednode {
 .tiptap-editor ul > li > ul {
   margin-top: 0rem !important;
   margin-bottom: 0rem !important;
+}
+
+.sidebar-toolkit button i {
+  display: flex;
+  align-items: center;
 }

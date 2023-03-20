@@ -3,7 +3,7 @@
     {
       "name": "publisher",
       "script": "npm",
-      "args": ["run", "serve"]
+      "args": ["run", "start:production"]
     }
   ]
 }

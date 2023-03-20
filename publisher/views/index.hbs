@@ -1,5 +1,16 @@
 {{#content "body"}}
 
-  Hello World!
-
+  <div class="py-4 border-b-2 border-gray-200 text-center">
+    <h1 class="text-xl font-bold">{{title}}</h1>
+  </div>
+  <article class="prose max-w-md mx-auto p-4">
+    <h3 class="mb-2 is-size-4 font-bold">All essays and posts</h3>
+    {{#if notes}}
+      <ul>
+        {{#each notes}}
+          <li><a href="{{url}}">{{title}}</a></li>
+        {{/each}}
+      </ul>
+    {{/if}}
+  </article>
 {{/content}}

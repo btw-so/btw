@@ -108,7 +108,7 @@ app.use(async (req, res, next) => {
 
       res.locals.domainSlug = req.hostname.split(".")[0];
 
-      if (res.locals.domainSlug === "app") {
+      if (res.locals.domainSlug === "publish") {
         res.locals.domainSlug = req.query[process.env.DOMAIN_QUERY_PARAM];
       }
     } else {
@@ -117,8 +117,10 @@ app.use(async (req, res, next) => {
     }
   }
 
+  console.log("A", res.locals.customDomain, res.locals.domainSlug);
+
   if (!res.locals.domainSlug) {
-    res.redirect("/404");
+    res.status(404);
   } else {
     next();
   }

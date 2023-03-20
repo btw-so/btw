@@ -13,25 +13,37 @@ const mainUrl = (res) => {
 
 const createSubUrlWithPath = (res, path) => {
   if (res.locals.customDomain) {
-    return `https://${res.locals.domainSlug}${path}`;
+    return `http${!!Number(process.env.HTTPS_DOMAIN) ? "s" : ""}://${
+      res.locals.domainSlug
+    }${path}`;
   }
 
   if (process.env.DEBUG) {
-    return `https://${process.env.ROOT_DOMAIN}${path}?${process.env.DOMAIN_QUERY_PARAM}=${res.locals.domainSlug}`;
+    return `http${!!Number(process.env.HTTPS_DOMAIN) ? "s" : ""}://${
+      process.env.ROOT_DOMAIN
+    }${path}?${process.env.DOMAIN_QUERY_PARAM}=${res.locals.domainSlug}`;
   }
 
-  return `https://${res.locals.domainSlug}.${process.env.ROOT_DOMAIN}${path}`;
+  return `http${!!Number(process.env.HTTPS_DOMAIN) ? "s" : ""}://${
+    res.locals.domainSlug
+  }.${process.env.ROOT_DOMAIN}${path}`;
 };
 
 router.get("/", async (req, res, next) => {
-  const user = await getUserBySlug(req.params.slug);
+  const user = await getUserBySlug({
+    slug: res.locals.domainSlug,
+    customDomain: res.locals.customDomain,
+  });
 
   if (!user) {
     res.redirect("/404");
     return;
   }
 
-  const notes = await getAllNotes(req.params.slug);
+  const notes = await getAllNotes({
+    slug: res.locals.domainSlug,
+    customDomain: res.locals.customDomain,
+  });
 
   if (notes) {
     notes.map((note) => {
@@ -48,19 +60,38 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get("/:slug", async (req, res, next) => {
-  const note = await getNoteBySlug(req.params.slug);
+  const note = await getNoteBySlug({
+    slug: res.locals.domainSlug,
+    customDomain: res.locals.customDomain,
+    noteSlug: req.params.slug,
+  });
+
+  console.log({
+    slug: res.locals.domainSlug,
+    customDomain: res.locals.customDomain,
+    noteSlug: req.params.slug,
+  });
 
   if (!note) {
-    res.redirect("/404");
+    res.status(404);
+    res.send({
+      error: "Note not found",
+    });
     return;
   }
 
   note.url = createSubUrlWithPath(res, `/${note.slug}`);
 
-  const user = await getUserBySlug(req.params.slug);
+  const user = await getUserBySlug({
+    slug: res.locals.domainSlug,
+    customDomain: res.locals.customDomain,
+  });
 
   if (!user) {
-    res.redirect("/404");
+    res.status(404);
+    res.send({
+      error: "User not found",
+    });
     return;
   }
 
@@ -69,6 +100,8 @@ router.get("/:slug", async (req, res, next) => {
     canonicalUrl: note.url,
     title: note.title || `Note | ${user.name || user.email}`,
     note,
+    mainUrl: mainUrl(res),
+    siteTitle: user.name || user.email,
   });
 });
 
