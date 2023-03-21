@@ -186,9 +186,13 @@ export function* addCustomDomain({ payload }) {
   if (success) {
     yield put(addCustomDomainSuccess());
 
-    toast.success(`Add domain: ${domain}`, {
+    toast.success(`Added domain: ${domain}`, {
       id: toastId,
     });
+
+    toast.success(
+      "Domain verification instructions will be sent to your email with in 24 hours"
+    );
 
     // call getUserSaga to update the user in the store
     yield call(getUserSaga);

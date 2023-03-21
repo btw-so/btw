@@ -87,6 +87,7 @@ function Root() {
                   userId={user && user.data ? user.data.id : null}
                   name={user && user.data ? user.data.name : null}
                   email={user && user.data ? user.data.email : null}
+                  slug={user && user.data ? user.data.slug : null}
                 />
               </PrivateRoute>
             }

@@ -6,6 +6,7 @@ import { useAppSelector } from "modules/hooks";
 import useInterval from "beautiful-react-hooks/useInterval";
 import { useDispatch } from "react-redux";
 import { STATUS } from "../literals";
+import { useNavigate } from "react-router-dom";
 import {
   getNotes,
   createNewNote,
@@ -16,8 +17,10 @@ import {
 import { Switch } from "@headlessui/react";
 import AppWrapper from "./AppWraper";
 import useTreeChanges from "tree-changes-hook";
+import toast from "react-hot-toast";
 
 function Dash(props) {
+  const navigate = useNavigate();
   const [token, setToken] = useCookie("btw_uuid", "");
   const notesState = useAppSelector(selectNotes);
   const noteActionsState = useAppSelector(selectNoteActions);
@@ -58,6 +61,27 @@ function Dash(props) {
                   <Switch
                     checked={enabled}
                     onChange={() => {
+                      // check if name and slug are present for this user
+
+                      if (!props.name || !props.slug) {
+                        toast.error(
+                          "Please set your name and slug before publishing"
+                        );
+                        navigate("/settings");
+                        return;
+                      }
+
+                      // check the title of this note. if it is empty or "New note", then ask the user to change
+                      if (
+                        selectedNote.title === "New note" ||
+                        selectedNote.title === ""
+                      ) {
+                        toast.error(
+                          "Please set a title for this note before publishing"
+                        );
+                        return;
+                      }
+
                       // allow change only if no publishing action is going on
                       if (
                         noteActionsState.publishNote.status !== STATUS.RUNNING
