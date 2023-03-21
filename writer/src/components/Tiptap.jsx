@@ -183,14 +183,14 @@ class Tiptap extends React.Component {
   render() {
     return (
       <div
-        className="p-2 h-full flex flex-grow flex-col max-w-2xl"
+        className="p-2 h-full flex flex-grow flex-col"
         style={{ minHeight: 0 }}
       >
         <MenuBar editor={this.editor} />
         <div className="tiptap-editor flex flex-col flex-grow overflow-y-scroll">
           <EditorContent
             editor={this.editor}
-            className="flex-grow"
+            className="flex-grow max-w-4xl"
             onClick={(e) => {
               // get the editor in focus
               this.editor.commands.focus();

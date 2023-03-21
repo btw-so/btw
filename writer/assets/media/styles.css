@@ -1572,6 +1572,10 @@ input[type="number"]::-webkit-inner-spin-button,
   max-width: 24rem;
 }
 
+.max-w-4xl {
+  max-width: 56rem;
+}
+
 .flex-shrink-0 {
   flex-shrink: 0;
 }
