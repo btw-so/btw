@@ -13,6 +13,9 @@ import {
   createNewNote,
   selectNote,
   saveNoteContent,
+  archiveNote,
+  deleteNote,
+  publishNote,
 } from "../actions";
 
 function Sidebar(props) {
@@ -33,6 +36,14 @@ function Sidebar(props) {
     "expandUnpublishedNotes",
     false
   );
+  const [expandTrashNotes, setExpandTrashNotes] = useLocalStorage(
+    "expandTrashNotes",
+    false
+  );
+  const [expandArchivedNotes, setExpandArchivedNotes] = useLocalStorage(
+    "expandArchivedNotes",
+    false
+  );
 
   useInterval(() => {
     if (token && notesState.notesList.status !== STATUS.RUNNING) {
@@ -42,7 +53,7 @@ function Sidebar(props) {
         })
       );
     }
-  }, 10000);
+  }, 15000);
 
   useEffect(() => {
     if (token) {
@@ -72,16 +83,189 @@ function Sidebar(props) {
     {
       title: "Working notes",
       notes: notesState.notesList.data.filter(
-        (id) => !notesState.notesMap[id].publish
+        (id) =>
+          !notesState.notesMap[id].publish &&
+          !notesState.notesMap[id].archive &&
+          !notesState.notesMap[id].delete
       ),
       expanded: expandUnpublishedNotes,
       toggle: () => setExpandUnpublishedNotes(!expandUnpublishedNotes),
     },
+    {
+      title: "Archived notes",
+      notes: notesState.notesList.data.filter(
+        (id) => notesState.notesMap[id].archive
+      ),
+      expanded: expandArchivedNotes,
+      toggle: () => setExpandArchivedNotes(!expandArchivedNotes),
+    },
+    {
+      title: "Trash",
+      notes: notesState.notesList.data.filter(
+        (id) => notesState.notesMap[id].delete
+      ),
+      expanded: expandTrashNotes,
+      toggle: () => setExpandTrashNotes(!expandTrashNotes),
+    },
   ];
+
+  const [contextMenu, showContextMenu] = React.useState(false);
+  const [pointX, setPointX] = React.useState(0);
+  const [pointY, setPointY] = React.useState(0);
+  const [contextNoteId, setContextNoteId] = React.useState(null);
+
+  useEffect(() => {
+    const handleClick = () => showContextMenu(false);
+    document.addEventListener("click", handleClick);
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, []);
 
   if (token) {
     return (
       <>
+        {contextMenu ? (
+          <div
+            className="text-blue-500 absolute z-10 w-32 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            style={{
+              top: pointY,
+              left: pointX,
+            }}
+          >
+            <div className="cursor-pointer" role="none">
+              {notesState.notesMap[contextNoteId].publish ? (
+                <div
+                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
+                  onClick={() => {
+                    dispatch(
+                      publishNote({
+                        id: contextNoteId,
+                        publish: false,
+                        user_id: props.userId,
+                      })
+                    );
+                    showContextMenu(false);
+                  }}
+                >
+                  Unpublish
+                </div>
+              ) : null}
+              {!notesState.notesMap[contextNoteId].publish &&
+              !notesState.notesMap[contextNoteId].delete &&
+              !notesState.notesMap[contextNoteId].archive ? (
+                <div
+                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
+                  onClick={() => {
+                    dispatch(
+                      publishNote({
+                        id: contextNoteId,
+                        publish: true,
+                        user_id: props.userId,
+                      })
+                    );
+                    showContextMenu(false);
+                  }}
+                >
+                  Publish
+                </div>
+              ) : null}
+              {!notesState.notesMap[contextNoteId].publish &&
+              !notesState.notesMap[contextNoteId].delete &&
+              !notesState.notesMap[contextNoteId].archive ? (
+                <div
+                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
+                  onClick={() => {
+                    dispatch(
+                      archiveNote({
+                        id: contextNoteId,
+                        archive: true,
+                        user_id: props.userId,
+                      })
+                    );
+                    showContextMenu(false);
+                  }}
+                >
+                  Archive
+                </div>
+              ) : null}
+              {notesState.notesMap[contextNoteId].archive ? (
+                <div
+                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
+                  onClick={() => {
+                    dispatch(
+                      archiveNote({
+                        id: contextNoteId,
+                        archive: false,
+                        user_id: props.userId,
+                      })
+                    );
+                    showContextMenu(false);
+                  }}
+                >
+                  Unarchive
+                </div>
+              ) : null}
+              {!notesState.notesMap[contextNoteId].publish &&
+              !notesState.notesMap[contextNoteId].delete ? (
+                <div
+                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
+                  onClick={() => {
+                    dispatch(
+                      deleteNote({
+                        id: contextNoteId,
+                        delete: true,
+                        user_id: props.userId,
+                      })
+                    );
+                    showContextMenu(false);
+                  }}
+                >
+                  Move to trash
+                </div>
+              ) : null}
+              {notesState.notesMap[contextNoteId].delete ? (
+                <div
+                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
+                  onClick={() => {
+                    dispatch(
+                      deleteNote({
+                        id: contextNoteId,
+                        delete: false,
+                        user_id: props.userId,
+                      })
+                    );
+                    showContextMenu(false);
+                  }}
+                >
+                  Recover
+                </div>
+              ) : null}
+              {notesState.notesMap[contextNoteId].delete ? (
+                <div
+                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
+                  onClick={() => {
+                    dispatch(
+                      deleteNote({
+                        id: contextNoteId,
+                        delete: false,
+                        user_id: props.userId,
+                        moveToArchive: true,
+                      })
+                    );
+                    showContextMenu(false);
+                  }}
+                >
+                  Move to archive
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
         <div className="w-full mb-8 border-gray-200 sidebar-toolkit">
           <button
             className={`w-full py-2 flex items-center hover:font-extrabold hover:text-blue-500 ${
@@ -143,6 +327,14 @@ function Sidebar(props) {
                                 : ""
                             }`}
                             key={id}
+                            onContextMenu={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setPointX(e.pageX);
+                              setPointY(e.pageY);
+                              showContextMenu(true);
+                              setContextNoteId(id);
+                            }}
                             onClick={() => {
                               dispatch(
                                 selectNote({

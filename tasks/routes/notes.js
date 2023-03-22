@@ -9,6 +9,10 @@ var {
     importNote,
     publishNote,
     unpublishNote,
+    archiveNote,
+    unarchiveNote,
+    deleteNote,
+    undeleteNote,
 } = require("../logic/notes");
 
 router.options(
@@ -218,6 +222,133 @@ router.post(
                 success: false,
                 data: { notes: [] },
                 error: e,
+            });
+            return;
+        }
+    }
+);
+
+router.options(
+    "/update/delete",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/update/delete",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const {
+            fingerprint,
+            id,
+            user_id,
+            delete: deleteAs,
+            moveToArchive,
+        } = req.body || {};
+
+        // get loginToken as btw_uuid cookie
+        const loginToken = req.cookies.btw_uuid;
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            // access check. for now the access check requires user to own the note
+            // in future, we can add collaborators
+            if (user.id !== user_id) {
+                res.json({
+                    success: false,
+                    error: "Access denied",
+                });
+                return;
+            }
+
+            if (deleteAs) {
+                res.send(
+                    await deleteNote({
+                        id,
+                        user_id,
+                    })
+                );
+            } else {
+                res.send(
+                    await undeleteNote({
+                        id,
+                        user_id,
+                        moveToArchive,
+                    })
+                );
+            }
+        } catch (e) {
+            res.json({
+                success: false,
+                error: e.message,
+            });
+            return;
+        }
+    }
+);
+
+router.options(
+    "/update/archive",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/update/archive",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, id, user_id, archive } = req.body || {};
+
+        // get loginToken as btw_uuid cookie
+        const loginToken = req.cookies.btw_uuid;
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            // access check. for now the access check requires user to own the note
+            // in future, we can add collaborators
+            if (user.id !== user_id) {
+                res.json({
+                    success: false,
+                    error: "Access denied",
+                });
+                return;
+            }
+
+            if (archive) {
+                res.send(
+                    await archiveNote({
+                        id,
+                        user_id,
+                    })
+                );
+            } else {
+                res.send(
+                    await unarchiveNote({
+                        id,
+                        user_id,
+                    })
+                );
+            }
+        } catch (e) {
+            res.json({
+                success: false,
+                error: e.message,
             });
             return;
         }

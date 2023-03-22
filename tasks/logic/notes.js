@@ -78,7 +78,7 @@ async function getNotes({ user_id, page, limit, after = 0 }) {
     limit = Number(limit);
     after = new Date(after);
     const { rows } = await pool.query(
-        `SELECT id, user_id, title, created_at, updated_at, published_at, publish, slug, ydoc FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
+        `SELECT id, user_id, title, created_at, updated_at, published_at, publish, slug, ydoc, delete, archive, deleted_at FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
         [user_id, after, after, limit, (page - 1) * limit]
     );
 
@@ -93,6 +93,60 @@ async function getNotes({ user_id, page, limit, after = 0 }) {
         total: totalRows.length > 1 ? totalRows[0].count : 0,
         page,
         limit,
+    };
+}
+
+async function archiveNote({ user_id, id }) {
+    const pool = await db.getTasksDB();
+
+    await pool.query(
+        `UPDATE btw.notes SET archive = true, updated_at = $3 WHERE id = $1 AND user_id = $2`,
+        [id, user_id, new Date()]
+    );
+
+    return {
+        success: true,
+    };
+}
+
+async function unarchiveNote({ user_id, id }) {
+    const pool = await db.getTasksDB();
+
+    await pool.query(
+        `UPDATE btw.notes SET archive = false, updated_at = $3 WHERE id = $1 AND user_id = $2`,
+        [id, user_id, new Date()]
+    );
+
+    return {
+        success: true,
+    };
+}
+
+async function deleteNote({ user_id, id }) {
+    // delete only if it is not published
+    const pool = await db.getTasksDB();
+
+    await pool.query(
+        `UPDATE btw.notes SET delete = true, deleted_at = $3, updated_at = $4, archive = false WHERE id = $1 AND user_id = $2`,
+        [id, user_id, new Date(), new Date()]
+    );
+
+    return {
+        success: true,
+    };
+}
+
+async function undeleteNote({ user_id, id, moveToArchive = false }) {
+    // remove delete flag from note and set deleted_at to null and optionally move to archive
+    const pool = await db.getTasksDB();
+
+    await pool.query(
+        `UPDATE btw.notes SET delete = false, deleted_at = null, archive = $3, updated_at = $4 WHERE id = $1 AND user_id = $2 AND delete = true`,
+        [id, user_id, moveToArchive, new Date()]
+    );
+
+    return {
+        success: true,
     };
 }
 
@@ -208,4 +262,8 @@ module.exports = {
     importNote,
     unpublishNote,
     publishNote,
+    deleteNote,
+    undeleteNote,
+    archiveNote,
+    unarchiveNote,
 };

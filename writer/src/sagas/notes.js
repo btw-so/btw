@@ -16,6 +16,10 @@ import {
   upsertNoteFailure,
   publishNoteSuccess,
   publishNoteFailure,
+  archiveNoteSuccess,
+  archiveNoteFailure,
+  deleteNoteSuccess,
+  deleteNoteFailure,
   getNoteSuccess,
   getNoteFailure,
 } from "actions";
@@ -161,6 +165,190 @@ export function* getNote({ payload }) {
   }
 }
 
+export function* archiveNote({ payload }) {
+  const { id, archive, user_id } = payload;
+  const fingerprint = yield call(getFingerPrint);
+
+  const toastId = toast.loading(
+    `${archive ? "Archiving" : "Unarchiving"} note...`
+  );
+
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/update/archive`,
+
+        method: "POST",
+        data: {
+          fingerprint,
+          id,
+          archive,
+          user_id,
+        },
+      })
+    );
+
+    const { success, data, error } = res;
+    if (success && !error) {
+      toast.success(`Note ${archive ? "archived" : "unarchived"}`, {
+        id: toastId,
+      });
+
+      yield call(() => getNote({ payload: { id } }));
+
+      yield put(archiveNoteSuccess(data));
+    } else {
+      toast.error(
+        `Something went wrong ${
+          archive ? "archiving" : "unarchiving"
+        } the note. Try again.`,
+        { id: toastId }
+      );
+
+      yield call(() => getNote({ payload: { id } }));
+
+      yield put(
+        archiveNoteFailure({
+          error:
+            error ||
+            `Something went wrong ${
+              archive ? "archiving" : "unarchiving"
+            } the note`,
+        })
+      );
+      return;
+    }
+  } catch (e) {
+    console.log(e);
+    toast.error(
+      `Something went wrong ${
+        archive ? "archiving" : "unarchiving"
+      } the note. Try again.`,
+      { id: toastId }
+    );
+
+    yield call(() => getNote({ payload: { id } }));
+
+    yield put(
+      archiveNoteFailure({
+        error:
+          e.message ||
+          `Something went wrong ${
+            archive ? "archiving" : "unarchiving"
+          } the note`,
+      })
+    );
+
+    return;
+  }
+}
+
+export function* deleteNote({ payload }) {
+  const { id, delete: deleteAs, user_id, moveToArchive } = payload;
+  const fingerprint = yield call(getFingerPrint);
+
+  const toastId = toast.loading(
+    `${
+      deleteAs ? "Deleting" : moveToArchive ? "Moving to archive" : "Recovering"
+    } note...`
+  );
+
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/update/delete`,
+
+        method: "POST",
+        data: {
+          fingerprint,
+          id,
+          delete: deleteAs,
+          moveToArchive,
+          user_id,
+        },
+      })
+    );
+
+    const { success, data, error } = res;
+    if (success && !error) {
+      toast.success(
+        `Note ${
+          deleteAs
+            ? "deleted"
+            : moveToArchive
+            ? "moved to archive"
+            : "recovered"
+        }`,
+        {
+          id: toastId,
+        }
+      );
+
+      yield call(() => getNote({ payload: { id } }));
+
+      yield put(deleteNoteSuccess(data));
+    } else {
+      toast.error(
+        `Something went wrong ${
+          deleteAs
+            ? "Deleting"
+            : moveToArchive
+            ? "Moving to archive"
+            : "Recovering"
+        } the note. Try again.`,
+        { id: toastId }
+      );
+
+      yield call(() => getNote({ payload: { id } }));
+
+      yield put(
+        deleteNoteFailure({
+          error:
+            error ||
+            `Something went wrong ${
+              deleteAs
+                ? "Deleting"
+                : moveToArchive
+                ? "Moving to archive"
+                : "Recovering"
+            } the note`,
+        })
+      );
+      return;
+    }
+  } catch (e) {
+    console.log(e);
+    toast.error(
+      `Something went wrong ${
+        deleteAs
+          ? "Deleting"
+          : moveToArchive
+          ? "Moving to archive"
+          : "Recovering"
+      } the note. Try again.`,
+      { id: toastId }
+    );
+
+    yield call(() => getNote({ payload: { id } }));
+
+    yield put(
+      deleteNoteFailure({
+        error:
+          e.message ||
+          `Something went wrong ${
+            deleteAs
+              ? "Deleting"
+              : moveToArchive
+              ? "Moving to archive"
+              : "Recovering"
+          } the note`,
+      })
+    );
+
+    return;
+  }
+}
+
 export function* publishNote({ payload }) {
   const { id, publish, user_id } = payload;
   const fingerprint = yield call(getFingerPrint);
@@ -245,6 +433,8 @@ export default function* root() {
     takeEvery(ActionTypes.UPSERT_NOTE, upsertNote),
     takeEvery(ActionTypes.IMPORT_NOTES, importNotes),
     takeEvery(ActionTypes.PUBLISH_NOTE, publishNote),
+    takeEvery(ActionTypes.ARCHIVE_NOTE, archiveNote),
+    takeEvery(ActionTypes.DELETE_NOTE, deleteNote),
     takeEvery(ActionTypes.GET_NOTE, getNote),
   ]);
 }

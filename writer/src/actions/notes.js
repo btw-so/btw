@@ -69,6 +69,39 @@ export const publishNoteFailure = createAction(
     payload: data,
   })
 );
+
+export const archiveNote = createAction(ActionTypes.ARCHIVE_NOTE, (data) => ({
+  payload: data,
+}));
+export const archiveNoteSuccess = createAction(
+  ActionTypes.ARCHIVE_NOTE_SUCCESS,
+  (data) => ({
+    payload: data,
+  })
+);
+export const archiveNoteFailure = createAction(
+  ActionTypes.ARCHIVE_NOTE_FAILURE,
+  (data) => ({
+    payload: data,
+  })
+);
+
+export const deleteNote = createAction(ActionTypes.DELETE_NOTE, (data) => ({
+  payload: data,
+}));
+export const deleteNoteSuccess = createAction(
+  ActionTypes.DELETE_NOTE_SUCCESS,
+  (data) => ({
+    payload: data,
+  })
+);
+export const deleteNoteFailure = createAction(
+  ActionTypes.DELETE_NOTE_FAILURE,
+  (data) => ({
+    payload: data,
+  })
+);
+
 export const getNote = createAction(ActionTypes.GET_NOTE, (data) => ({
   payload: data,
 }));

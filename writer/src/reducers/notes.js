@@ -20,6 +20,12 @@ import {
   publishNote,
   publishNoteSuccess,
   publishNoteFailure,
+  archiveNote,
+  archiveNoteSuccess,
+  archiveNoteFailure,
+  deleteNote,
+  deleteNoteSuccess,
+  deleteNoteFailure,
 } from "actions";
 
 export const notesState = {
@@ -37,6 +43,14 @@ export const actionState = {
     status: STATUS.IDLE,
     data: null,
   },
+  archiveNote: {
+    status: STATUS.IDLE,
+    data: null,
+  },
+  deleteNote: {
+    status: STATUS.IDLE,
+    data: null,
+  },
 };
 
 export default {
@@ -50,14 +64,27 @@ export default {
       .addCase(getNotesSuccess, (draft, { payload }) => {
         draft.notesList.status = STATUS.SUCCESS;
         draft.notesList.error = null;
+
         draft.notesList.lastSuccessAt = draft.notesList.lastFetchedAt;
 
         if (payload.notes) {
           // loop through notes and merge them into notesMap
           payload.notes.forEach((note) => {
-            let { ydoc, id, user_id, title, created_at, updated_at } = note;
+            let {
+              ydoc,
+              id,
+              user_id,
+              title,
+              created_at,
+              updated_at,
+              archive,
+              publish,
+              delete: deletedAs,
+              deleted_at,
+            } = note;
             created_at = new Date(created_at).getTime();
             updated_at = new Date(updated_at).getTime();
+            deleted_at = deleted_at ? new Date(deleted_at).getTime() : null;
 
             if (
               draft.notesMap[id] &&
@@ -73,6 +100,10 @@ export default {
               created_at,
               updated_at,
               ydoc,
+              archive,
+              publish,
+              deleted: deletedAs,
+              deleted_at,
             });
           });
         }
@@ -169,10 +200,21 @@ export default {
         draft.notesMap[payload.id].error = null;
         draft.notesMap[payload.id].ydoc = payload.ydoc;
         draft.notesMap[payload.id].title = payload.title;
-        draft.notesMap[payload.id].updated_at = payload.updated_at;
-        draft.notesMap[payload.id].created_at = payload.created_at;
-        draft.notesMap[payload.id].published_at = payload.published_at;
+        draft.notesMap[payload.id].updated_at = payload.updated_at
+          ? new Date(payload.updated_at).getTime()
+          : null;
+        draft.notesMap[payload.id].created_at = payload.created_at
+          ? new Date(payload.created_at).getTime()
+          : null;
+        draft.notesMap[payload.id].published_at = payload.published_at
+          ? new Date(payload.published_at).getTime()
+          : null;
         draft.notesMap[payload.id].publish = payload.publish;
+        draft.notesMap[payload.id].archive = payload.archive;
+        draft.notesMap[payload.id].delete = payload.delete;
+        draft.notesMap[payload.id].deleted_at = payload.deleted_at
+          ? new Date(payload.deleted_at).getTime()
+          : null;
       })
       .addCase(getNoteFailure, (draft, { payload }) => {
         draft.notesMap[payload.id].status = STATUS.ERROR;
@@ -192,6 +234,34 @@ export default {
       .addCase(publishNoteFailure, (draft, { payload }) => {
         draft.publishNote.status = STATUS.ERROR;
         draft.publishNote.error = payload.error;
+      });
+
+    builder
+      .addCase(deleteNote, (draft) => {
+        draft.deleteNote.status = STATUS.RUNNING;
+        draft.deleteNote.error = null;
+      })
+      .addCase(deleteNoteSuccess, (draft, { payload }) => {
+        draft.deleteNote.status = STATUS.SUCCESS;
+        draft.deleteNote.error = null;
+      })
+      .addCase(deleteNoteFailure, (draft, { payload }) => {
+        draft.deleteNote.status = STATUS.ERROR;
+        draft.deleteNote.error = payload.error;
+      });
+
+    builder
+      .addCase(archiveNote, (draft) => {
+        draft.archiveNote.status = STATUS.RUNNING;
+        draft.archiveNote.error = null;
+      })
+      .addCase(archiveNoteSuccess, (draft, { payload }) => {
+        draft.archiveNote.status = STATUS.SUCCESS;
+        draft.archiveNote.error = null;
+      })
+      .addCase(archiveNoteFailure, (draft, { payload }) => {
+        draft.archiveNote.status = STATUS.ERROR;
+        draft.archiveNote.error = payload.error;
       });
   }),
 };
