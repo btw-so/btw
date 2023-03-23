@@ -31,6 +31,7 @@
     "@tiptap/extension-heading": "^2.0.0-beta.220",
     "@tiptap/extension-highlight": "^2.0.0-beta.220",
     "@tiptap/extension-horizontal-rule": "^2.0.0-beta.220",
+    "@tiptap/extension-image": "^2.0.0-beta.220",
     "@tiptap/extension-italic": "^2.0.0-beta.220",
     "@tiptap/extension-link": "^2.0.0-beta.220",
     "@tiptap/extension-list-item": "^2.0.0-beta.219",

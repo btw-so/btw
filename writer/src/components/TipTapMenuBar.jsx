@@ -10,7 +10,7 @@ const MenuItem = ({ icon, title, action, isActive = null }) => (
   </button>
 );
 
-export default ({ editor }) => {
+export default ({ editor, showImageUploader }) => {
   const setLink = useCallback(() => {
     const previousUrl = editor.getAttributes("link").href;
     const url = window.prompt("URL", previousUrl);
@@ -118,6 +118,12 @@ export default ({ editor }) => {
       title: "Code Block",
       action: () => editor.chain().focus().toggleCodeBlock().run(),
       isActive: () => editor.isActive("codeBlock"),
+    },
+    {
+      icon: "image-line",
+      title: "Image",
+      action: () => showImageUploader && showImageUploader(),
+      isActive: () => false,
     },
     {
       type: "divider",

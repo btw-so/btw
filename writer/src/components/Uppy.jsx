@@ -16,7 +16,7 @@ class UppyComponent extends React.Component {
     this.uppy = new Uppy({
       restrictions: {
         maxNumberOfFiles: 100,
-        allowedFileTypes: [".html"],
+        allowedFileTypes: this.props.allowedFileTypes || [".html"],
         allowMultipleUploads: true,
       },
       id: "uppy",
@@ -57,7 +57,6 @@ class UppyComponent extends React.Component {
         proudlyDisplayPoweredByUppy={false}
         // closeAfterFinish={true}
         plugins={[]}
-        note={"HTML format only"}
       />
     );
   }

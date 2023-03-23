@@ -12,6 +12,7 @@ const { ExpressAdapter } = require("@bull-board/express");
 const { Youtube } = require("@tiptap/extension-youtube");
 const { Document } = require("@tiptap/extension-document");
 const { Paragraph } = require("@tiptap/extension-paragraph");
+const { Image } = require("@tiptap/extension-image");
 const { Text } = require("@tiptap/extension-text");
 const { Bold } = require("@tiptap/extension-bold");
 const { Blockquote } = require("@tiptap/extension-blockquote");
@@ -66,6 +67,7 @@ var extensions = [
     TaskList,
     Typography,
     Underline,
+    Image,
     TaskItem.configure({
         nested: true,
     }),

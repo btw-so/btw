@@ -30,10 +30,12 @@ import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import Typography from "@tiptap/extension-typography";
 import Underline from "@tiptap/extension-underline";
+import Image from "@tiptap/extension-image";
 const CustomDocument = Document.extend({
   content: "heading block*",
 });
 
+import UppyComponent from "../components/Uppy";
 import Suggestion from "./TipTapSuggestion";
 
 import { lowlight } from "lowlight";
@@ -60,7 +62,9 @@ class Tiptap extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      showImageUpload: false,
+    };
 
     this.setupEditor(props);
 
@@ -121,6 +125,7 @@ class Tiptap extends React.Component {
         TaskList,
         Typography,
         Underline,
+        Image,
         TaskItem.configure({
           nested: true,
         }),
@@ -186,7 +191,12 @@ class Tiptap extends React.Component {
         className="p-2 h-full flex flex-grow flex-col"
         style={{ minHeight: 0 }}
       >
-        <MenuBar editor={this.editor} />
+        <MenuBar
+          editor={this.editor}
+          showImageUploader={() => {
+            this.setState({ showImageUpload: !this.state.showImageUpload });
+          }}
+        />
         <div className="tiptap-editor flex flex-col flex-grow overflow-y-scroll">
           <EditorContent
             editor={this.editor}
@@ -201,6 +211,53 @@ class Tiptap extends React.Component {
           {this.state.chars || "0"}/{limit} characters
           <br />
           {this.state.words || "0"} words
+        </div>
+        <div
+          className={`w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center ${
+            this.state.showImageUpload ? "absolute" : "absolute hidden"
+          }`}
+          onClick={() => {
+            this.setState({ showImageUpload: false });
+          }}
+        >
+          <div
+            className=""
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <UppyComponent
+              allowedFileTypes={[
+                "image/png",
+                "image/gif",
+                "image/jpeg",
+                "image/webp",
+                "image/svg+xml",
+              ]}
+              onResults={(res) => {
+                // dispatch an action to backend for this now
+                if (this.editor) {
+                  res.urls.map((url) => {
+                    // HACK. for some reason DO us adding S3 endpoint twice in its urls
+                    // so we need to remove the first one
+                    // If the URL has process.env.S3_ENDPOINT + "/" +  process.env.S3_ENDPOINT, remove the first one
+                    if (process.env.REACT_APP_S3_ENDPOINT) {
+                      url = url
+                        .split(
+                          `${process.env.REACT_APP_S3_ENDPOINT}/${process.env.REACT_APP_S3_ENDPOINT}`
+                        )
+                        .join(process.env.REACT_APP_S3_ENDPOINT);
+                    }
+
+                    // this.editor.commands.setImage({ src: url });
+                    this.editor.chain().focus().setImage({ src: url }).run();
+                  });
+                }
+
+                this.setState({ showImageUpload: false });
+              }}
+            />
+          </div>
         </div>
       </div>
     );
