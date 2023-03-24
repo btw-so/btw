@@ -7,7 +7,7 @@ async function getAllNotes({ slug, customDomain }) {
     ? `select id from btw.custom_domains where domain = $1`
     : `select id from btw.users where slug = $1`;
   const { rows } = await pool.query(
-    `select slug, published_at, title, tags from btw.notes where publish = TRUE and user_id in (${subquery}) LIMIT 1000`,
+    `select slug, published_at, title, tags from btw.notes where publish = TRUE and user_id in (${subquery}) ORDER BY published_at DESC LIMIT 1000`,
     [slug]
   );
 
