@@ -1,6 +1,5 @@
 # BTW (By The Way)
 
-![Logo](logo.png)
 
 BTW (By The Way) is an open-source project that aims to [provide a brief description of the project's purpose or functionality]. This project is designed to be easy to use, highly customizable, and scalable.
 
