@@ -1,9 +1,5 @@
 # BTW (By The Way)
 
-![Logo](logo.png)
-
-BTW (By The Way) is an open-source project that aims to [provide a brief description of the project's purpose or functionality]. This project is designed to be easy to use, highly customizable, and scalable.
-
 The cloud hosted version of this project is at [https://app.btw.so](https://app.btw.so)
 
 Sample of a blog that is published using btw:
@@ -15,13 +11,9 @@ Sample of a blog that is published using btw:
 -   [Getting Started](#getting-started)
     -   [Prerequisites](#prerequisites)
     -   [Installation](#installation)
--   [Usage](#usage)
-    -   [Basic Example](#basic-example)
-    -   [Advanced Usage](#advanced-usage)
--   [Documentation](#documentation)
--   [Contributing](#contributing)
+    -   [Running](#running)
+-   [Coming next](#coming-next)
 -   [License](#license)
--   [Acknowledgments](#acknowledgments)
 
 ## Getting Started
 
@@ -56,3 +48,17 @@ Visit
 
 -   localhost:9000 to login and start writing
 -   If you set your slug and publish any articles, you can visit localhost:9222?domain=<slug>
+
+## Coming next
+
+-   Simplified development setup
+-   Sample cloud deployment setup
+-   Sample custom domain setup instructions
+-   Plan for v0 and v1
+-   Documentation
+-   Contributing guidelines
+-   Acknowledgements
+
+## License
+
+This project is licensed under the [LICENSE NAME] License - see the LICENSE.md file for details.
