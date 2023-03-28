@@ -1,0 +1,125 @@
+version: "3"
+
+services:
+    tasks:
+        platform: linux/amd64
+        container_name: tasks
+        build: ../tasks
+        volumes:
+            - ../tasks/views:/tasks/views
+            - ../tasks/services:/tasks/services
+            - ../tasks/public:/tasks/public
+            - ../tasks/routes:/tasks/routes
+            - ../tasks/logic:/tasks/logic
+            - ../tasks/utils:/tasks/utils
+            - ../tasks/app.js:/tasks/app.js
+            - ../tasks/package.json:/tasks/package.json
+            - ../tasks/files:/tasks/files
+        working_dir: /tasks
+        ports:
+            - "9210:9210"
+            - "9211:9211"
+            - "9212:9212"
+        expose:
+            - "9210"
+            - "9211"
+            - "9212"
+        environment:
+            NODE_TLS_REJECT_UNAUTHORIZED: "0"
+            NEW_RELIC_NO_CONFIG_FILE: 1
+            NEW_RELIC_ENABLED: 0
+            APP_NAME: tasks
+            DOMAIN: localhost:9210
+            ROOT_DOMAIN: localhost
+            PORT: 9210
+            YJS_PORT: 9211
+            UPPY_PORT: 9212
+            DEBUG: 1
+            HTTPS_DOMAIN: 0
+            NODE_ENV: development
+            TASKS_DATABASE_URL: 
+            SMTP_HOST: 
+            SMTP_PORT: 
+            SMTP_USER: 
+            SMTP_PASS: 
+            SMTP_FROM: 
+            TASKS_REDIS_URL: "redis://redis:6379/"
+            CORS_DOMAINS: "http://localhost:9000"
+            COMPANION_CLIENT_ORIGINS: "http://localhost:9000"
+            COMPANION_AWS_ACL: "public-read"
+            SECRET: CHANGE THIS AND SET YOUR SECRET
+            S3_ENDPOINT: 
+            S3_BUCKET: 
+            S3_KEY: 
+            S3_SECRET: 
+            ADMIN_EMAIL: 
+    writer:
+        platform: linux/amd64
+        container_name: writer
+        build: ../writer
+        volumes:
+            - ../writer/assets:/writer/assets
+            - ../writer/src:/writer/src
+            - ../writer/tools:/writer/tools
+            - ../writer/build:/writer/build
+            - ../writer/package.json:/writer/package.json
+            - ../writer/tsconfig.json:/writer/tsconfig.json
+        working_dir: /writer
+        ports:
+            - "9000:9000"
+        expose:
+            - "9000"
+        environment:
+            NODE_TLS_REJECT_UNAUTHORIZED: "0"
+            NEW_RELIC_NO_CONFIG_FILE: 1
+            NEW_RELIC_ENABLED: 0
+            APP_NAME: writer
+            DOMAIN: localhost:9000
+            REACT_APP_YJS_DOMAIN: ws://localhost:9211
+            ROOT_DOMAIN: localhost
+            PORT: 9000
+            DEBUG: 1
+            HTTPS_DOMAIN: 0
+            NODE_ENV: development
+            REACT_APP_TASKS_PUBLIC_URL: "http://localhost:9210"
+            REACT_APP_UPPY_COMPANION_URL: "http://localhost:9210/companion"
+            REACT_APP_S3_ENDPOINT: 
+            SECRET: CHANGE THIS AND SET YOUR SECRET
+    publisher:
+        platform: linux/amd64
+        container_name: publisher
+        build: ../publisher
+        volumes:
+            - ../publisher/views:/publisher/views
+            - ../publisher/services:/publisher/services
+            - ../publisher/public:/publisher/public
+            - ../publisher/routes:/publisher/routes
+            - ../publisher/logic:/publisher/logic
+            - ../publisher/utils:/publisher/utils
+            - ../publisher/app.js:/publisher/app.js
+            - ../publisher/package.json:/publisher/package.json
+        working_dir: /publisher
+        ports:
+            - "9222:9222"
+        expose:
+            - "9222"
+        environment:
+            NODE_TLS_REJECT_UNAUTHORIZED: "0"
+            NEW_RELIC_NO_CONFIG_FILE: 1
+            NEW_RELIC_ENABLED: 0
+            APP_NAME: publisher
+            DOMAIN: localhost:9222
+            DOMAIN_QUERY_PARAM: domain
+            ROOT_DOMAIN: localhost:9222
+            PORT: 9222
+            TASKS_DATABASE_URL: 
+            DEBUG: 1
+            HTTPS_DOMAIN: 0
+            NODE_ENV: development
+            SECRET_KEY: CHANGE THIS AND SET YOUR SECRET
+    redis:
+        # platform: linux/amd64
+        image: "redisfab/redis:6.2.6-arm64v8-bionic"
+        container_name: redis
+        ports:
+            - "6379:6379"
