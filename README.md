@@ -1,5 +1,11 @@
 # BTW (By The Way)
 
+<<<<<<< HEAD
+=======
+
+BTW (By The Way) is an open-source project that aims to [provide a brief description of the project's purpose or functionality]. This project is designed to be easy to use, highly customizable, and scalable.
+
+>>>>>>> d24419aaa1072c8befddbfa8243cdef0d65f6118
 The cloud hosted version of this project is at [https://app.btw.so](https://app.btw.so)
 
 Sample of a blog that is published using btw:
