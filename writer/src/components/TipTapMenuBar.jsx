@@ -10,7 +10,7 @@ const MenuItem = ({ icon, title, action, isActive = null }) => (
   </button>
 );
 
-export default ({ editor, showImageUploader }) => {
+export default ({ editor, showImageUploader, showEmbedUploader }) => {
   const setLink = useCallback(() => {
     const previousUrl = editor.getAttributes("link").href;
     const url = window.prompt("URL", previousUrl);
@@ -123,6 +123,12 @@ export default ({ editor, showImageUploader }) => {
       icon: "image-line",
       title: "Image",
       action: () => showImageUploader && showImageUploader(),
+      isActive: () => false,
+    },
+    {
+      icon: "html5-line",
+      title: "Embed",
+      action: () => showEmbedUploader && showEmbedUploader(),
       isActive: () => false,
     },
     {

@@ -1,5 +1,7 @@
-{{#content "body"}}
 
+
+
+{{#content "body"}}
   <div class="py-4 border-b-2 border-gray-200 text-center">
     <a href="{{mainUrl}}" class="text-xl font-bold">{{siteTitle}}</a>
   </div>
@@ -8,4 +10,83 @@
       {{{note.html}}}
     </article>
   </article>
+{{/content}}
+
+{{#content "eob-block"}}
+    <script>
+      window.addEventListener(
+        "message",
+        function (event) {
+          if (event.data.type === "setIframeHeight") {
+            if (event.origin !== window.location.origin) {
+              // Only accept messages from the same origin
+              return;
+            }
+            var iframe = document.getElementById(event.data.iframeId);
+            if (iframe) {
+              iframe.style.height = event.data.height + 20 + "px";
+            }
+          }
+        },
+        false
+      );
+    </script>
+    <script>
+      // get all btw-embed elements on the page
+      const embeds = document.querySelectorAll("btw-embed");
+      // for each element
+      embeds.forEach((embed) => {
+        // get the html attribute
+        let html = embed.getAttribute("html");
+        html = (html || "").replace(/&quot;/g, '"');
+        const div = document.createElement("div");
+        const iframe = document.createElement("iframe");
+        // create unique id for iframe
+        const iframeId = "iframe-" + Math.random().toString(36).substr(2, 16);
+        var jsCode = `<scr`+ `ipt>function sendHeightToParent() {
+        var height = document.body.scrollHeight;
+        var origin = window.location.origin;
+        if (origin === "null" || !origin) {
+          origin = "*";
+        }
+        window.parent.postMessage({
+            type: 'setIframeHeight',
+            iframeId: '${iframeId}',
+            height: height
+        }, origin);
+    }
+
+    window.addEventListener('load', sendHeightToParent, false);
+    window.addEventListener('resize', sendHeightToParent, false);
+
+    // there is a delay sometimes. 
+    // let's send height again after 1 second for 6 times at 2 second intervals
+    setTimeout(sendHeightToParent, 1000);
+    setTimeout(sendHeightToParent, 3000);
+    setTimeout(sendHeightToParent, 5000);
+    setTimeout(sendHeightToParent, 7000);
+    setTimeout(sendHeightToParent, 9000);
+    setTimeout(sendHeightToParent, 11000);
+    </scr` + `ipt>`;
+            // if html contains body tag, then add jscode to body tag of html. else append to html directly
+            if (html.includes("<body>")) {
+                html = html.replace("<body>", `<body>${jsCode}`);
+            } else {
+                html = html + jsCode;
+            }
+
+            // insert html into iframe
+            iframe.srcdoc = html;
+            iframe.frameborder = "0";
+            iframe.allowfullscreen = "";
+            iframe.scrolling = "no";
+            iframe.className = "w-full ";
+            iframe.id = iframeId;
+
+            div.appendChild(iframe);
+            div.className = "w-full";
+
+            embed.appendChild(div);
+        });
+    </script>
 {{/content}}

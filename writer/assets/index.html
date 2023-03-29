@@ -47,6 +47,24 @@
       href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
       rel="stylesheet"
     />
+    <script>
+      window.addEventListener(
+        "message",
+        function (event) {
+          if (event.data.type === "setIframeHeight") {
+            if (event.origin !== window.location.origin) {
+              // Only accept messages from the same origin
+              return;
+            }
+            var iframe = document.getElementById(event.data.iframeId);
+            if (iframe) {
+              iframe.style.height = event.data.height + 20 + "px";
+            }
+          }
+        },
+        false
+      );
+    </script>
   </head>
   <body>
     <div

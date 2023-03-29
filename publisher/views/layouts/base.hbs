@@ -27,8 +27,6 @@
     </script>
     {{/and}}
 
-</script>
-
     <!--Add twitter meta data-->
     
     {{#if site_title}}<meta property="og:site_name" content="{{site_title}}">{{/if}}
@@ -69,6 +67,7 @@
       href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
       rel="stylesheet"
     />
+
   </head>
   <body class="text-base">
     <div id="btw-app">
@@ -89,9 +88,11 @@
       });
     </script>
 
+
     {{!-- Overrideable block --}}
     {{#block "eob-block"}}
     {{/block}}
+
   </body> 
 </html>
 

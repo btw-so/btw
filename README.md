@@ -61,4 +61,4 @@ Visit
 
 ## License
 
-This project is licensed under the [LICENSE NAME] License - see the LICENSE.md file for details.
+See the LICENSE.md file for details.

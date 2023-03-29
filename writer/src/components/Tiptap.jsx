@@ -55,6 +55,7 @@ import * as Y from "yjs";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import genFingerprint from "../fingerprint";
 import MenuBar from "./TipTapMenuBar";
+import Embed from "./TipTapEmbed";
 
 const limit = 100000;
 
@@ -64,6 +65,7 @@ class Tiptap extends React.Component {
 
     this.state = {
       showImageUpload: false,
+      embed: "",
     };
 
     this.setupEditor(props);
@@ -104,6 +106,7 @@ class Tiptap extends React.Component {
     this.editor = new Editor({
       autofocus: true,
       extensions: [
+        Embed,
         CustomDocument,
         Paragraph,
         Text,
@@ -196,6 +199,9 @@ class Tiptap extends React.Component {
           showImageUploader={() => {
             this.setState({ showImageUpload: !this.state.showImageUpload });
           }}
+          showEmbedUploader={() => {
+            this.setState({ showEmbedUpload: !this.state.showEmbedUpload });
+          }}
         />
         <div className="tiptap-editor flex flex-col flex-grow overflow-y-scroll">
           <EditorContent
@@ -211,6 +217,63 @@ class Tiptap extends React.Component {
           {this.state.chars || "0"}/{limit} characters
           <br />
           {this.state.words || "0"} words
+        </div>
+        <div
+          className={`w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center ${
+            this.state.showEmbedUpload ? "absolute" : "absolute hidden"
+          }`}
+          onClick={() => {
+            this.setState({ showEmbedUpload: false });
+          }}
+        >
+          <div
+            className="max-w-xl w-full mx-auto p-8"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <label
+              className="block text-gray-700 font-bold mb-2"
+              htmlFor="message"
+            >
+              Embed HTML
+            </label>
+            <textarea
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="message"
+              name="message"
+              rows={8}
+              placeholder="Enter your message"
+              defaultValue={""}
+              onChange={(e) => {
+                this.setState({ embed: e.target.value });
+              }}
+              value={this.state.embed}
+            />
+            <div className="w-full flex justify-right">
+              <button
+                className="ml-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-2 rounded focus:outline-none focus:shadow-outline"
+                type="button"
+                onClick={() => {
+                  // convert this.state.embed so that it can go as html attribute
+
+                  this.editor
+                    .chain()
+                    .focus()
+                    .insertContent(
+                      `<btw-embed html="${(this.state.embed || "").replace(
+                        /"/g,
+                        "&quot;"
+                      )}"></btw-embed>`
+                    )
+                    .run(); // add a new embed element
+                  this.setState({ showEmbedUpload: false, embed: "" });
+                }}
+              >
+                Embed
+              </button>
+            </div>
+          </div>
         </div>
         <div
           className={`w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center ${
