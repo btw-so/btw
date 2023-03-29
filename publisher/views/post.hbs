@@ -38,6 +38,11 @@
       embeds.forEach((embed) => {
         // get the html attribute
         let html = embed.getAttribute("html");
+        // if the html attribute is empty, then get the content of the element
+        if (!html) {
+          html = embed.innerHTML;
+        }
+
         html = (html || "").replace(/&quot;/g, '"');
         const div = document.createElement("div");
         const iframe = document.createElement("iframe");
@@ -86,6 +91,10 @@
             div.appendChild(iframe);
             div.className = "w-full";
 
+            // remove all children of embed and set div as child
+            while (embed.firstChild) {
+                embed.removeChild(embed.firstChild);
+            }
             embed.appendChild(div);
         });
     </script>
