@@ -1037,8 +1037,8 @@ input[type="number"]::-webkit-inner-spin-button,
 .w-full{
   width: 100%;
 }
-.max-w-lg{
-  max-width: 32rem;
+.max-w-3xl{
+  max-width: 48rem;
 }
 .max-w-md{
   max-width: 28rem;
