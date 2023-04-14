@@ -1037,6 +1037,9 @@ input[type="number"]::-webkit-inner-spin-button,
 .w-full{
   width: 100%;
 }
+.max-w-lg{
+  max-width: 32rem;
+}
 .max-w-md{
   max-width: 28rem;
 }
@@ -1056,6 +1059,12 @@ input[type="number"]::-webkit-inner-spin-button,
   --tw-space-x-reverse: 0;
   margin-right: calc(0.25rem * var(--tw-space-x-reverse));
   margin-left: calc(0.25rem * calc(1 - var(--tw-space-x-reverse)));
+}
+.object-contain{
+  object-fit: contain;
+}
+.object-top{
+  object-position: top;
 }
 .p-4{
   padding: 1rem;
