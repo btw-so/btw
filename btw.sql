@@ -83,6 +83,11 @@ CREATE TABLE "btw"."users" (
     "processed_email" text NOT NULL,
     "name" text,
     "slug" text,
+    "bio" text,
+    "pic" varchar(255),
+    "twitter" varchar(255),
+    "linkedin" varchar(255),
+    "instagram" varchar(255),
     "created_at" timestamptz NOT NULL,
     PRIMARY KEY ("processed_email")
 );

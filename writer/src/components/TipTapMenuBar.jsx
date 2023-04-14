@@ -10,7 +10,12 @@ const MenuItem = ({ icon, title, action, isActive = null }) => (
   </button>
 );
 
-export default ({ editor, showImageUploader, showEmbedUploader }) => {
+export default ({
+  editor,
+  showImageUploader,
+  showEmbedUploader,
+  customMenu,
+}) => {
   const setLink = useCallback(() => {
     const previousUrl = editor.getAttributes("link").href;
     const url = window.prompt("URL", previousUrl);
@@ -31,7 +36,7 @@ export default ({ editor, showImageUploader, showEmbedUploader }) => {
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   }, [editor]);
 
-  const items = [
+  let items = [
     {
       icon: "bold",
       title: "Bold",
@@ -172,6 +177,12 @@ export default ({ editor, showImageUploader, showEmbedUploader }) => {
       action: () => editor.chain().focus().redo().run(),
     },
   ];
+
+  if (customMenu) {
+    items = items.filter(({ title }) =>
+      (customMenu.items || []).includes(title)
+    );
+  }
 
   return (
     <div className="flex">

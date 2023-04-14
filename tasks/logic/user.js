@@ -132,10 +132,29 @@ async function createUser({ email }) {
     client.release();
 }
 
-async function setUserDetails({ name, slug, user_id }) {
+async function setUserDetails({
+    name,
+    slug,
+    bio,
+    pic,
+    twitter,
+    instagram,
+    linkedin,
+    user_id,
+}) {
     const tasksDB = await db.getTasksDB();
 
-    console.log("setUserDetails", name, slug, user_id);
+    console.log(
+        "setUserDetails",
+        name,
+        slug,
+        user_id,
+        bio,
+        pic,
+        twitter,
+        instagram,
+        linkedin
+    );
 
     if (!slug) {
         slug = null;
@@ -156,21 +175,17 @@ async function setUserDetails({ name, slug, user_id }) {
         }
     }
 
-    console.log("A");
-
     try {
         await tasksDB.query(
-            `UPDATE btw.users SET name = $1, slug = $2 WHERE id = $3`,
-            [name, slug, user_id]
+            `UPDATE btw.users SET name = $1, slug = $2, bio = $3, pic = $4, twitter = $5, linkedin = $6, instagram = $7 WHERE id = $8`,
+            [name, slug, bio, pic, twitter, linkedin, instagram, user_id]
         );
 
-        console.log("B");
         return {
             success: true,
         };
     } catch (e) {
         console.log(e);
-        console.log("C");
         return {
             success: false,
             error: e.message,

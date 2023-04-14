@@ -57,8 +57,8 @@ export const verifyOtpFailure = createAction(
 
 export const updateUser = createAction(
   ActionTypes.UPDATE_USER,
-  ({ name, slug } = {}) => ({
-    payload: { name, slug },
+  ({ name, slug, bio, pic, twitter, linkedin, instagram } = {}) => ({
+    payload: { name, slug, bio, pic, twitter, linkedin, instagram },
   })
 );
 export const updateUserSuccess = createAction(

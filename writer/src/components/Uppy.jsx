@@ -15,9 +15,12 @@ class UppyComponent extends React.Component {
     this.uppyId = "uppy";
     this.uppy = new Uppy({
       restrictions: {
-        maxNumberOfFiles: 100,
+        maxNumberOfFiles: this.props.maxNumberOfFiles || 100,
         allowedFileTypes: this.props.allowedFileTypes || [".html"],
-        allowMultipleUploads: true,
+        allowMultipleUploads:
+          typeof this.props.allowMultipleUploads === "boolean"
+            ? this.props.allowMultipleUploads
+            : true,
       },
       id: "uppy",
       meta: {},
@@ -50,7 +53,7 @@ class UppyComponent extends React.Component {
     return (
       <Dashboard
         uppy={this.uppy}
-        height={200}
+        height={this.props.height || 500}
         inline={true}
         showLinkToFileUploadResult={false}
         showProgressDetails={true}

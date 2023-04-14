@@ -69,7 +69,16 @@ router.post(
         origin: process.env.CORS_DOMAINS.split(","),
     }),
     async (req, res) => {
-        const { fingerprint, name, slug } = req.body || {};
+        const {
+            fingerprint,
+            name,
+            slug,
+            bio,
+            pic,
+            twitter,
+            linkedin,
+            instagram,
+        } = req.body || {};
 
         // get loginToken as btw_uuid cookie
         const token = req.cookies.btw_uuid;
@@ -84,6 +93,11 @@ router.post(
                 user_id: user.id,
                 name,
                 slug,
+                bio,
+                pic,
+                twitter,
+                linkedin,
+                instagram,
             });
 
             res.json({ success: true });

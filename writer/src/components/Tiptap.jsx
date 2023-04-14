@@ -71,7 +71,7 @@ class Tiptap extends React.Component {
     this.setupEditor(props);
 
     this.interval = setInterval(() => {
-      if (this.editor) {
+      if (this.editor && this.editor.storage) {
         this.setState({
           chars: this.editor.storage.characterCount.characters(),
           words: this.editor.storage.characterCount.words(),
@@ -92,16 +92,19 @@ class Tiptap extends React.Component {
 
   setupEditor(props) {
     const ydoc = new Y.Doc();
-    if (props.note?.ydoc?.data) {
-      Y.applyUpdate(ydoc, Uint8Array.from(props.note?.ydoc?.data));
-    }
 
-    this.provider = new HocuspocusProvider({
-      url: process.env.REACT_APP_YJS_DOMAIN,
-      name: `note.${props.userId}.${props.docId}`,
-      document: ydoc,
-      token: `${props.token}:::${genFingerprint()}`,
-    });
+    if (props.enableServerSync) {
+      if (props.note?.ydoc?.data) {
+        Y.applyUpdate(ydoc, Uint8Array.from(props.note?.ydoc?.data));
+      }
+
+      this.provider = new HocuspocusProvider({
+        url: process.env.REACT_APP_YJS_DOMAIN,
+        name: `note.${props.userId}.${props.docId}`,
+        document: ydoc,
+        token: `${props.token}:::${genFingerprint()}`,
+      });
+    }
 
     this.editor = new Editor({
       autofocus: true,
@@ -156,13 +159,20 @@ class Tiptap extends React.Component {
         CharacterCount.configure({
           limit,
         }),
-        Collaboration.configure({
-          document: ydoc,
-        }),
-        CollaborationCursor.configure({
-          provider: this.provider,
-          user: { name: props.name || props.email || "You", color: "#ffcc00" },
-        }),
+        ...(props.enableServerSync
+          ? [
+              Collaboration.configure({
+                document: ydoc,
+              }),
+              CollaborationCursor.configure({
+                provider: this.provider,
+                user: {
+                  name: props.name || props.email || "You",
+                  color: "#ffcc00",
+                },
+              }),
+            ]
+          : []),
       ],
       editorProps: {
         attributes: {
@@ -170,7 +180,7 @@ class Tiptap extends React.Component {
             "prose prose-sm lg:prose-lg focus:outline-none flex-grow p-2 mt-2 max-w-full",
         },
       },
-      content: "",
+      content: props.content || "",
     });
 
     this.editor.on("update", () => {
@@ -178,10 +188,8 @@ class Tiptap extends React.Component {
     });
   }
 
-  componentDidUpdate(prevProps) {
-    // if (prevProps.docId !== this.props.docId) {
-    //   this.setupEditor(this.props);
-    // }
+  setContent(content) {
+    this.editor.commands.setContent(content);
   }
 
   componentWillUnmount() {
@@ -195,6 +203,7 @@ class Tiptap extends React.Component {
         style={{ minHeight: 0 }}
       >
         <MenuBar
+          customMenu={this.props.customMenu}
           editor={this.editor}
           showImageUploader={() => {
             this.setState({ showImageUpload: !this.state.showImageUpload });
@@ -222,11 +231,13 @@ class Tiptap extends React.Component {
             }}
           />
         </div>
-        <div className="character-count text-xs text-gray-400">
-          {this.state.chars || "0"}/{limit} characters
-          <br />
-          {this.state.words || "0"} words
-        </div>
+        {this.props.hideCharacterCount ? null : (
+          <div className="character-count text-xs text-gray-400">
+            {this.state.chars || "0"}/{limit} characters
+            <br />
+            {this.state.words || "0"} words
+          </div>
+        )}
         <div
           className={`w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center ${
             this.state.showImageUpload ? "absolute" : "absolute hidden"

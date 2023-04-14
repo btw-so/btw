@@ -7,9 +7,12 @@
     </div>
     <div class="w-full sm:mt-0">
       <div class="max-w-md p-4">
-        <article class="prose tiptap-editor">
-          {{{note.html}}}
-        </article>
+        <div class="flex flex-col sm:flex-row">
+          {{#if pic}}<img src="{{pic}}" alt="{{siteTitle}}" class="w-40 mb-4 sm:mb-0 sm:mr-8"/>{{/if}}
+          <article class="prose tiptap-editor mb-4">
+            {{{bio}}}
+          </article>
+        </div>
       </div>
     </div>
   </div>

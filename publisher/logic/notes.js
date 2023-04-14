@@ -43,7 +43,7 @@ async function getUserBySlug({ slug, customDomain }) {
     : `select id from btw.users where slug = $1`;
 
   const { rows } = await pool.query(
-    `select name, slug from btw.users where id in (${subquery}) LIMIT 1`,
+    `select name, slug, bio, pic, linkedin, twitter, instagram from btw.users where id in (${subquery}) LIMIT 1`,
     [slug]
   );
 
