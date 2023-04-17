@@ -8,7 +8,7 @@ async function getAllNotes({ slug, customDomain }) {
     : `select id from btw.users where slug = $1`;
   const { rows } = await pool.query(
     `select slug, published_at, title, tags from btw.notes where publish = TRUE and user_id in (${subquery}) ORDER BY published_at DESC LIMIT 1000`,
-    [slug]
+    [customDomain || slug]
   );
 
   // I will be surprised if someone wrote more than 1000 notes that are published?
@@ -25,7 +25,7 @@ async function getNoteBySlug({ slug, customDomain, noteSlug }) {
 
   const { rows } = await pool.query(
     `select slug, published_at, title, tags, html from btw.notes where publish = TRUE and user_id in (${subquery}) and slug = $2 LIMIT 1`,
-    [slug, noteSlug]
+    [customDomain || slug, noteSlug]
   );
 
   if (rows.length === 0) {
@@ -44,7 +44,7 @@ async function getUserBySlug({ slug, customDomain }) {
 
   const { rows } = await pool.query(
     `select name, slug, bio, pic, linkedin, twitter, instagram from btw.users where id in (${subquery}) LIMIT 1`,
-    [slug]
+    [customDomain || slug]
   );
 
   if (rows.length === 0) {

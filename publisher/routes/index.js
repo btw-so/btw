@@ -52,7 +52,7 @@ const getCommonDeets = (
     title: title
       ? `${title} | ${user.name || user.email}`
       : user.name || user.email,
-    siteTitle: title || user.name || user.email,
+    siteTitle: user.name || user.email,
     site_description: meta_description || `${user.name || user.email}`,
     customDomain: res.locals.customDomain,
     linkedin: user.linkedin,
