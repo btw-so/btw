@@ -124,6 +124,15 @@ router.get("/about", async (req, res, next) => {
   });
 });
 
+function extractFirstImageSrc(html) {
+  const imgRegex = /<img[^>]+src="([^">]+)"/;
+  const match = html.match(imgRegex);
+  if (match) {
+    return match[1];
+  }
+  return null;
+}
+
 router.get("/:slug", async (req, res, next) => {
   const note = await getNoteBySlug({
     slug: res.locals.domainSlug,
@@ -160,10 +169,8 @@ router.get("/:slug", async (req, res, next) => {
     return;
   }
 
-  // check if note.html has any <img> element. if it does, then extract the first image as the meta image
-  const imgRegex = /<img[^>]+src="?([^"\s]+)"?[^>]*\/>/g;
-  const imgMatch = imgRegex.exec(note.html);
-  const meta_image = imgMatch ? imgMatch[1] : null;
+  // check if note.html has any <img> element (need not have closing tag. just simple <img src="">). if it does, then extract the first image as the meta image
+  const meta_image = extractFirstImageSrc(note.html);
 
   // check if note.html has first <p> element. if it does, then extract the first paragraph as the meta description
   const pRegex = /<p[^>]*>(.*?)<\/p>/g;
