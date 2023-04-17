@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { STATUS } from "../literals";
 import useCookie from "../hooks/useCookie";
 import UppyComponent from "../components/Uppy";
+import useLocalStorage from "../hooks/useLocalStorage";
 import { selectUser, selectOtp } from "../selectors";
 import { addCustomDomain, updateUser } from "../actions";
 import useTreeChanges from "tree-changes-hook";
@@ -108,7 +109,8 @@ function SettingsContainer(props) {
   return (
     <AppWrapper {...props} settingsPage={true}>
       {token && props.userId ? (
-        <div className="flex-grow p-4 flex flex-col">
+        <div className={`flex-grow p-4 flex flex-col`}>
+          <div className={`h-4 sm:hidden`}></div>
           <div className="mb-4 max-w-sm">
             <h2 className="font-extrabold text-lg mb-2">Profile</h2>
             <label className="block font-bold mb-2" htmlFor="name">
@@ -146,7 +148,7 @@ function SettingsContainer(props) {
             </label>
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="linkedin"
+              id="Linkedin"
               type="text"
               placeholder="linkedin"
               value={linkedin}

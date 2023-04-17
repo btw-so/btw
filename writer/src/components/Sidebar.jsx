@@ -44,6 +44,10 @@ function Sidebar(props) {
     "expandArchivedNotes",
     false
   );
+  const [sidebarIsOpen, setSidebarIsOpen] = useLocalStorage(
+    "sidebarIsOpen",
+    false
+  );
 
   useInterval(() => {
     if (token && notesState.notesList.status !== STATUS.RUNNING) {
@@ -127,7 +131,9 @@ function Sidebar(props) {
       <>
         {contextMenu ? (
           <div
-            className="text-blue-500 absolute z-10 w-32 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+            className={`${
+              sidebarIsOpen ? "hidden" : "absolute"
+            } w-32 text-blue-500 z-10 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -277,6 +283,7 @@ function Sidebar(props) {
                   id: undefined,
                 })
               );
+              setSidebarIsOpen(false);
               navigate("/settings");
             }}
           >
@@ -336,6 +343,8 @@ function Sidebar(props) {
                               setContextNoteId(id);
                             }}
                             onClick={() => {
+                              setSidebarIsOpen(false);
+                              console.log("HEE");
                               dispatch(
                                 selectNote({
                                   id,
@@ -372,6 +381,7 @@ function Sidebar(props) {
                   user_id: props.userId,
                 })
               );
+              setSidebarIsOpen(false);
               navigate("/dash");
             }}
           >

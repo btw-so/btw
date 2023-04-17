@@ -32,6 +32,35 @@ const createSubUrlWithPath = (res, path) => {
   }.${process.env.ROOT_DOMAIN}${path}`;
 };
 
+const getCommonDeets = (
+  req,
+  res,
+  path,
+  user,
+  { meta_title, meta_description, meta_image, title } = {}
+) => {
+  return {
+    site_title: meta_title
+      ? `${meta_title} | ${user.name || user.email}`
+      : user.name || user.email,
+    site_image: meta_image || user.pic,
+    site_url: mainUrl(res),
+    originalUrl: createSubUrlWithPath(res, path),
+    canonicalUrl: createSubUrlWithPath(res, path),
+    aboutUrl: createSubUrlWithPath(res, "/about"),
+    site_logo: user.pic,
+    title: title
+      ? `${title} | ${user.name || user.email}`
+      : user.name || user.email,
+    siteTitle: title || user.name || user.email,
+    site_description: meta_description || `${user.name || user.email}`,
+    customDomain: res.locals.customDomain,
+    linkedin: user.linkedin,
+    twitter: user.twitter,
+    instagram: user.instagram,
+  };
+};
+
 router.get("/", async (req, res, next) => {
   const user = await getUserBySlug({
     slug: res.locals.domainSlug,
@@ -55,18 +84,9 @@ router.get("/", async (req, res, next) => {
   }
 
   res.render("index", {
-    originalUrl: mainUrl(res),
-    canonicalUrl: mainUrl(res),
-    aboutUrl: createSubUrlWithPath(res, "/about"),
-    title: user.name || user.email,
     notes,
-    customDomain: res.locals.customDomain,
-    mainUrl: createSubUrlWithPath(res, "/"),
     mainPage: true,
-    siteTitle: user.name || user.email,
-    linkedin: user.linkedin,
-    twitter: user.twitter,
-    instagram: user.instagram,
+    ...getCommonDeets(req, res, "/", user),
   });
 });
 
@@ -92,23 +112,15 @@ router.get("/about", async (req, res, next) => {
     });
   }
 
-  const aboutUrl = createSubUrlWithPath(res, `/about`);
-
   res.render("about", {
-    originalUrl: aboutUrl,
-    canonicalUrl: aboutUrl,
-    aboutUrl,
-    mainUrl: createSubUrlWithPath(res, "/"),
     aboutPage: true,
-    title: `About | ${user.name || user.email}`,
     notes,
-    customDomain: res.locals.customDomain,
-    siteTitle: user.name || user.email,
-    linkedin: user.linkedin,
-    twitter: user.twitter,
-    instagram: user.instagram,
     bio: user.bio,
     pic: user.pic,
+    ...getCommonDeets(req, res, "/about", user, {
+      title: `About`,
+      meta_title: `About`,
+    }),
   });
 });
 
@@ -148,18 +160,25 @@ router.get("/:slug", async (req, res, next) => {
     return;
   }
 
+  // check if note.html has any <img> element. if it does, then extract the first image as the meta image
+  const imgRegex = /<img[^>]+src="?([^"\s]+)"?[^>]*\/>/g;
+  const imgMatch = imgRegex.exec(note.html);
+  const meta_image = imgMatch ? imgMatch[1] : null;
+
+  // check if note.html has first <p> element. if it does, then extract the first paragraph as the meta description
+  const pRegex = /<p[^>]*>(.*?)<\/p>/g;
+  const pMatch = pRegex.exec(note.html);
+  const meta_description = pMatch ? pMatch[1] : null;
+
   res.render("post", {
-    originalUrl: note.url,
-    canonicalUrl: note.url,
-    title: note.title || `Note | ${user.name || user.email}`,
-    aboutUrl: createSubUrlWithPath(res, "/about"),
+    ...getCommonDeets(req, res, `/${note.slug}`, user, {
+      title: note.title,
+      meta_title: note.title,
+      meta_image,
+      meta_description,
+    }),
     note,
-    mainUrl: createSubUrlWithPath(res, "/"),
-    siteTitle: user.name || user.email,
-    customDomain: res.locals.customDomain,
-    linkedin: user.linkedin,
-    twitter: user.twitter,
-    instagram: user.instagram,
+    published_at: new Date(note.published_at).getTime(),
   });
 });
 

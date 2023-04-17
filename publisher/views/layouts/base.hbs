@@ -16,6 +16,10 @@
     {{#block "custom-meta-block"}}
     {{/block}}
 
+    {{#if site_logo}}
+      <link rel="icon" href="{{site_logo}}">
+    {{/if}}
+
     {{#and site_logo site_url}}
     <script type="application/ld+json">
     {

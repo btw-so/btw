@@ -4,9 +4,10 @@
   <div class="flex flex-col-reverse sm:flex-row p-4 mt-0 sm:mt-8">
     <div class="p-4 w-full max-w-xs">
       {{> sidebar}}
+
     </div>
     <div class="w-full sm:mt-0">
-      <div class="max-w-md p-4">
+      <div class="max-w-3xl p-4">
         <article class="prose tiptap-editor">
           {{{note.html}}}
         </article>
@@ -100,5 +101,60 @@
             }
             embed.appendChild(div);
         });
+
+        const published_at = {{{published_at}}};
+
+        function readablePostDate(date) {
+          const now = new Date();
+          const diff = now.getTime() - date.getTime();
+
+          // milliseconds in each unit of time
+          const msPerMinute = 60 * 1000;
+          const msPerHour = msPerMinute * 60;
+          const msPerDay = msPerHour * 24;
+          const msPerMonth = msPerDay * 30;
+          const msPerYear = msPerDay * 365;
+
+          // time since post was created, in each unit of time
+          const minutesAgo = Math.round(diff / msPerMinute);
+          const hoursAgo = Math.round(diff / msPerHour);
+          const daysAgo = Math.round(diff / msPerDay);
+          const monthsAgo = Math.round(diff / msPerMonth);
+          const yearsAgo = Math.round(diff / msPerYear);
+
+          if (yearsAgo > 1) {
+            return `${yearsAgo} years ago`;
+          } else if (monthsAgo > 1) {
+            return `${monthsAgo} months ago`;
+          } else if (daysAgo > 1) {
+            return `${daysAgo} days ago`;
+          } else if (hoursAgo > 1) {
+            return `${hoursAgo} hours ago`;
+          } else {
+            return `${minutesAgo} minutes ago`;
+          }
+        }
+
+        if (published_at) {
+            const published_at_date = new Date(published_at);
+            // get the elements with id readable-post-date and id post-date-dd-mm-yyyy
+            // convert published_at to Mar 1, 2021 format in user's timezone
+            const readable_post_date = document.getElementById("readable-post-date");
+            const post_date_dd_mm_yyyy = document.getElementById("post-date-dd-mm-yyyy");
+
+            // readable_post_date must be in form of x mins ago, x hours ago, x days ago, x months ago, x years ago depending on what is sensible
+            if (readable_post_date) {
+              readable_post_date.innerHTML = `Published ${readablePostDate(published_at_date)}`;
+            }
+
+            // post_date_dd_mm_yyyy must be in form of Mar 1, 2021 in users timezone
+            if (post_date_dd_mm_yyyy) {
+              post_date_dd_mm_yyyy.innerHTML = published_at_date.toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+              });
+            }
+        }
     </script>
 {{/content}}
