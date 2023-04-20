@@ -110,7 +110,7 @@ class Tiptap extends React.Component {
       autofocus: true,
       extensions: [
         Embed,
-        CustomDocument,
+        ...(this.props.mandatoryH1 ? [CustomDocument] : [Document]),
         Paragraph,
         Text,
         Bold,
@@ -233,8 +233,8 @@ class Tiptap extends React.Component {
         </div>
         {this.props.hideCharacterCount ? null : (
           <div className="character-count text-xs text-gray-400">
-            {this.state.chars || "0"}/{limit} characters
-            <br />
+            {/* {this.state.chars || "0"}/{limit} characters
+            <br /> */}
             {this.state.words || "0"} words
           </div>
         )}

@@ -109,9 +109,9 @@ function SettingsContainer(props) {
   return (
     <AppWrapper {...props} settingsPage={true}>
       {token && props.userId ? (
-        <div className={`flex-grow p-4 flex flex-col`}>
+        <div className={`flex-grow p-4 flex flex-col overflow-y-scroll`}>
           <div className={`h-4 sm:hidden`}></div>
-          <div className="mb-4 max-w-sm">
+          <div className="mb-4 max-w-lg">
             <h2 className="font-extrabold text-lg mb-2">Profile</h2>
             <label className="block font-bold mb-2" htmlFor="name">
               Name
@@ -127,9 +127,12 @@ function SettingsContainer(props) {
               }}
             />
           </div>
-          <div className="mb-4 max-w-sm">
-            <label className="block font-bold mb-2" htmlFor="slug">
+          <div className="mb-4 max-w-lg">
+            <label className="block font-bold -mb-1" htmlFor="slug">
               Slug
+            </label>
+            <label className="text-xs text-gray-500">
+              Your site will go live on {`${slug || "<slug>"}.btw.so`}
             </label>
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -142,7 +145,7 @@ function SettingsContainer(props) {
               }}
             />
           </div>
-          <div className="mb-4 max-w-sm">
+          <div className="mb-4 max-w-lg">
             <label className="block font-bold mb-2" htmlFor="slug">
               Linkedin
             </label>
@@ -150,14 +153,14 @@ function SettingsContainer(props) {
               className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="Linkedin"
               type="text"
-              placeholder="linkedin"
+              placeholder="Linkedin"
               value={linkedin}
               onChange={(e) => {
                 setLinkedin(e.target.value);
               }}
             />
           </div>
-          <div className="mb-4 max-w-sm">
+          <div className="mb-4 max-w-lg">
             <label className="block font-bold mb-2" htmlFor="slug">
               Twitter
             </label>
@@ -172,7 +175,7 @@ function SettingsContainer(props) {
               }}
             />
           </div>
-          <div className="mb-4 max-w-sm">
+          <div className="mb-4 max-w-lg">
             <label className="block font-bold mb-2" htmlFor="slug">
               Instagram
             </label>
@@ -187,7 +190,7 @@ function SettingsContainer(props) {
               }}
             />
           </div>
-          <div className="mb-4 max-w-sm">
+          <div className="mb-4 max-w-lg">
             <label className="block font-bold mb-2" htmlFor="slug">
               Bio
             </label>
@@ -208,7 +211,7 @@ function SettingsContainer(props) {
               />
             </div>
           </div>
-          <div className="mb-4 max-w-sm">
+          <div className="mb-4 max-w-lg">
             <label className="block font-bold mb-2" htmlFor="pic">
               Picture
             </label>
@@ -325,7 +328,7 @@ function SettingsContainer(props) {
             </div>
 
             <h2 className="font-extrabold text-lg mb-2 mt-16">Publishing</h2>
-            <div className="mb-4 max-w-sm">
+            <div className="mb-4 max-w-lg">
               <label className="block font-bold mb-2" htmlFor="slug">
                 Custom domain
               </label>

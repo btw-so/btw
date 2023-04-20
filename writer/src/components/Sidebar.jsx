@@ -71,13 +71,13 @@ function Sidebar(props) {
 
   var noteLists = [
     {
-      title: "All notes",
+      title: "All",
       notes: notesState.notesList.data,
       expanded: expandAllNotes,
       toggle: () => setExpandAllNotes(!expandAllNotes),
     },
     {
-      title: "Published notes",
+      title: "Published",
       notes: notesState.notesList.data.filter(
         (id) => notesState.notesMap[id].publish
       ),
@@ -85,7 +85,7 @@ function Sidebar(props) {
       toggle: () => setExpandPublishedNotes(!expandPublishedNotes),
     },
     {
-      title: "Working notes",
+      title: "Drafts",
       notes: notesState.notesList.data.filter(
         (id) =>
           !notesState.notesMap[id].publish &&
@@ -96,7 +96,7 @@ function Sidebar(props) {
       toggle: () => setExpandUnpublishedNotes(!expandUnpublishedNotes),
     },
     {
-      title: "Archived notes",
+      title: "Archived",
       notes: notesState.notesList.data.filter(
         (id) => notesState.notesMap[id].archive
       ),
@@ -274,21 +274,18 @@ function Sidebar(props) {
         ) : null}
         <div className="w-full mb-8 border-gray-200 sidebar-toolkit">
           <button
-            className={`w-full py-2 flex items-center hover:font-extrabold hover:text-blue-500 ${
-              props.settingsPage ? "text-blue-500" : ""
-            }`}
+            className={`w-full py-2 flex items-center hover:font-extrabold hover:text-blue-500`}
             onClick={() => {
               dispatch(
-                selectNote({
-                  id: undefined,
+                createNewNote({
+                  user_id: props.userId,
                 })
               );
               setSidebarIsOpen(false);
-              navigate("/settings");
+              navigate("/dash");
             }}
           >
-            <i className={`ri-1x ri-settings-4-line mr-1`}></i>
-            <span className="font-extrabold">Settings</span>
+            <i className={`remix ri-edit-box-line w-5 h-5 mr-1 ml-auto`}></i>
           </button>
         </div>
         <div className="flex-grow overflow-y-auto">
@@ -374,19 +371,21 @@ function Sidebar(props) {
         </div>
         <div className="w-full border-t-2 border-gray-200 sidebar-toolkit">
           <button
-            className={`w-full py-2 flex items-center hover:font-extrabold hover:text-blue-500`}
+            className={`w-full pb-2 pt-4 flex items-center hover:font-extrabold hover:text-blue-500 ${
+              props.settingsPage ? "text-blue-500" : ""
+            }`}
             onClick={() => {
               dispatch(
-                createNewNote({
-                  user_id: props.userId,
+                selectNote({
+                  id: undefined,
                 })
               );
               setSidebarIsOpen(false);
-              navigate("/dash");
+              navigate("/settings");
             }}
           >
-            <i className={`remix ri-add-line w-5 h-5 mr-1`}></i>
-            <span className="font-extrabold">New note</span>
+            <i className={`ri-1x ri-settings-4-line mr-1`}></i>
+            <span className="font-extrabold">Settings</span>
           </button>
         </div>
       </>

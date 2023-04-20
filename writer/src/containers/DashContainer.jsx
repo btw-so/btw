@@ -123,6 +123,7 @@ function Dash(props) {
                 notesState.notesMap[notesState.selectedNoteId].content
               }
               enableServerSync={true}
+              mandatoryH1={true}
               onChange={(html) => {
                 const isEmpty = (content) => !content || content == "<h1></h1>";
                 if (
