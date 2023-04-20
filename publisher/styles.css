@@ -203,6 +203,10 @@ hr.ProseMirror-selectednode {
   margin-bottom: 0rem !important;
 }
 
+.tiptap-editor ul > li::marker {
+  color: rgb(107, 114, 128) !important;
+}
+
 .sidebar-toolkit button i {
   display: flex;
   align-items: center;

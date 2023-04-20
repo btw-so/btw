@@ -107,7 +107,7 @@ class Tiptap extends React.Component {
     }
 
     this.editor = new Editor({
-      autofocus: true,
+      // autofocus: true, // commenting this out since it's causing the editor to auto scroll to top when a below the fold checkbox is clicked
       extensions: [
         Embed,
         ...(this.props.mandatoryH1 ? [CustomDocument] : [Document]),

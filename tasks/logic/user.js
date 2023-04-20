@@ -163,7 +163,7 @@ async function setUserDetails({
     if (slug) {
         // check that the slug is unique
         const { rows } = await tasksDB.query(
-            `SELECT * FROM btw.users WHERE slug = $1 AND id != $2`,
+            `SELECT * FROM btw.users WHERE slug = $1 AND id <> $2`,
             [slug, user_id]
         );
 

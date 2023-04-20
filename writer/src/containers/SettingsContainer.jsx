@@ -329,8 +329,14 @@ function SettingsContainer(props) {
 
             <h2 className="font-extrabold text-lg mb-2 mt-16">Publishing</h2>
             <div className="mb-4 max-w-lg">
-              <label className="block font-bold mb-2" htmlFor="slug">
+              <label className="block font-bold -mb-1" htmlFor="slug">
                 Custom domain
+              </label>
+              <label className="text-xs text-gray-500">
+                Included only in{" "}
+                <a href="https://www.btw.so/pricing" target="_blank">
+                  Pro plan
+                </a>
               </label>
               <input
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"

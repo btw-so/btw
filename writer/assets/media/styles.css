@@ -1440,6 +1440,10 @@ input[type="number"]::-webkit-inner-spin-button,
   margin-bottom: 3rem;
 }
 
+.-mb-1 {
+  margin-bottom: -0.25rem;
+}
+
 .-ml-1 {
   margin-left: -0.25rem;
 }
@@ -1454,6 +1458,10 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .mb-8 {
   margin-bottom: 2rem;
+}
+
+.ml-auto {
+  margin-left: auto;
 }
 
 .mr-1 {
@@ -1478,14 +1486,6 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .mt-4 {
   margin-top: 1rem;
-}
-
-.ml-auto {
-  margin-left: auto;
-}
-
-.-mb-1 {
-  margin-bottom: -0.25rem;
 }
 
 .block {
@@ -1590,14 +1590,6 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .max-w-lg {
   max-width: 32rem;
-}
-
-.max-w-sm {
-  max-width: 24rem;
-}
-
-.max-w-md {
-  max-width: 28rem;
 }
 
 .flex-shrink-0 {
@@ -2263,6 +2255,10 @@ hr.ProseMirror-selectednode {
 .tiptap-editor ul > li > ul {
   margin-top: 0rem !important;
   margin-bottom: 0rem !important;
+}
+
+.tiptap-editor ul > li::marker {
+  color: rgb(107, 114, 128) !important;
 }
 
 .sidebar-toolkit button i {

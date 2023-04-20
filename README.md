@@ -2,16 +2,16 @@
 
 ---
 
-# btw 
+# btw
 
-[btw](https://btw.so) is an open source personal website builder. 
+[btw](https://btw.so) is an open source personal website builder.
 
 You can [sign up](https://btw.so) and use btw without installing anything. You can also use the open source version to self-host.
 
 ![btw-editor-screenshot](https://user-images.githubusercontent.com/70569022/233320021-e05c995f-4e4e-48a9-83de-f578d3662df1.png)
 
-
 ### Demo blogs published using btw:
+
 -   [deeptichopra.com](https://www.deeptichopra.com/about)
 -   [siddg.com](https://www.siddg.com/about)
 
@@ -37,8 +37,6 @@ These instructions will help you get a copy of the project up and running on you
 
 ### Installation
 
-Provide step-by-step instructions on how to set up the project on a local machine:
-
 1. Setup your database using btw.sql file
 2. Replace the variables in deploy/docker-compose.dev.yml
 
@@ -58,8 +56,9 @@ Provide step-by-step instructions on how to set up the project on a local machin
 3. If you set your slug and publish any articles, you can view them at localhost:9222?domain=<slug>
 
 ## Community
-- [Twitter](https://twitter.com/btw_hq): Product updates & memes.
-- [Discord](https://discord.gg/tDKK649e): If you have questions or just want to hang out, come & say hi!
+
+-   [Twitter](https://twitter.com/btw_hq): Product updates & memes.
+-   [Discord](https://discord.gg/tDKK649e): If you have questions or just want to hang out, come & say hi!
 
 ## Coming next
 

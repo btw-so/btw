@@ -89,18 +89,18 @@ router.post(
                 fingerprint,
             });
 
-            await setUserDetails({
-                user_id: user.id,
-                name,
-                slug,
-                bio,
-                pic,
-                twitter,
-                linkedin,
-                instagram,
-            });
-
-            res.json({ success: true });
+            res.json(
+                await setUserDetails({
+                    user_id: user.id,
+                    name,
+                    slug,
+                    bio,
+                    pic,
+                    twitter,
+                    linkedin,
+                    instagram,
+                })
+            );
         } catch (e) {
             res.json({
                 success: false,

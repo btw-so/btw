@@ -95,12 +95,6 @@ export default ({
       isActive: () => editor.isActive("heading", { level: 2 }),
     },
     {
-      icon: "paragraph",
-      title: "Paragraph",
-      action: () => editor.chain().focus().setParagraph().run(),
-      isActive: () => editor.isActive("paragraph"),
-    },
-    {
       icon: "list-unordered",
       title: "Bullet List",
       action: () => editor.chain().focus().toggleBulletList().run(),
