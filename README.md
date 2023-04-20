@@ -1,25 +1,35 @@
-# BTW (By The Way)
+![github-cover](https://user-images.githubusercontent.com/70569022/233320406-da81d842-c0d9-4d63-938e-fe521203e4e0.png)
 
-The cloud hosted version of this project is at [https://app.btw.so](https://app.btw.so)
+---
 
-Sample of a blog that is published using btw:
+# btw 
 
--   [https://www.siddg.com](https://www.siddg.com)
+[btw](https://btw.so) is an open source personal website builder. 
 
-## Table of Contents
+You can [sign up](https://btw.so) and use btw without installing anything. You can also use the open source version to self-host.
+
+![btw-editor-screenshot](https://user-images.githubusercontent.com/70569022/233320021-e05c995f-4e4e-48a9-83de-f578d3662df1.png)
+
+
+### Demo blogs published using btw:
+-   [deeptichopra.com](https://www.deeptichopra.com/about)
+-   [siddg.com](https://www.siddg.com/about)
+
+## Table of contents
 
 -   [Getting Started](#getting-started)
-    -   [Prerequisites](#prerequisites)
+    -   [Pre-requisites](#pre-requisites)
     -   [Installation](#installation)
-    -   [Running](#running)
+    -   [Development](#development)
+-   [Community](#community)
 -   [Coming next](#coming-next)
 -   [License](#license)
 
-## Getting Started
+## Getting started
 
-These instructions will help you get a copy of the project up and running on your local machine for development and testing purposes.
+These instructions will help you get a copy of the project up and running on your local machine.
 
-### Prerequisites
+### Pre-requisites
 
 -   Install latest Docker, Docker-compose in your system
 -   Working postgres instance
@@ -38,27 +48,28 @@ Provide step-by-step instructions on how to set up the project on a local machin
 -   ADMIN_EMAIL: Your email address
 -   SECRET: Unique secret
 
-### Running
+### Development
 
-Execute following commands from the deploy folder:
+1. Execute following commands from the deploy folder:
+    ```
+    docker-compose -f docker-compose.dev.yml up
+    ```
+2. Visit localhost:9000 to login and start writing
+3. If you set your slug and publish any articles, you can view them at localhost:9222?domain=<slug>
 
-`docker-compose -f docker-compose.dev.yml up`
-
-Visit
-
--   localhost:9000 to login and start writing
--   If you set your slug and publish any articles, you can visit localhost:9222?domain=<slug>
+## Community
+- [Twitter](https://twitter.com/btw_hq): Product updates & memes.
+- [Discord](https://discord.gg/tDKK649e): If you have questions or just want to hang out, come & say hi!
 
 ## Coming next
 
 -   Simplified development setup
 -   Sample cloud deployment setup
 -   Sample custom domain setup instructions
--   Plan for v0 and v1
+-   Feature roadmap
 -   Documentation
 -   Contributing guidelines
--   Acknowledgements
 
 ## License
 
-See the LICENSE.md file for details.
+See the [LICENSE.md](https://github.com/btw-so/btw/blob/main/LICENSE.md) file for details.
