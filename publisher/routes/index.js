@@ -11,7 +11,9 @@ const mainUrl = (res) => {
       }`
     : !!Number(process.env.DEBUG)
     ? `${process.env.ROOT_DOMAIN}/?${process.env.DOMAIN_QUERY_PARAM}=${res.locals.domainSlug}`
-    : res.locals.domainSlug + "." + process.env.ROOT_DOMAIN;
+    : `http${!!Number(process.env.HTTPS_DOMAIN) ? "s" : ""}://${
+        res.locals.domainSlug
+      }.${process.env.ROOT_DOMAIN}`;
 };
 
 const createSubUrlWithPath = (res, path) => {
