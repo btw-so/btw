@@ -22,6 +22,7 @@ import {
   deleteNoteFailure,
   getNoteSuccess,
   getNoteFailure,
+  resetState,
 } from "actions";
 
 import axios from "axios";
@@ -67,8 +68,8 @@ export function* getNotesSaga({ after }) {
       })
     );
 
-    const { success, data, error } = res;
-    if (success && !error) {
+    const { success, data, error, isLoggedIn } = res;
+    if (success && isLoggedIn && !error) {
       const { notes: _notes, total, page: _page, limit: _limit } = data;
 
       notes = [...notes, ..._notes];
@@ -79,7 +80,24 @@ export function* getNotesSaga({ after }) {
         break;
       }
     } else {
-      yield put(getNotesFailure({ error: error || "Something went wrong" }));
+      yield put(
+        getNotesFailure({
+          error:
+            error ||
+            (isLoggedIn
+              ? "Stale session. Log in again."
+              : "Something went wrong"),
+        })
+      );
+
+      if (!isLoggedIn) {
+        // if the user-details API fails, we need to clear the cookie
+        // so that the user can login again
+        document.cookie = `${
+          process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid"
+        }=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        yield put(resetState());
+      }
       return;
     }
   }

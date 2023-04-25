@@ -15,7 +15,11 @@ function Login() {
   const user = useAppSelector(selectUser);
   const otp = useAppSelector(selectOtp);
 
-  const [email, setEmail] = useState("");
+  const emailFromQueryParams = new URLSearchParams(window.location.search).get(
+    "email"
+  );
+
+  const [email, setEmail] = useState(emailFromQueryParams || "");
   const [mode, setMode] = useState("enter-email");
   const { changed } = useTreeChanges(user);
   const { changed: changedOtpState } = useTreeChanges(otp);
@@ -257,7 +261,7 @@ function Login() {
             {mode === "enter-email" ? (
               <div className="bg-white rounded-lg px-8 pt-6 pb-8 mb-4 drop-shadow-2xl">
                 <h1 className="text-2xl font-extrabold text-left mb-4">
-                  Welcome to BTW
+                  Welcome to btw
                 </h1>
                 <div className="">
                   <label

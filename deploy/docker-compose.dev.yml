@@ -53,6 +53,7 @@ services:
             S3_KEY: 
             S3_SECRET: 
             ADMIN_EMAIL: 
+            ADMIN_SLUG:
     writer:
         platform: linux/amd64
         container_name: writer
@@ -117,6 +118,8 @@ services:
             HTTPS_DOMAIN: 0
             NODE_ENV: development
             SECRET_KEY: CHANGE THIS AND SET YOUR SECRET
+            ADMIN_EMAIL: 
+            ADMIN_SLUG:
     redis:
         # platform: linux/amd64
         image: "redisfab/redis:6.2.6-arm64v8-bionic"

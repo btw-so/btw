@@ -22,6 +22,7 @@ import {
   updateUserFailure,
   addCustomDomainSuccess,
   addCustomDomainFailure,
+  resetState,
 } from "actions";
 
 import axios from "axios";
@@ -66,6 +67,18 @@ export function* getUserSaga() {
     yield put(getUserSuccess(data.user));
   } else {
     yield put(getUserFailure({ error: error || "Something went wrong" }));
+
+    if (!data.isLoggedIn) {
+      // reset the state
+      yield put(resetState());
+      // if the user-details API fails, we need to clear the cookie
+      // so that the user can login again
+      document.cookie = `${
+        process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid"
+      }=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      // update the user state fresh
+      yield put(getUserFailure({ error: error || "Something went wrong" }));
+    }
   }
 }
 

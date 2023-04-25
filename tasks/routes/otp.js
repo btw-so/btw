@@ -91,7 +91,7 @@ router.post(
         });
 
         // set the login token in the cookie on the root domain (so that it can be accessed by all subdomains)
-        res.cookie("btw_uuid", loginToken, {
+        res.cookie(process.env.BTW_UUID_KEY || "btw_uuid", loginToken, {
             maxAge: 1000 * 60 * 60 * 24 * 30,
             ...(process.env.NODE_ENV === "production"
                 ? {

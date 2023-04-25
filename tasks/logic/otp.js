@@ -36,6 +36,14 @@ function uniqueOTP() {
 }
 
 async function generateOTP({ email }) {
+    if (
+        !Number(process.env.TURN_OFF_SINGLE_USER_MODE) &&
+        process.env.ADMIN_OTP
+    ) {
+        // Single user mode and admin otp is set. so we return admin otp always
+        return process.env.ADMIN_OTP;
+    }
+
     const tasksDB = await db.getTasksDB();
     const client = await tasksDB.connect();
 
@@ -82,6 +90,16 @@ async function generateOTP({ email }) {
 }
 
 async function validateOTP({ email, otp }) {
+    if (
+        !Number(process.env.TURN_OFF_SINGLE_USER_MODE) &&
+        process.env.ADMIN_OTP &&
+        otp === process.env.ADMIN_OTP &&
+        email === process.env.ADMIN_EMAIL
+    ) {
+        // Single user mode and admin otp is set.
+        return true;
+    }
+
     const tasksDB = await db.getTasksDB();
     const client = await tasksDB.connect();
 

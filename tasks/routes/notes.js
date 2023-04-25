@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 var cors = require("cors");
-var { getUserFromToken } = require("../logic/user");
+var { getUserFromToken, doesLoginTokenExist } = require("../logic/user");
 var {
     getNotes,
     getNote,
@@ -45,7 +45,7 @@ router.post(
         }
 
         // get loginToken as btw_uuid cookie
-        const loginToken = req.cookies.btw_uuid;
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
 
         try {
             const user = await getUserFromToken({
@@ -100,7 +100,7 @@ router.post(
         const { fingerprint, id } = req.body || {};
 
         // get loginToken as btw_uuid cookie
-        const loginToken = req.cookies.btw_uuid;
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
 
         try {
             const user = await getUserFromToken({
@@ -143,13 +143,42 @@ router.post(
         const { fingerprint, page = 1, limit = 50, after } = req.body || {};
 
         // get loginToken as btw_uuid cookie
-        const loginToken = req.cookies.btw_uuid;
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        let user;
 
         try {
-            const user = await getUserFromToken({
+            user = await getUserFromToken({
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!Number(process.env.TURN_OFF_SINGLE_USER_MODE)) {
+                // single user mode.
+                if (!loginToken || !user) {
+                    res.json({
+                        success: true,
+                        data: { notes: [] },
+                        isLoggedIn: false,
+                    });
+                    return;
+                } else {
+                    const exists = await doesLoginTokenExist({
+                        token: loginToken,
+                        fingerprint,
+                    });
+
+                    if (!exists) {
+                        res.json({
+                            success: true,
+                            data: { notes: [] },
+                            isLoggedIn: false,
+                        });
+                        return;
+                    }
+                }
+            }
+
             const {
                 notes,
                 page: pageToSend,
@@ -164,12 +193,14 @@ router.post(
             res.json({
                 success: true,
                 data: { notes, page: pageToSend, total, limit: limitToSend },
+                isLoggedIn: !!user,
             });
         } catch (e) {
             res.json({
                 success: false,
                 data: { notes: [] },
                 error: e,
+                isLoggedIn: !!user,
             });
             return;
         }
@@ -193,7 +224,7 @@ router.post(
         const { fingerprint, id, user_id, html } = req.body || {};
 
         // get loginToken as btw_uuid cookie
-        const loginToken = req.cookies.btw_uuid;
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
 
         try {
             const user = await getUserFromToken({
@@ -251,7 +282,7 @@ router.post(
         } = req.body || {};
 
         // get loginToken as btw_uuid cookie
-        const loginToken = req.cookies.btw_uuid;
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
 
         try {
             const user = await getUserFromToken({
@@ -312,7 +343,7 @@ router.post(
         const { fingerprint, id, user_id, archive } = req.body || {};
 
         // get loginToken as btw_uuid cookie
-        const loginToken = req.cookies.btw_uuid;
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
 
         try {
             const user = await getUserFromToken({
@@ -372,7 +403,7 @@ router.post(
         const { fingerprint, id, user_id, publish } = req.body || {};
 
         // get loginToken as btw_uuid cookie
-        const loginToken = req.cookies.btw_uuid;
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
 
         try {
             const user = await getUserFromToken({

@@ -144,6 +144,12 @@ var {
 } = require("./logic/user");
 var db = require("./services/db");
 
+// setting up base user for default mode
+createUser({
+    email: process.env.ADMIN_EMAIL,
+    slug: process.env.ADMIN_SLUG,
+});
+
 var app = express();
 
 if (process.env.NODE_ENV == "production") {

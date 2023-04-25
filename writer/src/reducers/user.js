@@ -55,15 +55,7 @@ export const otpState = {
 export default {
   user: createReducer(userState, (builder) => {
     builder.addCase(resetState, (draft) => {
-      if (
-        !(draft.user.state !== STATUS.IDLE) &&
-        !(draft.user.state !== STATUS.SUCCESS)
-      ) {
-        draft.user.status = STATUS.IDLE;
-        draft.user.data = null;
-        draft.user.error = null;
-        draft.user.isLoggedIn = false;
-      }
+      draft.user = userState.user;
     });
 
     builder
@@ -97,6 +89,10 @@ export default {
   }),
 
   otp: createReducer(otpState, (builder) => {
+    builder.addCase(resetState, (draft) => {
+      return otpState;
+    });
+
     builder
       .addCase(generateOtp, (draft) => {
         draft.otp.status = STATUS.RUNNING;

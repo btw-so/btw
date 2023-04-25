@@ -19,7 +19,10 @@ function SettingsContainer(props) {
   const { user } = userState;
   const { changed } = useTreeChanges(userState);
   const actions = useAppSelector(selectOtp);
-  const [token, setToken] = useCookie("btw_uuid", "");
+  const [token, setToken] = useCookie(
+    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
+    ""
+  );
 
   const currentName = (user.data || {}).name || "";
   const currentSlug = (user.data || {}).slug || "";

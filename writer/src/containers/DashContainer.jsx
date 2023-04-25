@@ -21,7 +21,10 @@ import toast from "react-hot-toast";
 
 function Dash(props) {
   const navigate = useNavigate();
-  const [token, setToken] = useCookie("btw_uuid", "");
+  const [token, setToken] = useCookie(
+    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
+    ""
+  );
   const notesState = useAppSelector(selectNotes);
   const noteActionsState = useAppSelector(selectNoteActions);
   const selectedNote = notesState.selectedNoteId
@@ -149,6 +152,8 @@ function Dash(props) {
       </AppWrapper>
     );
   }
+
+  return null;
 }
 
 export default Dash;

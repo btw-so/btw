@@ -30,11 +30,30 @@ baseQueue.process("removeOldLoginTokens", async () => {
 
 // function to get users
 async function getUserFromToken({ token, fingerprint }) {
-    if (!token) return null;
-    if (!fingerprint) return null;
-
     const tasksDB = await db.getTasksDB();
     const client = await tasksDB.connect();
+
+    if (
+        !Number(process.env.TURN_OFF_SINGLE_USER_MODE) &&
+        !process.env.ADMIN_OTP
+    ) {
+        // Single user mode and admin otp is not set. so we return admin user always
+        const { rows } = await client.query(
+            `SELECT * FROM btw.users WHERE email = $1`,
+            [process.env.ADMIN_EMAIL]
+        );
+
+        client.release();
+
+        if (rows.length > 0) {
+            return rows[0];
+        }
+
+        return null;
+    }
+
+    if (!token) return null;
+    if (!fingerprint) return null;
 
     const { rows } = await client.query(
         `SELECT * FROM btw.login_token WHERE uuid = $1`,
@@ -79,6 +98,17 @@ async function getUserFromToken({ token, fingerprint }) {
     }
 }
 
+async function doesLoginTokenExist({ token, fingerprint }) {
+    const tasksDB = await db.getTasksDB();
+
+    const { rows } = await tasksDB.query(
+        `SELECT * FROM btw.login_token WHERE uuid = $1 AND fingerprint = $2`,
+        [token, fingerprint]
+    );
+
+    return rows.length > 0;
+}
+
 // function to create login token for user
 async function createLoginToken({ email, fingerprint, ip_address }) {
     const tasksDB = await db.getTasksDB();
@@ -111,7 +141,7 @@ async function createLoginToken({ email, fingerprint, ip_address }) {
 }
 
 // function to create user
-async function createUser({ email }) {
+async function createUser({ email, slug }) {
     const tasksDB = await db.getTasksDB();
     const client = await tasksDB.connect();
 
@@ -124,8 +154,13 @@ async function createUser({ email }) {
     if (rows.length == 0) {
         // create user
         await client.query(
-            `INSERT INTO btw.users (email, processed_email, created_at) VALUES ($1, $2, $3)`,
-            [email, email.toLowerCase().split(".").join(""), new Date()]
+            `INSERT INTO btw.users (email, processed_email, created_at, slug) VALUES ($1, $2, $3, $4)`,
+            [
+                email,
+                email.toLowerCase().split(".").join(""),
+                new Date(),
+                slug || null,
+            ]
         );
     }
 
@@ -161,6 +196,19 @@ async function setUserDetails({
     }
 
     if (slug) {
+        if (
+            !Number(process.env.TURN_OFF_SINGLE_USER_MODE) &&
+            process.env.ADMIN_SLUG
+        ) {
+            // single user mode. only one slug allowed
+            if (slug != process.env.ADMIN_SLUG) {
+                return {
+                    success: false,
+                    error: "Can't change slug in this instance. Sign up for an account on app.btw.so",
+                };
+            }
+        }
+
         // check that the slug is unique
         const { rows } = await tasksDB.query(
             `SELECT * FROM btw.users WHERE slug = $1 AND id <> $2`,
@@ -258,6 +306,7 @@ async function addUserDomain({ domain, user_id }) {
 module.exports = {
     getUserFromToken,
     createLoginToken,
+    doesLoginTokenExist,
     createUser,
     setUserDetails,
     addUserDomain,

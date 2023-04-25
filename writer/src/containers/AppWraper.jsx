@@ -4,14 +4,15 @@ import Sidebar from "../components/Sidebar";
 import useLocalStorage from "../hooks/useLocalStorage";
 
 function AppWrapper(props) {
-  const [token, setToken] = useCookie("btw_uuid", "");
+  const [token, setToken] = useCookie(
+    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
+    ""
+  );
 
   const [sidebarIsOpen, setSidebarIsOpen] = useLocalStorage(
     "sidebarIsOpen",
     false
   );
-
-  console.log(sidebarIsOpen);
 
   if (token) {
     return (

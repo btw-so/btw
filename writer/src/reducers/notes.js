@@ -26,6 +26,7 @@ import {
   deleteNote,
   deleteNoteSuccess,
   deleteNoteFailure,
+  resetState,
 } from "actions";
 
 export const notesState = {
@@ -55,6 +56,12 @@ export const actionState = {
 
 export default {
   notes: createReducer(notesState, (builder) => {
+    builder.addCase(resetState, (draft) => {
+      draft.notesMap = {};
+      draft.notesList = notesState.notesList;
+      draft.selectedNoteId = null;
+    });
+
     builder
       .addCase(getNotes, (draft) => {
         draft.notesList.status = STATUS.RUNNING;
@@ -222,6 +229,10 @@ export default {
       });
   }),
   actions: createReducer(actionState, (builder) => {
+    builder.addCase(resetState, (draft) => {
+      return actionState;
+    });
+
     builder
       .addCase(publishNote, (draft) => {
         draft.publishNote.status = STATUS.RUNNING;

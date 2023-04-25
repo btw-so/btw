@@ -19,7 +19,10 @@ import {
 } from "../actions";
 
 function Sidebar(props) {
-  const [token, setToken] = useCookie("btw_uuid", "");
+  const [token, setToken] = useCookie(
+    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
+    ""
+  );
   const notesState = useAppSelector(selectNotes);
   const dispatch = useDispatch();
   const navigate = useNavigate();
