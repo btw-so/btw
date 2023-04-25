@@ -23,6 +23,8 @@ import {
   getNoteSuccess,
   getNoteFailure,
   resetState,
+  setNoteSlugSuccess,
+  setNoteSlugFailure,
 } from "actions";
 
 import axios from "axios";
@@ -367,6 +369,74 @@ export function* deleteNote({ payload }) {
   }
 }
 
+export function* setNoteSlug({ payload }) {
+  const { id, slug, user_id } = payload;
+  const fingerprint = yield call(getFingerPrint);
+
+  const toastId = toast.loading(`Changing the note url...`);
+
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/update/slug`,
+
+        method: "POST",
+        data: {
+          fingerprint,
+          id,
+          user_id,
+          slug,
+        },
+      })
+    );
+
+    const { success, data, error } = res;
+    if (success && !error) {
+      toast.success(`Success`, {
+        id: toastId,
+      });
+
+      yield call(() => getNote({ payload: { id } }));
+
+      yield put(setNoteSlugSuccess(data));
+    } else {
+      toast.error(
+        `Something went wrong changing the URL of the note. Try again.`,
+        { id: toastId }
+      );
+
+      yield call(() => getNote({ payload: { id } }));
+
+      yield put(
+        setNoteSlugFailure({
+          error:
+            error ||
+            `Something went wrong changing the URL of the note. Try again.`,
+        })
+      );
+      return;
+    }
+  } catch (e) {
+    console.log(e);
+    toast.error(
+      `Something went wrong changing the URL of the note. Try again.`,
+      { id: toastId }
+    );
+
+    yield call(() => getNote({ payload: { id } }));
+
+    yield put(
+      setNoteSlugFailure({
+        error:
+          e.message ||
+          `Something went wrong changing the URL of the note. Try again.`,
+      })
+    );
+
+    return;
+  }
+}
+
 export function* publishNote({ payload }) {
   const { id, publish, user_id } = payload;
   const fingerprint = yield call(getFingerPrint);
@@ -454,5 +524,6 @@ export default function* root() {
     takeEvery(ActionTypes.ARCHIVE_NOTE, archiveNote),
     takeEvery(ActionTypes.DELETE_NOTE, deleteNote),
     takeEvery(ActionTypes.GET_NOTE, getNote),
+    takeEvery(ActionTypes.SET_NOTE_SLUG, setNoteSlug),
   ]);
 }

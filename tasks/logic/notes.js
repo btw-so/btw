@@ -163,6 +163,37 @@ async function unpublishNote({ user_id, id }) {
     };
 }
 
+async function setNoteSlug({ user_id, id, slug }) {
+    // get the note from db
+    // create slug for it
+    // set published to true
+    // set published_at to now
+    const pool = await db.getTasksDB();
+
+    const { rows } = await pool.query(
+        `SELECT * FROM btw.notes WHERE id = $1 AND user_id = $2`,
+        [id, user_id]
+    );
+
+    if (rows.length === 0) {
+        return {
+            success: false,
+            error: "Note not found",
+        };
+    }
+
+    const note = rows[0];
+
+    await pool.query(
+        `UPDATE btw.notes SET slug = $1 WHERE id = $2 AND user_id = $3`,
+        [slug, id, user_id]
+    );
+
+    return {
+        success: true,
+    };
+}
+
 async function publishNote({ user_id, id }) {
     // get the note from db
     // create slug for it
@@ -266,4 +297,5 @@ module.exports = {
     undeleteNote,
     archiveNote,
     unarchiveNote,
+    setNoteSlug,
 };

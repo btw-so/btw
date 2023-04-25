@@ -31,12 +31,12 @@ baseQueue.process("removeOldLoginTokens", async () => {
 // function to get users
 async function getUserFromToken({ token, fingerprint }) {
     const tasksDB = await db.getTasksDB();
-    const client = await tasksDB.connect();
 
     if (
         !Number(process.env.TURN_OFF_SINGLE_USER_MODE) &&
         !process.env.ADMIN_OTP
     ) {
+        const client = await tasksDB.connect();
         // Single user mode and admin otp is not set. so we return admin user always
         const { rows } = await client.query(
             `SELECT * FROM btw.users WHERE email = $1`,
@@ -55,6 +55,7 @@ async function getUserFromToken({ token, fingerprint }) {
     if (!token) return null;
     if (!fingerprint) return null;
 
+    const client = await tasksDB.connect();
     const { rows } = await client.query(
         `SELECT * FROM btw.login_token WHERE uuid = $1`,
         [token]

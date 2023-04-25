@@ -27,6 +27,9 @@ import {
   deleteNoteSuccess,
   deleteNoteFailure,
   resetState,
+  setNoteSlug,
+  setNoteSlugSuccess,
+  setNoteSlugFailure,
 } from "actions";
 
 export const notesState = {
@@ -49,6 +52,10 @@ export const actionState = {
     data: null,
   },
   deleteNote: {
+    status: STATUS.IDLE,
+    data: null,
+  },
+  setNoteSlug: {
     status: STATUS.IDLE,
     data: null,
   },
@@ -88,6 +95,7 @@ export default {
               publish,
               delete: deletedAs,
               deleted_at,
+              slug,
             } = note;
             created_at = new Date(created_at).getTime();
             updated_at = new Date(updated_at).getTime();
@@ -111,6 +119,7 @@ export default {
               publish,
               deleted: deletedAs,
               deleted_at,
+              slug,
             });
           });
         }
@@ -207,6 +216,7 @@ export default {
         draft.notesMap[payload.id].error = null;
         draft.notesMap[payload.id].ydoc = payload.ydoc;
         draft.notesMap[payload.id].title = payload.title;
+        draft.notesMap[payload.id].slug = payload.slug;
         draft.notesMap[payload.id].updated_at = payload.updated_at
           ? new Date(payload.updated_at).getTime()
           : null;
@@ -232,6 +242,20 @@ export default {
     builder.addCase(resetState, (draft) => {
       return actionState;
     });
+
+    builder
+      .addCase(setNoteSlug, (draft) => {
+        draft.setNoteSlug.status = STATUS.RUNNING;
+        draft.setNoteSlug.error = null;
+      })
+      .addCase(setNoteSlugSuccess, (draft, { payload }) => {
+        draft.setNoteSlug.status = STATUS.SUCCESS;
+        draft.setNoteSlug.error = null;
+      })
+      .addCase(setNoteSlugFailure, (draft, { payload }) => {
+        draft.setNoteSlug.status = STATUS.ERROR;
+        draft.setNoteSlug.error = payload.error;
+      });
 
     builder
       .addCase(publishNote, (draft) => {

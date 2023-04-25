@@ -54,6 +54,22 @@ export const importNotes = createAction(ActionTypes.IMPORT_NOTES, (data) => ({
   payload: data,
 }));
 
+export const setNoteSlug = createAction(ActionTypes.SET_NOTE_SLUG, (data) => ({
+  payload: data,
+}));
+export const setNoteSlugSuccess = createAction(
+  ActionTypes.SET_NOTE_SLUG_SUCCESS,
+  (data) => ({
+    payload: data,
+  })
+);
+export const setNoteSlugFailure = createAction(
+  ActionTypes.SET_NOTE_SLUG_FAILURE,
+  (data) => ({
+    payload: data,
+  })
+);
+
 export const publishNote = createAction(ActionTypes.PUBLISH_NOTE, (data) => ({
   payload: data,
 }));

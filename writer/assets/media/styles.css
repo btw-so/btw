@@ -1488,6 +1488,10 @@ input[type="number"]::-webkit-inner-spin-button,
   margin-top: 1rem;
 }
 
+.ml-1 {
+  margin-left: 0.25rem;
+}
+
 .block {
   display: block;
 }
@@ -1676,12 +1680,20 @@ input[type="number"]::-webkit-inner-spin-button,
   justify-content: space-between;
 }
 
+.overflow-hidden {
+  overflow: hidden;
+}
+
 .overflow-y-auto {
   overflow-y: auto;
 }
 
 .overflow-y-scroll {
   overflow-y: scroll;
+}
+
+.text-ellipsis {
+  text-overflow: ellipsis;
 }
 
 .rounded {
@@ -1728,6 +1740,10 @@ input[type="number"]::-webkit-inner-spin-button,
   border-style: solid;
 }
 
+.border-dotted {
+  border-style: dotted;
+}
+
 .border-blue-500 {
   --tw-border-opacity: 1;
   border-color: rgb(59 130 246 / var(--tw-border-opacity));
@@ -1745,6 +1761,11 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .border-transparent {
   border-color: transparent;
+}
+
+.border-black {
+  --tw-border-opacity: 1;
+  border-color: rgb(0 0 0 / var(--tw-border-opacity));
 }
 
 .bg-blue-500 {
@@ -1811,6 +1832,16 @@ input[type="number"]::-webkit-inner-spin-button,
 .py-6 {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
+}
+
+.py-0 {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.py-0\.5 {
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
 }
 
 .pb-2 {
@@ -2506,6 +2537,10 @@ hr.ProseMirror-selectednode {
   color: rgb(59 130 246 / var(--tw-text-opacity));
 }
 
+.hover\:underline:hover {
+  text-decoration-line: underline;
+}
+
 .focus\:outline-none:focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
@@ -2537,6 +2572,10 @@ hr.ProseMirror-selectednode {
 
   .sm\:mr-4 {
     margin-right: 1rem;
+  }
+
+  .sm\:block {
+    display: block;
   }
 
   .sm\:flex {

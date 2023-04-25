@@ -31,6 +31,13 @@ function Root() {
   const { user } = userState;
   const { isLoggedIn } = user;
 
+  const userDomain =
+    ((user.data || {}).domains || []).length > 0
+      ? user.data.domains[0].domain
+      : (user.data || {}).slug
+      ? `${(user.data || {}).slug}.btw.so`
+      : null;
+
   useEffect(() => {
     // get user details if it is the first time
     dispatch(getUser());
@@ -88,6 +95,7 @@ function Root() {
                   name={user && user.data ? user.data.name : null}
                   email={user && user.data ? user.data.email : null}
                   slug={user && user.data ? user.data.slug : null}
+                  domain={userDomain}
                 />
               </PrivateRoute>
             }

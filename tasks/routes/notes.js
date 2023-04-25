@@ -13,6 +13,7 @@ var {
     unarchiveNote,
     deleteNote,
     undeleteNote,
+    setNoteSlug,
 } = require("../logic/notes");
 
 router.options(
@@ -436,6 +437,52 @@ router.post(
                     })
                 );
             }
+        } catch (e) {
+            res.json({
+                success: false,
+                error: e.message,
+            });
+            return;
+        }
+    }
+);
+
+router.options(
+    "/update/slug",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/update/slug",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, id, user_id, slug } = req.body || {};
+
+        // get loginToken as btw_uuid cookie
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            // access check. for now the access check requires user to own the note
+            // in future, we can add collaborators
+            if (user.id !== user_id) {
+                res.json({
+                    success: false,
+                    error: "Access denied",
+                });
+                return;
+            }
+
+            res.send(await setNoteSlug({ id, user_id, slug }));
         } catch (e) {
             res.json({
                 success: false,
