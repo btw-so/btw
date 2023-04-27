@@ -51,34 +51,38 @@ export function* getUserSaga() {
 
   const fingerprint = yield call(getFingerPrint);
 
-  const { data: res } = yield call(() =>
-    axiosInstance.request({
-      url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/user/details`,
-      method: "POST",
-      data: {
-        fingerprint,
-      },
-    })
-  );
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/user/details`,
+        method: "POST",
+        data: {
+          fingerprint,
+        },
+      })
+    );
 
-  const { success, data, error } = res;
+    const { success, data, error } = res;
 
-  if (success && data.user && data.isLoggedIn) {
-    yield put(getUserSuccess(data.user));
-  } else {
-    yield put(getUserFailure({ error: error || "Something went wrong" }));
-
-    if (!data.isLoggedIn) {
-      // reset the state
-      yield put(resetState());
-      // if the user-details API fails, we need to clear the cookie
-      // so that the user can login again
-      document.cookie = `${
-        process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid"
-      }=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-      // update the user state fresh
+    if (success && data.user && data.isLoggedIn) {
+      yield put(getUserSuccess(data.user));
+    } else {
       yield put(getUserFailure({ error: error || "Something went wrong" }));
+
+      if (!data.isLoggedIn) {
+        // reset the state
+        yield put(resetState());
+        // if the user-details API fails, we need to clear the cookie
+        // so that the user can login again
+        document.cookie = `${
+          process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid"
+        }=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        // update the user state fresh
+        yield put(getUserFailure({ error: error || "Something went wrong" }));
+      }
     }
+  } catch (e) {
+    yield put(getUserFailure({ error: e.message }));
   }
 }
 
@@ -86,23 +90,29 @@ export function* generateOtp({ payload }) {
   const fingerprint = yield call(getFingerPrint);
   const { email } = payload || {};
 
-  const { data } = yield call(() =>
-    axiosInstance.request({
-      url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/otp/generate`,
-      method: "POST",
-      data: {
-        email,
-        fingerprint,
-      },
-    })
-  );
+  try {
+    const { data } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/otp/generate`,
+        method: "POST",
+        data: {
+          email,
+          fingerprint,
+        },
+      })
+    );
 
-  const { success, error } = data;
+    const { success, error } = data;
 
-  if (success) {
-    yield put(generateOtpSuccess({ success, error }));
-  } else {
-    yield put(generateOtpFailure({ error: error || "Something went wrong" }));
+    if (success) {
+      yield put(generateOtpSuccess({ success, error }));
+    } else {
+      yield put(generateOtpFailure({ error: error || "Something went wrong" }));
+    }
+  } catch (e) {
+    yield put(
+      generateOtpFailure({ error: e.message || "Something went wrong" })
+    );
   }
 }
 
@@ -110,32 +120,36 @@ export function* verifyOtp({ payload }) {
   const fingerprint = yield call(getFingerPrint);
   const { email, otp } = payload || {};
 
-  const { data: res } = yield call(() =>
-    axiosInstance.request({
-      url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/otp/validate`,
-      method: "POST",
-      data: {
-        email,
-        otp,
-        fingerprint,
-      },
-    })
-  );
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/otp/validate`,
+        method: "POST",
+        data: {
+          email,
+          otp,
+          fingerprint,
+        },
+      })
+    );
 
-  const { success, data, error } = res;
+    const { success, data, error } = res;
 
-  if (success && data.isValid) {
-    // 200ms delay
-    yield delay(200);
+    if (success && data.isValid) {
+      // 200ms delay
+      yield delay(200);
 
-    // get user details
-    yield call(getUserSaga);
+      // get user details
+      yield call(getUserSaga);
 
-    yield delay(200);
+      yield delay(200);
 
-    yield put(verifyOtpSuccess());
-  } else {
-    yield put(verifyOtpFailure({ error: error || "Something went wrong" }));
+      yield put(verifyOtpSuccess());
+    } else {
+      yield put(verifyOtpFailure({ error: error || "Something went wrong" }));
+    }
+  } catch (e) {
+    yield put(verifyOtpFailure({ error: e.message || "Something went wrong" }));
   }
 }
 
@@ -145,38 +159,48 @@ export function* updateUser({ payload }) {
 
   const toastId = toast.loading("Updating user details");
 
-  const { data: res } = yield call(() =>
-    axiosInstance.request({
-      url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/user/update`,
-      method: "POST",
-      data: {
-        fingerprint,
-        name,
-        slug,
-        bio,
-        pic,
-        twitter,
-        linkedin,
-        instagram,
-      },
-    })
-  );
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/user/update`,
+        method: "POST",
+        data: {
+          fingerprint,
+          name,
+          slug,
+          bio,
+          pic,
+          twitter,
+          linkedin,
+          instagram,
+        },
+      })
+    );
 
-  const { success, error } = res;
+    const { success, error } = res;
 
-  if (success) {
-    yield put(updateUserSuccess());
+    if (success) {
+      yield put(updateUserSuccess());
 
-    // call getUserSaga to update the user in the store
-    yield call(getUserSaga);
+      // call getUserSaga to update the user in the store
+      yield call(getUserSaga);
 
-    toast.success("Profile updated", {
-      id: toastId,
-    });
-  } else {
-    yield put(updateUserFailure({ error: error || "Something went wrong" }));
+      toast.success("Profile updated", {
+        id: toastId,
+      });
+    } else {
+      yield put(updateUserFailure({ error: error || "Something went wrong" }));
 
-    toast.error(`Error: ${error}`, {
+      toast.error(`Error: ${error}`, {
+        id: toastId,
+      });
+    }
+  } catch (e) {
+    yield put(
+      updateUserFailure({ error: e.message || "Something went wrong" })
+    );
+
+    toast.error(`Error: ${e.message}`, {
       id: toastId,
     });
   }
@@ -188,38 +212,48 @@ export function* addCustomDomain({ payload }) {
 
   const toastId = toast.loading("Adding custom domain");
 
-  const { data: res } = yield call(() =>
-    axiosInstance.request({
-      url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/user/add/domain`,
-      method: "POST",
-      data: {
-        fingerprint,
-        domain,
-      },
-    })
-  );
-
-  const { success, error } = res;
-
-  if (success) {
-    yield put(addCustomDomainSuccess());
-
-    toast.success(`Added domain: ${domain}`, {
-      id: toastId,
-    });
-
-    toast.success(
-      "Domain verification instructions will be sent to your email with in 24 hours"
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/user/add/domain`,
+        method: "POST",
+        data: {
+          fingerprint,
+          domain,
+        },
+      })
     );
 
-    // call getUserSaga to update the user in the store
-    yield call(getUserSaga);
-  } else {
+    const { success, error } = res;
+
+    if (success) {
+      yield put(addCustomDomainSuccess());
+
+      toast.success(`Added domain: ${domain}`, {
+        id: toastId,
+      });
+
+      toast.success(
+        "Domain verification instructions will be sent to your email with in 24 hours"
+      );
+
+      // call getUserSaga to update the user in the store
+      yield call(getUserSaga);
+    } else {
+      yield put(
+        addCustomDomainFailure({ error: error || "Something went wrong" })
+      );
+
+      toast.error(`Error: ${error}`, {
+        id: toastId,
+      });
+    }
+  } catch (e) {
     yield put(
-      addCustomDomainFailure({ error: error || "Something went wrong" })
+      addCustomDomainFailure({ error: e.message || "Something went wrong" })
     );
 
-    toast.error(`Error: ${error}`, {
+    toast.error(`Error: ${e.message}`, {
       id: toastId,
     });
   }

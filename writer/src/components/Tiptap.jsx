@@ -56,6 +56,7 @@ import { HocuspocusProvider } from "@hocuspocus/provider";
 import genFingerprint from "../fingerprint";
 import MenuBar from "./TipTapMenuBar";
 import Embed from "./TipTapEmbed";
+import toast from "react-hot-toast";
 
 const limit = 100000;
 
@@ -103,6 +104,18 @@ class Tiptap extends React.Component {
         name: `note.${props.userId}.${props.docId}`,
         document: ydoc,
         token: `${props.token}:::${genFingerprint()}`,
+        onDisconnect: () => {
+          if (!this.toastId) {
+            this.toastId = toast.loading(`Trying to reconnect`);
+          }
+        },
+        onConnect: () => {
+          if (this.toastId) {
+            toast.success(`Connected`);
+            toast.dismiss(this.toastId);
+            this.toastId = null;
+          }
+        },
       });
     }
 

@@ -56,78 +56,99 @@ export function* getNotesSaga({ after }) {
   let limit = 50;
 
   // loop through the data until we get all the notes
-  while (true) {
-    const { data: res } = yield call(() =>
-      axiosInstance.request({
-        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/get`,
-        method: "POST",
-        data: {
-          fingerprint,
-          after,
-          page,
-          limit,
-        },
-      })
-    );
-
-    const { success, data, error, isLoggedIn } = res;
-    if (success && isLoggedIn && !error) {
-      const { notes: _notes, total, page: _page, limit: _limit } = data;
-
-      notes = [...notes, ..._notes];
-      limit = _limit;
-      page = _page + 1;
-
-      if (notes.length >= total) {
-        break;
-      }
-    } else {
-      yield put(
-        getNotesFailure({
-          error:
-            error ||
-            (isLoggedIn
-              ? "Stale session. Log in again."
-              : "Something went wrong"),
+  try {
+    while (true) {
+      const { data: res } = yield call(() =>
+        axiosInstance.request({
+          url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/get`,
+          method: "POST",
+          data: {
+            fingerprint,
+            after,
+            page,
+            limit,
+          },
         })
       );
 
-      if (!isLoggedIn) {
-        // if the user-details API fails, we need to clear the cookie
-        // so that the user can login again
-        document.cookie = `${
-          process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid"
-        }=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-        yield put(resetState());
-      }
-      return;
-    }
-  }
+      const { success, data, error, isLoggedIn } = res;
+      if (success && isLoggedIn && !error) {
+        const { notes: _notes, total, page: _page, limit: _limit } = data;
 
-  yield put(getNotesSuccess({ notes }));
+        notes = [...notes, ..._notes];
+        limit = _limit;
+        page = _page + 1;
+
+        if (notes.length >= total) {
+          break;
+        }
+      } else {
+        yield put(
+          getNotesFailure({
+            error:
+              error ||
+              (isLoggedIn
+                ? "Stale session. Log in again."
+                : "Something went wrong"),
+          })
+        );
+
+        if (!isLoggedIn) {
+          // if the user-details API fails, we need to clear the cookie
+          // so that the user can login again
+          document.cookie = `${
+            process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid"
+          }=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+          yield put(resetState());
+        }
+        return;
+      }
+    }
+
+    // Why show connection failed toast here? because hocuspocus websocket connection failed event is not trustable sometimes
+    if (window.connectionStatusToastId) {
+      toast.success(`Connected`);
+      toast.dismiss(window.connectionStatusToastId);
+      window.connectionStatusToastId = null;
+    }
+
+    yield put(getNotesSuccess({ notes }));
+  } catch (e) {
+    if (!window.connectionStatusToastId) {
+      window.connectionStatusToastId = toast.loading(`Trying to reconnect`);
+    }
+
+    yield put(getNotesFailure({ error: "Something went wrong" }));
+    return;
+  }
 }
 
 export function* upsertNote({ html, id, user_id }) {
   const fingerprint = yield call(getFingerPrint);
 
-  const { data: res } = yield call(() =>
-    axiosInstance.request({
-      url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/update/html`,
-      method: "POST",
-      data: {
-        fingerprint,
-        id,
-        user_id,
-        html,
-      },
-    })
-  );
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/update/html`,
+        method: "POST",
+        data: {
+          fingerprint,
+          id,
+          user_id,
+          html,
+        },
+      })
+    );
 
-  const { success, data, error } = res;
-  if (success && !error) {
-    yield put(upsertNoteSuccess(data));
-  } else {
-    yield put(upsertNoteFailure({ error: error || "Something went wrong" }));
+    const { success, data, error } = res;
+    if (success && !error) {
+      yield put(upsertNoteSuccess(data));
+    } else {
+      yield put(upsertNoteFailure({ error: error || "Something went wrong" }));
+      return;
+    }
+  } catch (e) {
+    yield put(upsertNoteFailure({ error: "Something went wrong" }));
     return;
   }
 }
@@ -136,20 +157,24 @@ export function* importNotes({ payload }) {
   const { urls } = payload;
   const fingerprint = yield call(getFingerPrint);
 
-  const { data: res } = yield call(() =>
-    axiosInstance.request({
-      url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/import`,
-      method: "POST",
-      data: {
-        fingerprint,
-        urls,
-      },
-    })
-  );
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/import`,
+        method: "POST",
+        data: {
+          fingerprint,
+          urls,
+        },
+      })
+    );
 
-  if (res.success) {
-    toast.success("Import started!");
-  } else {
+    if (res.success) {
+      toast.success("Import started!");
+    } else {
+      toast.error("Something went wrong. Try again.");
+    }
+  } catch (e) {
     toast.error("Something went wrong. Try again.");
   }
 }
@@ -158,24 +183,38 @@ export function* getNote({ payload }) {
   const { id } = payload;
   const fingerprint = yield call(getFingerPrint);
 
-  const { data: res } = yield call(() =>
-    axiosInstance.request({
-      url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/get-by-id`,
-      method: "POST",
-      data: {
-        fingerprint,
-        id,
-      },
-    })
-  );
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/get-by-id`,
+        method: "POST",
+        data: {
+          fingerprint,
+          id,
+        },
+      })
+    );
 
-  const { success, data, error } = res;
-  if (success && !error && data.note) {
-    yield put(getNoteSuccess({ ...data.note }));
-  } else {
+    const { success, data, error } = res;
+    if (success && !error && data.note) {
+      yield put(getNoteSuccess({ ...data.note }));
+    } else {
+      yield put(
+        getNoteFailure({
+          error: error || "Something went wrong updating the note",
+          id,
+        })
+      );
+
+      toast.error("Something went wrong updating the note. Try again.");
+
+      return;
+    }
+  } catch (e) {
     yield put(
       getNoteFailure({
-        error: error || "Something went wrong updating the note",
+        error: "Something went wrong updating the note",
+        id,
       })
     );
 

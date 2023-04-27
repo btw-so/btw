@@ -62,6 +62,21 @@ function Sidebar(props) {
     }
   }, 15000);
 
+  // if there is a connection failure earlier, which can be seen from connectionStatusToastId variable, then we can increase the interval.
+  useInterval(() => {
+    if (
+      token &&
+      notesState.notesList.status !== STATUS.RUNNING &&
+      window.connectionStatusToastId
+    ) {
+      dispatch(
+        getNotes({
+          after: notesState.notesList.lastSuccessAt || 0,
+        })
+      );
+    }
+  }, 4000);
+
   useEffect(() => {
     if (token) {
       dispatch(

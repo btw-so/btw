@@ -150,13 +150,13 @@ function SettingsContainer(props) {
           </div>
           <div className="mb-4 max-w-lg">
             <label className="block font-bold mb-2" htmlFor="slug">
-              Linkedin
+              LinkedIn
             </label>
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="Linkedin"
+              id="LinkedIn"
               type="text"
-              placeholder="Linkedin"
+              placeholder="LinkedIn"
               value={linkedin}
               onChange={(e) => {
                 setLinkedin(e.target.value);
