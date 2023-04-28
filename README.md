@@ -60,7 +60,7 @@ These instructions will help you get a copy of the project up and running on you
 ## Community
 
 -   [Twitter](https://twitter.com/btw_hq): Product updates & memes.
--   [Discord](https://discord.gg/tDKK649e): If you have questions or just want to hang out, come & say hi!
+-   [Discord](https://discord.gg/2t5wG7EDb3): If you have questions or just want to hang out, come & say hi!
 
 ## Coming next
 
