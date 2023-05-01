@@ -73,4 +73,4 @@ These instructions will help you get a copy of the project up and running on you
 
 ## License
 
-See the [LICENSE.md](https://github.com/btw-so/btw/blob/main/LICENSE.md) file for details.
+See the [LICENSE](https://github.com/btw-so/btw/blob/main/LICENSE) file for details.
