@@ -21,7 +21,7 @@ COPY . /publisher
 
 RUN export NODE_OPTIONS="--max-old-space-size=8192"
 
-# allow port 2000 to be publicly available
+# allow port 9222 to be publicly available
 EXPOSE 9222
 
 # run command

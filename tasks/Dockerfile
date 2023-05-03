@@ -9,9 +9,9 @@ WORKDIR /tasks
 ENV PATH /tasks/node_modules/.bin:$PATH
 
 COPY package.json /tasks/package.json
-COPY package.json /teemp/package.json
+COPY package.json /tmp/package.json
 RUN npm config set unsafe-perm true
-RUN cd /teemp && npm install
+RUN cd /tmp && npm install
 # COPY package-lock.json /tasks/package-lock.json
 
 # # RUN apk add --no-cache --virtual .gyp
@@ -33,9 +33,9 @@ RUN npm install db-migrate -g
 RUN npm install cross-env -g
 
 COPY . /tasks
-RUN cp -a /teemp/node_modules /tasks/node_modules
+RUN cp -a /tmp/node_modules /tasks/node_modules
 
-# allow port 3006 to be publicly available
+# allow port 3210 to be publicly available
 EXPOSE 3210
 
 # run command
