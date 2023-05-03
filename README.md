@@ -40,13 +40,24 @@ These instructions will help you get a copy of the project up and running on you
 1. Setup your database using btw.sql file
 2. Replace the variables in deploy/docker-compose.dev.yml
 
--   TASKS_DATABASE_URL: Set the connection url to your PG DB
--   ADMIN_EMAIL: Your email address
--   ADMIN_SLUG: <unique slug>
--   ADMIN_OTP: (OPTIONAL) Set a unique 6 digit code, if you want the writer to be behind OTP login. OTP login turned off by default.
--   SECRET: Unique secret
--   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM: SMTP access creds (OPTIONAL. Used to email OTPs for login)
--   S3_ENDPOINT, REACT_APP_S3_ENDPOINT, S3_BUCKET, S3_KEY, S3_SECRET: (OPTIONAL) Set this if you need image uploads to work in editor
+| Variable Name            | Description                                                                                                         |
+|--------------------------|---------------------------------------------------------------------------------------------------------------------|
+| TASKS_DATABASE_URL       | Set the connection URL to your PG DB                                                                                |
+| ADMIN_EMAIL              | Your email address                                                                                                  |
+| ADMIN_SLUG               | Unique slug                                                                                                         |
+| ADMIN_OTP                | (OPTIONAL) Set a unique 6 digit code, if you want the writer to be behind OTP login. OTP login turned off by default |
+| SECRET                   | Unique secret                                                                                                       |
+| SMTP_HOST                | SMTP HOST (OPTIONAL, used to email OTPs for login)                                                   |
+| SMTP_PORT                | OPTIONAL                                                                                                                  |
+| SMTP_USER                | OPTIONAL                                                                                                                    |
+| SMTP_PASS                | OPTIONAL                                                                                                                    |
+| SMTP_FROM                | OPTIONAL                                                                                                                    |
+| S3_ENDPOINT              | (OPTIONAL) Set this if you need image uploads to work in editor                                                                                                          |
+| REACT_APP_S3_ENDPOINT    | OPTIONAL                                                                                                                    |
+| S3_BUCKET                | OPTIONAL                                                                                                                    |
+| S3_KEY                   | OPTIONAL                                                                                                                    |
+| S3_SECRET                | OPTIONAL                                                                                                                   |
+
 
 ### Development
 
