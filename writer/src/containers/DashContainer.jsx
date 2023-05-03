@@ -126,7 +126,7 @@ function Dash(props) {
                       />
                     </div>
                     <button
-                      className={`w-5 h-5 flex items-center hover:text-blue-500 ${
+                      className={`hidden sm:block w-5 h-5 flex items-center hover:text-blue-500 ${
                         showEditUrl ? "hidden" : ""
                       }`}
                       onClick={() => {

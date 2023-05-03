@@ -16,7 +16,7 @@ baseQueue.add(
     }
 );
 
-baseQueue.process("removeOldLoginTokens", async () => {
+baseQueue.process("removeOldLoginTokens", async (job, done) => {
     const tasksDB = await db.getTasksDB();
     const client = await tasksDB.connect();
 
@@ -26,6 +26,8 @@ baseQueue.process("removeOldLoginTokens", async () => {
     );
 
     client.release();
+
+    done();
 });
 
 // function to get users

@@ -13,7 +13,7 @@ baseQueue.add(
     }
 );
 
-baseQueue.process("removeOldOTPs", async () => {
+baseQueue.process("removeOldOTPs", async (job, done) => {
     const tasksDB = await db.getTasksDB();
     const client = await tasksDB.connect();
 
@@ -21,6 +21,8 @@ baseQueue.process("removeOldOTPs", async () => {
     await client.query(
         `DELETE FROM btw.otp WHERE created_at < NOW() - INTERVAL '120 minutes'`
     );
+
+    done();
 });
 
 // generate random 6 digit OTP

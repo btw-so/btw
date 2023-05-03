@@ -43,6 +43,7 @@ CREATE TABLE "btw"."notes" (
     "updated_at" timestamptz NOT NULL,
     "json" json,
     "html" text,
+    "md" text,
     "title" text,
     "id" uuid NOT NULL,
     "ydoc" bytea,
