@@ -16,16 +16,15 @@ baseQueue.add(
     }
 );
 
-baseQueue.process("removeOldLoginTokens", async () => {
+baseQueue.process("removeOldLoginTokens", async (job, done) => {
     const tasksDB = await db.getTasksDB();
-    const client = await tasksDB.connect();
 
     // remove all otps that are older than 30 days
-    await client.query(
+    await tasksDB.query(
         `DELETE FROM btw.login_token WHERE created_at < NOW() - INTERVAL '30 days'`
     );
 
-    client.release();
+    done();
 });
 
 // function to get users

@@ -4,6 +4,90 @@ const { v4: uuidv4 } = require("uuid");
 const { emailImportComplete } = require("./email");
 const fetch = require("node-fetch");
 const { JSDOM } = require("jsdom");
+const turndown = require("turndown")();
+
+// run every 10 minutes
+baseQueue.add(
+    "htmlToMarkdown",
+    {},
+    {
+        repeat: {
+            every: 10 * 60 * 1000,
+        },
+    }
+);
+
+baseQueue.process("htmlToMarkdown", async (job, done) => {
+    const tasksDB = await db.getTasksDB();
+
+    // get all the posts with non-empty html or updated in last 2 hours
+    // convert each html to markdown
+    // update the markdown in the DB
+    const { rows } = await tasksDB.query(
+        `SELECT id, html FROM btw.notes WHERE ((html IS NOT NULL AND html <> '') AND (md IS NULL OR md = '')) OR updated_at > NOW() - INTERVAL '2 hours'`
+    );
+
+    for (const row of rows) {
+        let markdown = "";
+        try {
+            // remove the first <h1> from the html if it is not empty using regex
+            // this is because the first <h1> is the title of the note and we don't want that in the markdown
+
+            markdown = turndown.turndown(
+                (row.html || "").replace(/<h1.*?>.*?<\/h1>/g, "")
+            );
+        } catch (e) {
+            console.log(e);
+        }
+        await tasksDB.query(`UPDATE btw.notes SET md = $1 WHERE id = $2`, [
+            markdown,
+            row.id,
+        ]);
+    }
+
+    done();
+});
+
+// add a job that runs every 2 hours and removes old posts
+baseQueue.add(
+    "removeOldPosts",
+    {},
+    {
+        repeat: {
+            every: 2 * 60 * 60 * 1000,
+        },
+    }
+);
+
+baseQueue.process("removeOldPosts", async (job, done) => {
+    // Not starting this job right away since it is key job and we want to make sure that it is working as expected
+    // try {
+    //     const tasksDB = await db.getTasksDB();
+
+    //     const { rows } = await tasksDB.query(
+    //         `SELECT * FROM btw.notes WHERE delete = TRUE and deleted_at < NOW() - INTERVAL '30 days'`
+    //     );
+
+    //     for (const row of rows) {
+    //         // TODO: (SG) need a better solution for this where we force a user to refresh their notes state
+    //         // delete the login tokens for this user so that their notes are refreshed in their UIs.
+    //         // or else there is a chance that a new note with deleted note will be created
+    //         await tasksDB.query(
+    //             `DELETE FROM btw.login_token WHERE user_id = $1`,
+    //             [row.user_id]
+    //         );
+    //     }
+
+    //     // remove all otps that are older than 30 days
+    //     await tasksDB.query(
+    //         `DELETE FROM btw.notes WHERE delete = TRUE and deleted_at < NOW() - INTERVAL '30 days'`
+    //     );
+    // } catch (e) {
+    //     console.log(e);
+    // }
+
+    done();
+});
 
 // functions to CRUD on notes
 async function getNote({ id, user_id }) {
@@ -78,7 +162,7 @@ async function getNotes({ user_id, page, limit, after = 0 }) {
     limit = Number(limit);
     after = new Date(after);
     const { rows } = await pool.query(
-        `SELECT id, user_id, title, created_at, updated_at, published_at, publish, slug, ydoc, delete, archive, deleted_at FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
+        `SELECT id, user_id, title, md, created_at, updated_at, published_at, publish, slug, ydoc, delete, archive, deleted_at FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
         [user_id, after, after, limit, (page - 1) * limit]
     );
 
@@ -183,6 +267,11 @@ async function setNoteSlug({ user_id, id, slug }) {
     }
 
     const note = rows[0];
+
+    slug = (slug || "")
+        .toLowerCase()
+        .replace(/ /g, "-")
+        .replace(/[^\w-]+/g, "");
 
     await pool.query(
         `UPDATE btw.notes SET slug = $1 WHERE id = $2 AND user_id = $3`,

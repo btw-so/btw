@@ -27,11 +27,11 @@ You can [sign up](https://btw.so) and use btw without installing anything. You c
 
 ## Getting started
 
-These instructions will help you get a copy of the project up and running on your local machine.
+These instructions will help you to get a copy of the project up and running on your local machine
 
 ### Pre-requisites
 
--   Install latest Docker, Docker-compose in your system
+-   Install the latest version of Docker, Docker-compose on your system
 -   Working postgres instance
 -   SMTP credentials (Ex: from mailgun)
 
@@ -46,11 +46,11 @@ These instructions will help you get a copy of the project up and running on you
 -   ADMIN_OTP: (OPTIONAL) Set a unique 6 digit code, if you want the writer to be behind OTP login. OTP login turned off by default.
 -   SECRET: Unique secret
 -   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM: SMTP access creds (OPTIONAL. Used to email OTPs for login)
--   S3_ENDPOINT, REACT_APP_S3_ENDPOINT, S3_BUCKET, S3_KEY, S3_SECRET: (OPTIONAL) Set this if you need image uploads to work in editor
+-   S3_ENDPOINT, REACT_APP_S3_ENDPOINT, S3_BUCKET, S3_KEY, S3_SECRET: (OPTIONAL) Set this if you need image uploads to work in the editor
 
 ### Development
 
-1. Execute following commands from the deploy folder:
+1. Execute the following commands from the deploy folder:
     ```
     docker-compose -f docker-compose.dev.yml up
     ```
@@ -60,7 +60,7 @@ These instructions will help you get a copy of the project up and running on you
 ## Community
 
 -   [Twitter](https://twitter.com/btw_hq): Product updates & memes.
--   [Discord](https://discord.gg/2t5wG7EDb3): If you have questions or just want to hang out, come & say hi!
+-   [Discord](https://discord.com/invite/vbDysPXJuF): If you have questions or just want to hang out, come & say hi!
 
 ## Coming next
 
@@ -73,4 +73,4 @@ These instructions will help you get a copy of the project up and running on you
 
 ## License
 
-See the [LICENSE.md](https://github.com/btw-so/btw/blob/main/LICENSE.md) file for details.
+See the [LICENSE](https://github.com/btw-so/btw/blob/main/LICENSE) file for details.

@@ -56,6 +56,9 @@ export const ActionTypes = keyMirror({
   SET_NOTE_SLUG: undefined,
   SET_NOTE_SLUG_SUCCESS: undefined,
   SET_NOTE_SLUG_FAILURE: undefined,
+  SEARCH_NOTES: undefined,
+  SEARCH_NOTES_SUCCESS: undefined,
+  SEARCH_NOTES_FAILURE: undefined,
 });
 
 export const STATUS = {
