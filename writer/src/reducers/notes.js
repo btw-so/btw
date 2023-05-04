@@ -4,6 +4,15 @@ import { STATUS } from "literals";
 
 import { v4 as uuidv4 } from "uuid";
 
+import Fuse from "fuse.js";
+
+const fuse = new Fuse([], {
+  minMatchCharLength: 3,
+  keys: ["title", "md"],
+  threshold: 0,
+  ignoreLocation: true,
+});
+
 import {
   getNotes,
   getNotesSuccess,
@@ -30,7 +39,13 @@ import {
   setNoteSlug,
   setNoteSlugSuccess,
   setNoteSlugFailure,
+  searchNotes,
+  searchNotesSuccess,
+  searchNotesFailure,
 } from "actions";
+
+import TurndownService from "turndown";
+const turndown = new TurndownService();
 
 export const notesState = {
   notesMap: {},
@@ -56,6 +71,10 @@ export const actionState = {
     data: null,
   },
   setNoteSlug: {
+    status: STATUS.IDLE,
+    data: null,
+  },
+  searchNotes: {
     status: STATUS.IDLE,
     data: null,
   },
@@ -85,6 +104,7 @@ export default {
           // loop through notes and merge them into notesMap
           payload.notes.forEach((note) => {
             let {
+              md,
               ydoc,
               id,
               user_id,
@@ -101,6 +121,15 @@ export default {
             updated_at = new Date(updated_at).getTime();
             deleted_at = deleted_at ? new Date(deleted_at).getTime() : null;
 
+            // for search, remove any images from markdown like ![image](https://example.com/image.png)
+
+            fuse.remove((doc) => doc.id === id);
+            fuse.add({
+              id,
+              title,
+              md: (md || "").replace(/!\[.*?\]\(.*?\)/g, ""),
+            });
+
             if (
               draft.notesMap[id] &&
               draft.notesMap[id].updated_at > updated_at
@@ -115,6 +144,7 @@ export default {
               created_at,
               updated_at,
               ydoc,
+              md,
               archive,
               publish,
               deleted: deletedAs,
@@ -172,12 +202,39 @@ export default {
         draft.selectedNoteId = payload.id;
       })
       .addCase(saveNoteContent, (draft, { payload }) => {
+        let md = "";
+        let title = "";
+        if (payload.content) {
+          try {
+            md = turndown.turndown(
+              payload.content.replace(/<h1.*?>.*?<\/h1>/g, "")
+            );
+
+            // get <h1> content from payload.content
+            const h1 = payload.content.match(/<h1.*?>(.*?)<\/h1>/);
+            if (h1 && h1[1]) {
+              title = h1[1];
+            }
+          } catch (e) {
+            console.log(e);
+          }
+        }
+
+        fuse.remove((doc) => doc.id === payload.id);
+        fuse.add({
+          id: payload.id,
+          title: title || "",
+          md: (md || "").replace(/!\[.*?\]\(.*?\)/g, ""),
+        });
+
         draft.notesMap[payload.id] = Object.assign(
           {},
           draft.notesMap[payload.id] || {},
           {
-            content: payload.content,
+            html: payload.content,
             updated_at: Date.now(),
+            md,
+            title: title || "",
           }
         );
       });
@@ -215,6 +272,7 @@ export default {
         draft.notesMap[payload.id].status = STATUS.SUCCESS;
         draft.notesMap[payload.id].error = null;
         draft.notesMap[payload.id].ydoc = payload.ydoc;
+        draft.notesMap[payload.id].md = payload.md;
         draft.notesMap[payload.id].title = payload.title;
         draft.notesMap[payload.id].slug = payload.slug;
         draft.notesMap[payload.id].updated_at = payload.updated_at
@@ -232,6 +290,13 @@ export default {
         draft.notesMap[payload.id].deleted_at = payload.deleted_at
           ? new Date(payload.deleted_at).getTime()
           : null;
+
+        fuse.remove((doc) => doc.id === payload.id);
+        fuse.add({
+          id: payload.id,
+          title: payload.title,
+          md: (payload.md || "").replace(/!\[.*?\]\(.*?\)/g, ""),
+        });
       })
       .addCase(getNoteFailure, (draft, { payload }) => {
         draft.notesMap[payload.id].status = STATUS.ERROR;
@@ -242,6 +307,84 @@ export default {
     builder.addCase(resetState, (draft) => {
       return actionState;
     });
+
+    builder
+      .addCase(searchNotes, (draft, { payload }) => {
+        // draft.searchNotes.status = STATUS.RUNNING;
+        // draft.searchNotes.error = null;
+        const query = payload.query;
+        let results = JSON.parse(JSON.stringify(fuse.search(query)));
+
+        var highlighter = function (matchedItem, indices) {
+          var text = matchedItem;
+          var result = [];
+          var matches = [].concat(indices); // limpar referencia
+          var pair = matches.shift();
+
+          for (var i = 0; i < text.length; i++) {
+            var char = text.charAt(i);
+            if (pair && i == pair[0]) {
+              result.push("<mark>");
+            }
+            result.push(char);
+            if (pair && i == pair[1]) {
+              result.push("</mark>");
+              pair = matches.shift();
+            }
+          }
+          var highlight = result.join("");
+
+          return highlight;
+        };
+
+        // convert results.matches to a <mark> highlighted string
+        results.map((result) => {
+          const title = result.item.title || "";
+          const md = result.item.md || "";
+          const titleMatch = title.toLowerCase().indexOf(query.toLowerCase());
+          const mdMatch = md.toLowerCase().indexOf(query.toLowerCase());
+
+          if (titleMatch !== -1) {
+            const highlightedTitle = highlighter(title, [
+              [titleMatch, titleMatch + Math.max(query.length - 1, 0)],
+            ]);
+            result.item.highlightedTitle = highlightedTitle;
+          } else {
+            result.item.highlightedTitle = title;
+          }
+
+          if (mdMatch !== -1) {
+            const highlightedMd = highlighter(md, [
+              [mdMatch, mdMatch + Math.max(query.length - 1, 0)],
+            ]);
+            result.item.highlightedMd = highlightedMd;
+
+            // we can't show the whole md, it's too much
+            // find the first <mark> and show 30 chars before it and 30 chars after it
+            const firstMark = highlightedMd.indexOf("<mark>");
+            const lastMark = highlightedMd.indexOf("</mark>");
+            const start = firstMark - 30;
+            const end = lastMark + 30;
+            const highlightedMdShort = highlightedMd.substring(start, end);
+            result.item.highlightedMdShort = highlightedMdShort;
+          } else {
+            // first 42 chars of content
+            const highlightedMd = (md || "").substring(0, 42);
+            result.item.highlightedMd = highlightedMd;
+          }
+        });
+
+        draft.searchNotes.data = results;
+      })
+      .addCase(searchNotesSuccess, (draft, { payload }) => {
+        draft.searchNotes.status = STATUS.SUCCESS;
+        draft.searchNotes.error = null;
+        draft.searchNotes.data = payload.notes;
+      })
+      .addCase(searchNotesFailure, (draft, { payload }) => {
+        draft.searchNotes.status = STATUS.ERROR;
+        draft.searchNotes.error = payload.error;
+      });
 
     builder
       .addCase(setNoteSlug, (draft) => {

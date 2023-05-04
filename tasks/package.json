@@ -95,7 +95,7 @@
     "socket.io-redis": "~6.1.0",
     "tippy.js": "^6.3.7",
     "tough-cookie": "^4.0.0",
-    "typesense": "^1.1.2",
+    "turndown": "^7.1.2",
     "uuid": "^8.0.0",
     "xml": "^1.0.1",
     "yjs": "13.5.48"

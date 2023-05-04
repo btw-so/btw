@@ -126,7 +126,7 @@ function Dash(props) {
                       />
                     </div>
                     <button
-                      className={`w-5 h-5 flex items-center hover:text-blue-500 ${
+                      className={`hidden sm:block w-5 h-5 flex items-center hover:text-blue-500 ${
                         showEditUrl ? "hidden" : ""
                       }`}
                       onClick={() => {
@@ -172,6 +172,13 @@ function Dash(props) {
                       ) {
                         toast.error(
                           "Please set a title for this note before publishing"
+                        );
+                        return;
+                      }
+
+                      if (!selectedNote.ydoc) {
+                        toast.error(
+                          "The note is not yet saved to the server. Please wait 10 seconds before publishing"
                         );
                         return;
                       }

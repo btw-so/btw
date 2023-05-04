@@ -9,9 +9,9 @@ WORKDIR /writer
 ENV PATH /writer/node_modules/.bin:$PATH
 
 COPY package.json /writer/package.json
-COPY package.json /teemp/package.json
+COPY package.json /tmp/package.json
 RUN npm config set unsafe-perm true
-RUN cd /teemp && npm install --force
+RUN cd /tmp && npm install --force
 # COPY package-lock.json /tasks/package-lock.json
 
 # # RUN apk add --no-cache --virtual .gyp
@@ -33,9 +33,9 @@ RUN npm install db-migrate -g
 RUN npm install cross-env -g
 
 COPY . /writer
-RUN cp -a /teemp/node_modules /writer/node_modules
+RUN cp -a /tmp/node_modules /writer/node_modules
 
-# allow port 3006 to be publicly available
+# allow port 9200 to be publicly available
 EXPOSE 9200
 
 # run command
