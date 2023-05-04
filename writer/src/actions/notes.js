@@ -70,6 +70,24 @@ export const setNoteSlugFailure = createAction(
   })
 );
 
+export const searchNotes = createAction(ActionTypes.SEARCH_NOTES, (data) => ({
+  payload: data,
+}));
+
+export const searchNotesSuccess = createAction(
+  ActionTypes.SEARCH_NOTES_SUCCESS,
+  (data) => ({
+    payload: data,
+  })
+);
+
+export const searchNotesFailure = createAction(
+  ActionTypes.SEARCH_NOTES_FAILURE,
+  (data) => ({
+    payload: data,
+  })
+);
+
 export const publishNote = createAction(ActionTypes.PUBLISH_NOTE, (data) => ({
   payload: data,
 }));
