@@ -1483,6 +1483,10 @@ input[type="number"]::-webkit-inner-spin-button,
   margin-left: 0.25rem;
 }
 
+.ml-2 {
+  margin-left: 0.5rem;
+}
+
 .ml-auto {
   margin-left: auto;
 }
@@ -1509,10 +1513,6 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .mt-4 {
   margin-top: 1rem;
-}
-
-.ml-2 {
-  margin-left: 0.5rem;
 }
 
 .block {
@@ -1701,6 +1701,12 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .justify-between {
   justify-content: space-between;
+}
+
+.space-x-2 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+  margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
 }
 
 .overflow-hidden {
@@ -1907,6 +1913,10 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .pl-4 {
   padding-left: 1rem;
+}
+
+.pl-8 {
+  padding-left: 2rem;
 }
 
 .pt-16 {
@@ -2265,7 +2275,7 @@ hr.ProseMirror-selectednode {
 }
 
 .editor__header .menu-item:hover,
-.editor__header .menu-item .is-active {
+.editor__header .menu-item.is-active {
   background-color: #0d0d0d;
   color: #fff;
 }

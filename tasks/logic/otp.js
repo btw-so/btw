@@ -15,10 +15,9 @@ baseQueue.add(
 
 baseQueue.process("removeOldOTPs", async (job, done) => {
     const tasksDB = await db.getTasksDB();
-    const client = await tasksDB.connect();
 
     // remove all otps that are older than 2 hours
-    await client.query(
+    await tasksDB.query(
         `DELETE FROM btw.otp WHERE created_at < NOW() - INTERVAL '120 minutes'`
     );
 
