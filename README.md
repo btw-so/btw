@@ -27,11 +27,11 @@ You can [sign up](https://btw.so) and use btw without installing anything. You c
 
 ## Getting started
 
-These instructions will help you get a copy of the project up and running on your local machine.
+These instructions will help you to get a copy of the project up and running on your local machine
 
 ### Pre-requisites
 
--   Install latest Docker, Docker-compose in your system
+-   Install the latest version of Docker, Docker-compose on your system
 -   Working postgres instance
 -   SMTP credentials (Ex: from mailgun)
 
@@ -58,10 +58,9 @@ These instructions will help you get a copy of the project up and running on you
 | S3_KEY                   | OPTIONAL                                                                                                                    |
 | S3_SECRET                | OPTIONAL                                                                                                                   |
 
-
 ### Development
 
-1. Execute following commands from the deploy folder:
+1. Execute the following commands from the deploy folder:
     ```
     docker-compose -f docker-compose.dev.yml up
     ```

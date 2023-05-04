@@ -131,7 +131,7 @@ hr.ProseMirror-selectednode {
 }
 
 .editor__header .menu-item:hover,
-.editor__header .menu-item .is-active {
+.editor__header .menu-item.is-active {
   background-color: #0d0d0d;
   color: #fff;
 }
