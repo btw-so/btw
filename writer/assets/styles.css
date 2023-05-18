@@ -211,3 +211,174 @@ hr.ProseMirror-selectednode {
   display: flex;
   align-items: center;
 }
+
+.problem {
+  /* position: relative; */
+}
+
+:root {
+  --tiptop: 0;
+  --tipleft: 0;
+}
+
+.problem.tooltip::before {
+  content: attr(data-message);
+  position: absolute;
+  z-index: 1;
+  background-color: white;
+  padding: 5px;
+  text-align: center;
+  border-radius: 2px;
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  width: 180px;
+  line-height: 1.5;
+  display: block;
+  font-size: 12px;
+  top: var(--tiptop);
+  left: var(--tipleft);
+}
+
+.problem.hardSentences,
+.problem.hardSentences::before {
+  /* apply tailwind yellow 500 as bg */
+  background: #fffab5;
+  content: attr(data-hardsentences);
+}
+
+.problem.veryHardSentences,
+.problem.veryHardSentences::before {
+  /* apply tailwind red 500 as bg */
+  @apply bg-red-300;
+  content: attr(data-veryhardsentences);
+}
+
+.problem.complex,
+.problem.complex::before {
+  /* apply tailwind indigo 500 */
+  @apply bg-indigo-200;
+  content: attr(data-complex);
+}
+
+.problem.adverbs,
+.problem.adverbs::before {
+  /* apply tailwind purple 500 */
+  @apply bg-purple-200;
+  content: attr(data-adverbs);
+}
+
+.problem.qualifier,
+.problem.qualifier::before {
+  /* apply tailwind purple 500 */
+  @apply bg-purple-200;
+  content: attr(data-qualifier);
+}
+
+.problem.passiveVoice,
+.problem.passiveVoice::before {
+  /* apply tailwind pink 500 */
+  @apply bg-green-200;
+  content: attr(data-passivevoice);
+}
+
+.problem.MonotonousTone,
+.problem.MonotonousTone::before {
+  background: #c4e3ff;
+  content: attr(data-monotonoustone);
+}
+
+.problem.FirstElementNotH1,
+.problem.FirstElementNotH1::before {
+  @apply bg-red-200;
+}
+
+.problem.MoreThanOneH1,
+.problem.MoreThanOneH1::before {
+  /* apply tailwind red 500 */
+  @apply bg-red-200;
+}
+
+.problem.HeadingLevel,
+.problem.HeadingLevel::before {
+  @apply bg-red-200;
+}
+
+.problem.tooltip:hover::before,
+.problem.tooltip:focus::before {
+  opacity: 1;
+}
+
+.lint-icon {
+  display: inline-block;
+  position: absolute;
+  right: 2px;
+  cursor: pointer;
+  border-radius: 100px;
+  background: #f22;
+  color: white;
+  font-family: times, georgia, serif;
+  font-size: 15px;
+  font-weight: bold;
+  width: 1.1em;
+  height: 1.1em;
+  text-align: center;
+  padding-left: 0.5px;
+  line-height: 1.1em;
+}
+
+.lint-icon:before {
+  content: "!";
+}
+
+.ProseMirror {
+  padding-right: 20px;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cccccc #ffffff;
+}
+
+/* Chrome, Edge and Safari */
+*::-webkit-scrollbar {
+  width: 6px;
+  width: 6px;
+}
+*::-webkit-scrollbar-track {
+  border-radius: 6px;
+  background-color: #ffffff;
+}
+
+/* .small-scrollbar::-webkit-scrollbar-track {
+  width: 60px !important;
+  height: 60px !important;
+}
+
+.small-scrollbar::-webkit-scrollbar-track {
+  background-color: red !important;
+} */
+
+*::-webkit-scrollbar-track:hover {
+  background-color: #ffffff;
+}
+
+*::-webkit-scrollbar-track:active {
+  background-color: #ffffff;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+  background-color: #cccccc;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #bbbbbb;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: #bbbbbb;
+}

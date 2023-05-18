@@ -376,5 +376,47 @@
         This website need Javascript. Please turn it on.
       </div>
     </noscript>
+    <script>
+      var rootElement = document.querySelector(":root");
+
+      function addReviewTooltipListeners() {
+        var tooltips = document.querySelectorAll("span.problem.tooltip");
+        // remove old listeners
+        tooltips.forEach(function (tooltip) {
+          tooltip.removeEventListener("mouseover", function () {});
+        });
+
+        var editor = document.querySelector(".tiptap-editor>.small-scrollbar");
+
+        tooltips.forEach(function (tooltip) {
+          tooltip.addEventListener("mouseover", function () {
+            var rect = tooltip.getBoundingClientRect();
+            var editorRect = editor.getBoundingClientRect();
+
+            var editorTop = editorRect.top;
+            var editorLeft = editorRect.left;
+            var scrolledSoFar = editor.scrollTop;
+            var editorWidth = editorRect.width;
+
+            var tooltipWidth = rect.width;
+
+            var top = rect.top - editorTop - 45 + scrolledSoFar;
+            var left = rect.left - editorLeft;
+
+            if (Math.abs(editorWidth - tooltipWidth) < 80) {
+              left = editorWidth / 2 - 90;
+            }
+
+            if (left > editorWidth - 180) {
+              left = editorWidth - 180 - 10;
+            }
+
+            // set css variables tiptop and tipleft based on the menu item's position
+            rootElement.style.setProperty("--tiptop", `${top}px`);
+            rootElement.style.setProperty("--tipleft", `${left}px`);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

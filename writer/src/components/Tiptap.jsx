@@ -2,6 +2,7 @@
 import React from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { Editor } from "@tiptap/core";
+import { TextSelection } from "@tiptap/pm/state";
 
 import Youtube from "@tiptap/extension-youtube";
 import Document from "@tiptap/extension-document";
@@ -34,6 +35,15 @@ import Image from "@tiptap/extension-image";
 const CustomDocument = Document.extend({
   content: "heading block*",
 });
+
+let TipTapTeacher = null;
+const requireCustomFile = require.context("../enterprise", false, /E.*$/);
+if (requireCustomFile.keys()?.length > 0) {
+  if (requireCustomFile.keys()?.includes("./E.TipTapTeacher.jsx")) {
+    const fileName = "E.TipTapTeacher.jsx";
+    TipTapTeacher = requireCustomFile(`./${fileName}`).default;
+  }
+}
 
 import UppyComponent from "../components/Uppy";
 import Suggestion from "./TipTapSuggestion";
@@ -186,6 +196,7 @@ class Tiptap extends React.Component {
               }),
             ]
           : []),
+        ...(TipTapTeacher ? [TipTapTeacher] : []),
       ],
       editorProps: {
         attributes: {
@@ -199,6 +210,60 @@ class Tiptap extends React.Component {
     this.editor.on("update", () => {
       this.props.onChange(this.editor.getHTML());
     });
+
+    if (props.reviewerMode) {
+      this.enableTeacherModeAndRun();
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!prevProps.reviewerMode && this.props.reviewerMode) {
+      this.enableTeacherModeAndRun();
+    } else if (
+      this.props.reviewerMode &&
+      prevProps.docId !== this.props.docId
+    ) {
+      this.enableTeacherModeAndRun();
+    }
+
+    if (!this.props.reviewerMode) {
+      this.disableTeacherMode();
+    }
+  }
+
+  getTeacherResults() {
+    if (
+      TipTapTeacher &&
+      this.editor &&
+      this.editor.storage &&
+      this.editor.storage.teacher
+    ) {
+      return this.editor.commands.getData();
+    }
+  }
+
+  enableTeacherModeAndRun() {
+    if (
+      TipTapTeacher &&
+      this.editor &&
+      this.editor.storage &&
+      this.editor.storage.teacher
+    ) {
+      this.editor.commands.enableTeacher();
+      this.editor.chain().runTeacher().run();
+    }
+  }
+
+  disableTeacherMode() {
+    if (
+      TipTapTeacher &&
+      this.editor &&
+      this.editor.storage &&
+      this.editor.storage.teacher
+    ) {
+      this.editor.commands.disableTeacher();
+      this.editor.chain().runTeacher().run();
+    }
   }
 
   setContent(content) {
@@ -207,6 +272,25 @@ class Tiptap extends React.Component {
 
   componentWillUnmount() {
     clearInterval(this.interval);
+  }
+
+  moveTo(from, to) {
+    const { node } = this.editor.view.domAtPos(from);
+    node?.scrollIntoView?.(false);
+
+    // set text selection
+    this.editor.view.dispatch(
+      this.editor.view.state.tr.setSelection(
+        TextSelection.create(this.editor.view.state.doc, from, to)
+      )
+    );
+  }
+
+  fix(fn, issue) {
+    if (fn) {
+      this.moveTo(issue.from, issue.to);
+      fn(this.editor.view, issue);
+    }
   }
 
   render() {
@@ -234,10 +318,10 @@ class Tiptap extends React.Component {
               .run(); // add a new embed element
           }}
         />
-        <div className="tiptap-editor flex flex-col flex-grow overflow-y-scroll">
+        <div className="tiptap-editor flex flex-col flex-grow overflow-y-auto overflow-x-auto">
           <EditorContent
             editor={this.editor}
-            className="flex-grow max-w-4xl"
+            className="flex-grow max-w-4xl overflow-x-hidden small-scrollbar"
             onClick={(e) => {
               // get the editor in focus
               this.editor.commands.focus();

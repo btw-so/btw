@@ -96,6 +96,7 @@ function Root() {
                   email={user && user.data ? user.data.email : null}
                   slug={user && user.data ? user.data.slug : null}
                   domain={userDomain}
+                  proUser={user && user.data ? user.data.pro : null}
                 />
               </PrivateRoute>
             }

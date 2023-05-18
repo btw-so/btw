@@ -50,7 +50,9 @@ const getCommonDeets = (
     originalUrl: createSubUrlWithPath(res, path),
     canonicalUrl: createSubUrlWithPath(res, path),
     aboutUrl: createSubUrlWithPath(res, "/about"),
-    site_logo: user.pic,
+    site_logo:
+      user.pic ||
+      "https://res.cloudinary.com/adaface/image/upload/f_auto,q_auto/btw-app-icon.png",
     title: title
       ? `${title} | ${user.name || user.email}`
       : user.name || user.email,

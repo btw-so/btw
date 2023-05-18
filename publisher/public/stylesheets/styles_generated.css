@@ -1003,6 +1003,12 @@ select {
 .prose :where(.prose > :last-child):not(:where([class~="not-prose"] *)) {
   margin-bottom: 0;
 }
+.absolute {
+  position: absolute;
+}
+.relative {
+  position: relative;
+}
 .mb-2 {
   margin-bottom: 0.5rem;
 }
@@ -1047,6 +1053,12 @@ select {
 }
 .max-w-xs {
   max-width: 20rem;
+}
+.flex-shrink {
+  flex-shrink: 1;
+}
+.flex-grow {
+  flex-grow: 1;
 }
 .resize {
   resize: both;

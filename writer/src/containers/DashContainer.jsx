@@ -20,6 +20,15 @@ import AppWrapper from "./AppWraper";
 import useTreeChanges from "tree-changes-hook";
 import toast from "react-hot-toast";
 
+let TipTapTeacherSummary = null;
+const requireCustomFile = require.context("../enterprise", false, /E.*$/);
+if (requireCustomFile.keys()?.length > 0) {
+  if (requireCustomFile.keys()?.includes("./E.TipTapTeacherSummary.jsx")) {
+    const fileName = "E.TipTapTeacherSummary.jsx";
+    TipTapTeacherSummary = requireCustomFile(`./${fileName}`).default;
+  }
+}
+
 function Dash(props) {
   const navigate = useNavigate();
   const [token, setToken] = useCookie(
@@ -35,6 +44,8 @@ function Dash(props) {
   const { changed } = useTreeChanges(noteActionsState);
   const { changed: notesStateChanged } = useTreeChanges(notesState);
   const dispatch = useDispatch();
+
+  const proUser = props.proUser;
 
   useEffect(() => {
     setEnabled(selectedNote?.publish || false);
@@ -67,6 +78,21 @@ function Dash(props) {
       }
     }
   }, [changed("setNoteSlug.status")]);
+
+  const [reviewerMode, setReviewerMode] = useState(false);
+  const [reviewData, setReviewData] = useState(null);
+  const tiptapRef = useRef(null);
+  useEffect(() => {
+    if (reviewerMode) {
+      setTimeout(() => {
+        if (tiptapRef.current) {
+          // get review data
+          const reviewData = tiptapRef.current.getTeacherResults();
+          setReviewData(reviewData);
+        }
+      }, 400);
+    }
+  }, [reviewerMode, selectedNote?.id]);
 
   if (token) {
     return (
@@ -145,7 +171,32 @@ function Dash(props) {
                   </div>
                 ) : null}
               </div>
-              <div>
+              <div className="flex space-x-5 ml-5">
+                {TipTapTeacherSummary ? (
+                  <Switch.Group as="div" className="flex items-center">
+                    <Switch.Label as="span" className="mr-3 text-sm">
+                      <span className="font-medium text-gray-900 whitespace-nowrap">
+                        {enabled ? "Check readability" : "Check readability"}
+                      </span>{" "}
+                    </Switch.Label>
+                    <Switch
+                      checked={reviewerMode}
+                      onChange={() => {
+                        setReviewerMode(!reviewerMode);
+                      }}
+                      className={`${
+                        reviewerMode ? "bg-blue-600" : "bg-gray-200"
+                      } flex items-center h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`mx-0.5 ${
+                          reviewerMode ? "translate-x-5" : "translate-x-0"
+                        } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                      />
+                    </Switch>
+                  </Switch.Group>
+                ) : null}
                 <Switch.Group as="div" className="flex items-center">
                   <Switch.Label as="span" className="mr-3 text-sm">
                     <span className="font-medium text-gray-900">
@@ -211,40 +262,77 @@ function Dash(props) {
                 </Switch.Group>
               </div>
             </div>
-            <Tiptap
-              className="h-full p-2"
-              note={notesState.notesMap[notesState.selectedNoteId]}
-              key={notesState.selectedNoteId}
-              token={token}
-              userId={props.userId}
-              email={props.email}
-              name={props.name}
-              docId={notesState.selectedNoteId}
-              savedContent={
-                notesState.notesMap[notesState.selectedNoteId].content
-              }
-              enableServerSync={true}
-              mandatoryH1={true}
-              onChange={(html) => {
-                const isEmpty = (content) => !content || content == "<h1></h1>";
-                if (
-                  (isEmpty(html) &&
-                    isEmpty(
-                      notesState.notesMap[notesState.selectedNoteId].content
-                    )) ||
-                  html ===
-                    notesState.notesMap[notesState.selectedNoteId].content
-                ) {
-                  return;
+            <div className="flex h-full overflow-hidden">
+              <Tiptap
+                ref={tiptapRef}
+                reviewerMode={reviewerMode}
+                className="h-full flex-grow p-2"
+                note={notesState.notesMap[notesState.selectedNoteId]}
+                key={notesState.selectedNoteId}
+                token={token}
+                userId={props.userId}
+                email={props.email}
+                name={props.name}
+                docId={notesState.selectedNoteId}
+                savedContent={
+                  notesState.notesMap[notesState.selectedNoteId].content
                 }
-                dispatch(
-                  saveNoteContent({
-                    id: notesState.selectedNoteId,
-                    content: html,
-                  })
-                );
-              }}
-            />
+                enableServerSync={true}
+                mandatoryH1={true}
+                onChange={(html) => {
+                  const isEmpty = (content) =>
+                    !content || content == "<h1></h1>";
+                  if (
+                    (isEmpty(html) &&
+                      isEmpty(
+                        notesState.notesMap[notesState.selectedNoteId].content
+                      )) ||
+                    html ===
+                      notesState.notesMap[notesState.selectedNoteId].content
+                  ) {
+                    return;
+                  }
+                  dispatch(
+                    saveNoteContent({
+                      id: notesState.selectedNoteId,
+                      content: html,
+                    })
+                  );
+
+                  if (reviewerMode) {
+                    setTimeout(() => {
+                      if (tiptapRef.current) {
+                        // get review data
+                        const reviewData =
+                          tiptapRef.current.getTeacherResults();
+                        setReviewData(reviewData);
+                      }
+                    }, 200);
+                  }
+                }}
+              />
+              <div
+                className="mt-2 w-80 flex-grow shrink-0 hidden sm:block"
+                style={{
+                  whiteSpace: "wrap",
+                  wordWrap: "break-word",
+                  overflowWrap: "break-word",
+                  maxWidth: "20rem",
+                }}
+              >
+                {reviewerMode && TipTapTeacherSummary ? (
+                  <TipTapTeacherSummary
+                    data={reviewData}
+                    onClick={(from, to) => {
+                      tiptapRef.current?.moveTo(from, to);
+                    }}
+                    fix={(fn, issue) => {
+                      tiptapRef.current?.fix(fn, issue);
+                    }}
+                  />
+                ) : null}
+              </div>
+            </div>
           </div>
         ) : null}
       </AppWrapper>
