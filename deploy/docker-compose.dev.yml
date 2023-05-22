@@ -5,6 +5,8 @@ services:
         platform: linux/amd64
         container_name: tasks
         build: ../tasks
+        depends_on:
+            - db
         volumes:
             - ../tasks/views:/tasks/views
             - ../tasks/services:/tasks/services
@@ -61,6 +63,8 @@ services:
         platform: linux/amd64
         container_name: writer
         build: ../writer
+        depends_on:
+            - db
         volumes:
             - ../writer/assets:/writer/assets
             - ../writer/src:/writer/src
@@ -93,6 +97,8 @@ services:
         platform: linux/amd64
         container_name: publisher
         build: ../publisher
+        depends_on:
+            - db
         volumes:
             - ../publisher/views:/publisher/views
             - ../publisher/services:/publisher/services
@@ -129,3 +135,17 @@ services:
         container_name: redis
         ports:
             - "6379:6379"
+    db:
+        image: postgres:15.2-alpine
+        restart: always
+        container_name: postgres
+        user: postgres
+        environment:
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: btw
+        volumes:
+        - ../btw.sql:/docker-entrypoint-initdb.d/init.sql
+        ports:
+            - "5432:5432"
+        expose:
+            - "5432"

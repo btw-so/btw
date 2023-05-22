@@ -33,7 +33,7 @@ router.post(
         }
 
         const otp = await generateOTP({ email });
-
+        console.log("Jalotra : " + otp);
         emailOTP({ email, otp });
 
         res.json({ success: true });

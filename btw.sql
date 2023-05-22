@@ -3,7 +3,8 @@
 -- Generation Time: 2023-03-28 16:22:10.3490
 -- -------------------------------------------------------------
 
-CREATE SCHEMA btw;
+CREATE DATABASE IF NOT EXISTS btw;
+CREATE SCHEMA IF NOT EXISTS btw;
 
 DROP TABLE IF EXISTS "btw"."custom_domains";
 
@@ -92,4 +93,3 @@ CREATE TABLE "btw"."users" (
     "created_at" timestamptz NOT NULL,
     PRIMARY KEY ("processed_email")
 );
-
