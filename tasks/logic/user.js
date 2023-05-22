@@ -4,6 +4,241 @@ const { v4: uuidv4 } = require("uuid");
 
 const { baseQueue } = require("../services/queue");
 const { customDomainSetupEmail } = require("../logic/email");
+const axios = require("axios");
+
+// add a job that runs every 24 hours for all existing users
+// if umami_sit_id exists, upsert the website name, domain of this site id
+// ^ do the same for custom_domains
+baseQueue.add(
+    "upsertUmamiSiteId",
+    {},
+    {
+        repeat: {
+            every: 24 * 60 * 60 * 1000,
+        },
+    }
+);
+
+baseQueue.process("upsertUmamiSiteId", async (job, done) => {
+    // schedule a child job for every user
+    const tasksDB = await db.getTasksDB();
+
+    const { rows: users } = await tasksDB.query(
+        `SELECT id, name, slug, share_id, umami_site_id FROM btw.users WHERE umami_site_id IS NOT NULL AND slug IS NOT NULL`
+    );
+
+    for (let i = 0; i < users.length; i++) {
+        let domain = `${users[i].slug}.${process.env.ROOT_DOMAIN}`;
+        let umami_site_id = users[i].umami_site_id;
+        let name = users[i].name || `Blog - ${users[i].slug}`;
+        let share_id = users[i].share_id;
+
+        if (umami_site_id) {
+            // upsert the website name, domain of this site id
+            baseQueue.add(
+                "upsertUmamiSiteIdForUser",
+                {
+                    domain,
+                    umami_site_id,
+                    name,
+                    share_id,
+                },
+                {
+                    removeOnComplete: true,
+                    removeOnFail: true,
+                }
+            );
+        }
+    }
+
+    // get entries from custom_domains table
+    const { rows: custom_domains } = await tasksDB.query(
+        `SELECT domain, btw.custom_domains.share_id, btw.custom_domains.umami_site_id, btw.users.name FROM btw.custom_domains LEFT JOIN btw.users ON btw.custom_domains.user_id = btw.users.id WHERE btw.custom_domains.umami_site_id IS NOT NULL`
+    );
+
+    for (let i = 0; i < custom_domains.length; i++) {
+        let domain = custom_domains[i].domain;
+        let umami_site_id = custom_domains[i].umami_site_id;
+        let share_id = custom_domains[i].share_id;
+        let name = custom_domains[i].name || `Blog - ${custom_domains[i].id}`;
+
+        if (umami_site_id) {
+            // upsert the website name, domain of this site id
+            baseQueue.add(
+                "upsertUmamiSiteIdForUser",
+                {
+                    domain,
+                    umami_site_id,
+                    share_id,
+                    name,
+                },
+                {
+                    removeOnComplete: true,
+                    removeOnFail: true,
+                }
+            );
+        }
+    }
+
+    done();
+});
+
+baseQueue.process("upsertUmamiSiteIdForUser", async (job, done) => {
+    const { domain, umami_site_id, name, share_id } = job.data;
+
+    // check that UMAMI_SOURCE AND UMAMI_TOKEN are available in process.env
+    if (!process.env.UMAMI_SOURCE || !process.env.UMAMI_TOKEN) {
+        console.log("UMAMI_SOURCE or UMAMI_TOKEN not set");
+        done();
+        return;
+    }
+
+    // DO A POST request to UMAMI_SOURCE on POST /api/websites/{websiteId}
+    // with body { domain, name, shareId }
+
+    try {
+        const response = await axios.post(
+            `${process.env.UMAMI_SOURCE}/api/websites/${umami_site_id}`,
+            {
+                domain,
+                name,
+                shareId: share_id,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.UMAMI_TOKEN}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+    } catch (e) {
+        console.log(e);
+    }
+
+    done();
+});
+
+// add a job that runs every 1 hour. checks if there is no umami_site_id for a user. if not, create one
+baseQueue.add(
+    "createUmamiSiteId",
+    {},
+    {
+        repeat: {
+            every: 60 * 60 * 1000,
+        },
+    }
+);
+
+baseQueue.process("createUmamiSiteId", async (job, done) => {
+    // schedule a child job for every user
+    const tasksDB = await db.getTasksDB();
+
+    const { rows: users } = await tasksDB.query(
+        `SELECT id, name, slug, umami_site_id FROM btw.users WHERE umami_site_id IS NULL AND slug IS NOT NULL`
+    );
+
+    for (let i = 0; i < users.length; i++) {
+        let domain = `${users[i].slug}.${process.env.ROOT_DOMAIN}`;
+        let name = users[i].name || `Blog - ${users[i].slug}`;
+        let id = users[i].id;
+
+        // create a new site id
+        baseQueue.add(
+            "createUmamiSiteIdForUser",
+            {
+                domain,
+                name,
+                id,
+                type: "user",
+            },
+            {
+                removeOnComplete: true,
+                removeOnFail: true,
+            }
+        );
+    }
+
+    // now for custom domains
+    const { rows: custom_domains } = await tasksDB.query(
+        `SELECT domain, btw.custom_domains.id, btw.custom_domains.share_id, btw.users.name FROM btw.custom_domains LEFT JOIN btw.users ON btw.custom_domains.user_id = btw.users.id WHERE btw.custom_domains.umami_site_id IS NULL`
+    );
+
+    for (let i = 0; i < custom_domains.length; i++) {
+        let domain = custom_domains[i].domain;
+        let name = custom_domains[i].name || `Blog - ${custom_domains[i].id}`;
+        let id = custom_domains[i].id;
+
+        // create a new site id
+        baseQueue.add(
+            "createUmamiSiteIdForUser",
+            {
+                domain,
+                name,
+                id: `0${id}`,
+                type: "custom_domain",
+            },
+            {
+                removeOnComplete: true,
+                removeOnFail: true,
+            }
+        );
+    }
+
+    done();
+});
+
+baseQueue.process("createUmamiSiteIdForUser", async (job, done) => {
+    const { domain, name, id, type } = job.data;
+
+    // check that UMAMI_SOURCE AND UMAMI_TOKEN are available in process.env
+    if (!process.env.UMAMI_SOURCE || !process.env.UMAMI_TOKEN) {
+        console.log("UMAMI_SOURCE or UMAMI_TOKEN not set");
+        done();
+        return;
+    }
+
+    // DO A POST request to UMAMI_SOURCE on POST /api/websites
+    // with body { domain, name }
+    // create share_id using hri
+    const hri = require("human-readable-ids").hri;
+    const share_id = hri.random() + "-" + id;
+
+    try {
+        const response = await axios.post(
+            `${process.env.UMAMI_SOURCE}/api/websites`,
+            {
+                domain,
+                name,
+                shareId: share_id,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.UMAMI_TOKEN}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        // update the umami_site_id and share_id in btw.users
+        const tasksDB = await db.getTasksDB();
+
+        if (type == "user") {
+            await tasksDB.query(
+                `UPDATE btw.users SET umami_site_id = $1, share_id = $2 WHERE id = $3`,
+                [response.data.id, share_id, id]
+            );
+        } else {
+            await tasksDB.query(
+                `UPDATE btw.custom_domains SET umami_site_id = $1, share_id = $2 WHERE id = $3`,
+                [response.data.id, share_id, id]
+            );
+        }
+    } catch (e) {
+        console.log(e);
+    }
+
+    done();
+});
 
 // add a job that runs every 2 hours and removed old login tokens
 baseQueue.add(

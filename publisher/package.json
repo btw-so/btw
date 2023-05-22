@@ -49,6 +49,7 @@
     "morgan": "~1.9.1",
     "mysql": "^2.18.1",
     "newrelic": "7.5.2",
+    "node-cron": "^3.0.2",
     "node-fetch": "^2.6.1",
     "node-html-parser": "^6.1.5",
     "pg": "^8.0.3",
