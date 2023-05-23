@@ -76,6 +76,7 @@
     "hbs": "~4.0.4",
     "http": "0.0.1-security",
     "http-errors": "~1.6.3",
+    "human-readable-ids": "^1.0.4",
     "jsdom": "^21.1.1",
     "lodash": "4.17.11",
     "lowlight": "^2.8.1",

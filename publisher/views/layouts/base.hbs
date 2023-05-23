@@ -73,6 +73,15 @@
       rel="stylesheet"
     />
 
+
+    {{#and umami_src umami_site_id}}
+    <script
+      async
+      src="{{umami_src}}/script.js"
+      data-website-id="{{umami_site_id}}"
+    ></script>
+    {{/and}}
+
   </head>
   <body class="text-base" style="min-height: calc(100vh);display: flex; flex-direction: column;">
     <div id="btw-app" style="flex-grow: 1; flex-shrink: 0;">

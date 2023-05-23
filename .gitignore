@@ -7,7 +7,6 @@ writer/dist/
 writer/node_modules/
 writer/reports/
 writer/webpack.stats.json
-writer/enterprise
 writer/src/enterprise
 
 writer/out/

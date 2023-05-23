@@ -62,6 +62,8 @@ const getCommonDeets = (
     linkedin: user.linkedin,
     twitter: user.twitter,
     instagram: user.instagram,
+    umami_site_id: user.umami_site_id,
+    umami_src: process.env.UMAMI_SOURCE,
   };
 };
 

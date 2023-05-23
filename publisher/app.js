@@ -5,8 +5,12 @@ var logger = require("morgan");
 var exphbs = require("express-handlebars");
 var hbsLayout = require("handlebars-layout");
 
+var cron = require("node-cron");
+
 var indexRouter = require("./routes/index");
 var { genSitemap } = require("./routes/sitemap");
+
+var { cacheUsers } = require("./logic/notes");
 
 var app = express();
 var minifyHTML = require("express-minify-html");
@@ -155,6 +159,13 @@ app.use("/", indexRouter);
 // app.use(function (req, res, next) {
 //   next(createError(404));
 // });
+
+// Run a CRON that runs every 6 hours cacheUsersData
+cron.schedule("0 */6 * * *", () => {
+  console.log("Running a task every 6 hours");
+  cacheUsers();
+});
+cacheUsers();
 
 // error handler
 app.use(function (err, req, res, next) {
