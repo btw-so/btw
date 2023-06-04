@@ -122,7 +122,7 @@ services:
             DOMAIN_QUERY_PARAM: domain
             ROOT_DOMAIN: localhost:9222
             PORT: 9222
-            TASKS_DATABASE_URL:
+            TASKS_DATABASE_URL: postgres://postgres:postgres@db:5432/btw
             DEBUG: 1
             HTTPS_DOMAIN: 0
             NODE_ENV: development
