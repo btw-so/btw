@@ -2,15 +2,9 @@ const { Pool } = require("pg");
 
 class DB {
     async getTasksDB() {
-        // Support for local postgres db connection
-        let connectString = process.env.TASKS_DATABASE_URL;
-        if(connectString === undefined && process.env.NODE_ENV !== "production"){
-            connectString = "postgres://postgres:postgres@localhost:5432/btw";
-        }
-
         if (!this.tasks_pool) {
             this.tasks_pool = new Pool({
-                connectionString: connectString,
+                connectionString: process.env.TASKS_DATABASE_URL,
                 max: 10,
                 ssl: {
                     rejectUnauthorized: false,
