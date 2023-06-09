@@ -1018,6 +1018,9 @@ select {
 .mb-8 {
   margin-bottom: 2rem;
 }
+.ml-6 {
+  margin-left: 1.5rem;
+}
 .mt-0 {
   margin-top: 0px;
 }
@@ -1033,8 +1036,17 @@ select {
 .flex {
   display: flex;
 }
+.h-32 {
+  height: 8rem;
+}
 .h-4 {
   height: 1rem;
+}
+.h-full {
+  height: 100%;
+}
+.w-32 {
+  width: 8rem;
 }
 .w-4 {
   width: 1rem;
@@ -1045,17 +1057,20 @@ select {
 .w-full {
   width: 100%;
 }
+.max-w-2xl {
+  max-width: 42rem;
+}
 .max-w-3xl {
   max-width: 48rem;
-}
-.max-w-md {
-  max-width: 28rem;
 }
 .max-w-xs {
   max-width: 20rem;
 }
 .flex-shrink {
   flex-shrink: 1;
+}
+.flex-shrink-0 {
+  flex-shrink: 0;
 }
 .flex-grow {
   flex-grow: 1;
@@ -1074,8 +1089,23 @@ select {
   margin-right: calc(0.25rem * var(--tw-space-x-reverse));
   margin-left: calc(0.25rem * calc(1 - var(--tw-space-x-reverse)));
 }
+.space-y-8 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(2rem * var(--tw-space-y-reverse));
+}
+.bg-gray-200 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(229 231 235 / var(--tw-bg-opacity));
+}
 .object-contain {
   object-fit: contain;
+}
+.object-cover {
+  object-fit: cover;
+}
+.object-center {
+  object-position: center;
 }
 .object-top {
   object-position: top;
@@ -1097,6 +1127,9 @@ select {
 }
 .font-bold {
   font-weight: 700;
+}
+.leading-4 {
+  line-height: 1rem;
 }
 .text-gray-500 {
   --tw-text-opacity: 1;

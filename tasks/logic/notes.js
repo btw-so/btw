@@ -5,6 +5,69 @@ const { emailImportComplete } = require("./email");
 const fetch = require("node-fetch");
 const { JSDOM } = require("jsdom");
 const turndown = require("turndown")();
+const axios = require("axios");
+
+var NOTE_UPDATE_DEBOUNCES = {};
+
+// do a POST request to process.env.PUBLISHER_SERVER_URL with user_id of the note
+// to the url /internal/cache/refresh/notes
+// this will refresh the cache for the user
+const noteCacheHelper = (user_id) => {
+    console.log("refreshing note cache for user", user_id);
+    const publisherServerUrl = process.env.PUBLISHER_SERVER_URL;
+    if (publisherServerUrl) {
+        try {
+            const publisherServerRefreshUrl = `http${
+                !!Number(process.env.HTTPS_DOMAIN) ? "s" : ""
+            }://${publisherServerUrl}/internal/cache/refresh/notes`;
+            const publisherServerRefreshResponse = axios.post(
+                publisherServerRefreshUrl,
+                {
+                    user_id,
+                }
+            );
+        } catch (e) {
+            console.log("error in refreshing cache", e);
+        }
+    }
+};
+
+baseQueue.add(
+    "htmlToImage",
+    {},
+    {
+        repeat: {
+            every: 10 * 60 * 1000,
+        },
+    }
+);
+
+baseQueue.process("htmlToImage", async (job, done) => {
+    const tasksDB = await db.getTasksDB();
+
+    // get all the posts with non-empty html and has "<img" portion in its html content
+    //  or updated in last 2 hours
+    // get the first image in the html
+    // set the image in the db for this note
+    const { rows } = await tasksDB.query(
+        `SELECT * FROM btw.notes WHERE ((html IS NOT NULL AND html <> '' AND html LIKE '%<img%') AND (image IS NULL OR image = '')) OR updated_at > NOW() - INTERVAL '2 hours'`
+    );
+
+    for (const row of rows) {
+        let image = "";
+        // do a simple parse for first <img src=""> tag via regex and get the src
+        const match = (row.html || "").match(/<img.*?src="(.*?)"/);
+        if (match && match.length > 1) {
+            image = match[1];
+        }
+        await tasksDB.query(`UPDATE btw.notes SET image = $1 WHERE id = $2`, [
+            image,
+            row.id,
+        ]);
+    }
+
+    done();
+});
 
 // run every 10 minutes
 baseQueue.add(
@@ -149,6 +212,16 @@ async function upsertNote({ id, user_id, json, html, title: defaultTitle }) {
         ...(json ? [json] : []),
         ...(hasHTML ? [html.replaceAll("\u0000", "")] : []),
     ]);
+
+    NOTE_UPDATE_DEBOUNCES[id] = NOTE_UPDATE_DEBOUNCES[id] || null;
+    if (NOTE_UPDATE_DEBOUNCES[id]) {
+        clearTimeout(NOTE_UPDATE_DEBOUNCES[id]);
+
+        NOTE_UPDATE_DEBOUNCES[id] = setTimeout(() => {
+            delete NOTE_UPDATE_DEBOUNCES[id];
+            noteCacheHelper(user_id);
+        }, 10 * 60 * 1000);
+    }
 }
 
 async function getNotes({ user_id, page, limit, after = 0 }) {
@@ -242,6 +315,8 @@ async function unpublishNote({ user_id, id }) {
         [id, user_id]
     );
 
+    noteCacheHelper(user_id);
+
     return {
         success: true,
     };
@@ -278,6 +353,8 @@ async function setNoteSlug({ user_id, id, slug }) {
         [slug, id, user_id]
     );
 
+    noteCacheHelper(user_id);
+
     return {
         success: true,
     };
@@ -310,10 +387,23 @@ async function publishNote({ user_id, id }) {
         .replace(/ /g, "-")
         .replace(/[^\w-]+/g, "");
 
+    const html = note.html || "";
+    let image = "";
+
+    // from regex get first <img src="" from html and extract src as image
+    const regex = /<img.*?src="(.*?)"/;
+    const found = html.match(regex);
+
+    if (found && found.length > 1) {
+        image = found[1];
+    }
+
     await pool.query(
-        `UPDATE btw.notes SET publish = true, published_at = $1, slug = $2 WHERE id = $3 AND user_id = $4`,
-        [new Date(), slug, id, user_id]
+        `UPDATE btw.notes SET publish = true, published_at = $1, slug = $2, image = $3 WHERE id = $4 AND user_id = $5`,
+        [new Date(), slug, image, id, user_id]
     );
+
+    noteCacheHelper(user_id);
 
     return {
         success: true,
@@ -387,4 +477,5 @@ module.exports = {
     archiveNote,
     unarchiveNote,
     setNoteSlug,
+    noteCacheHelper,
 };

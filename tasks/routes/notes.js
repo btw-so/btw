@@ -482,7 +482,9 @@ router.post(
                 return;
             }
 
-            res.send(await setNoteSlug({ id, user_id, slug }));
+            const d = await setNoteSlug({ id, user_id, slug });
+
+            res.send(d);
         } catch (e) {
             res.json({
                 success: false,

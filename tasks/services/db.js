@@ -6,9 +6,12 @@ class DB {
             this.tasks_pool = new Pool({
                 connectionString: process.env.TASKS_DATABASE_URL,
                 max: 10,
-                ssl: {
-                    rejectUnauthorized: false,
-                },
+                ssl:
+                    process.env.NODE_ENV === "production"
+                        ? {
+                              rejectUnauthorized: false,
+                          }
+                        : false,
             });
             // the pool will emit an error on behalf of any idle clients
             // it contains if a backend error or network partition happens

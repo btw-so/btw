@@ -6,6 +6,29 @@ const { baseQueue } = require("../services/queue");
 const { customDomainSetupEmail } = require("../logic/email");
 const axios = require("axios");
 
+// do a POST request to process.env.PUBLISHER_SERVER_URL with user_id of the note
+// to the url /internal/cache/refresh/notes
+// this will refresh the cache for the user
+const userCacheHelper = (user_id) => {
+    console.log("refreshing cache for user", user_id);
+    const publisherServerUrl = process.env.PUBLISHER_SERVER_URL;
+    if (publisherServerUrl) {
+        try {
+            const publisherServerRefreshUrl = `http${
+                !!Number(process.env.HTTPS_DOMAIN) ? "s" : ""
+            }://${publisherServerUrl}/internal/cache/refresh/user`;
+            const publisherServerRefreshResponse = axios.post(
+                publisherServerRefreshUrl,
+                {
+                    user_id,
+                }
+            );
+        } catch (e) {
+            console.log("error in refreshing cache", e);
+        }
+    }
+};
+
 // add a job that runs every 24 hours for all existing users
 // if umami_sit_id exists, upsert the website name, domain of this site id
 // ^ do the same for custom_domains
@@ -464,6 +487,8 @@ async function setUserDetails({
             [name, slug, bio, pic, twitter, linkedin, instagram, user_id]
         );
 
+        userCacheHelper(user_id);
+
         return {
             success: true,
         };
@@ -525,6 +550,8 @@ async function addUserDomain({ domain, user_id }) {
                 domain,
             });
         }
+
+        userCacheHelper(user_id);
 
         return {
             success: true,

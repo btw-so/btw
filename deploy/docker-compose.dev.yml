@@ -41,6 +41,7 @@ services:
             HTTPS_DOMAIN: 0
             NODE_ENV: development
             TASKS_DATABASE_URL: postgres://postgres:postgres@db:5432/btw
+            PUBLISHER_SERVER_URL: publisher:9222
             SMTP_HOST:
             SMTP_PORT:
             SMTP_USER:

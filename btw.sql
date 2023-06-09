@@ -3,7 +3,6 @@
 -- Generation Time: 2023-06-04 14:36:11.7610
 -- -------------------------------------------------------------
 
-CREATE DATABASE IF NOT EXISTS btw;
 CREATE SCHEMA IF NOT EXISTS btw;
 
 DROP TABLE IF EXISTS "btw"."custom_domains";
@@ -57,6 +56,7 @@ CREATE TABLE "btw"."notes" (
     "delete" bool,
     "deleted_at" timestamptz,
     "md" text,
+    "image" text
     PRIMARY KEY ("id","user_id")
 );
 

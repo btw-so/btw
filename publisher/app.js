@@ -8,9 +8,10 @@ var hbsLayout = require("handlebars-layout");
 var cron = require("node-cron");
 
 var indexRouter = require("./routes/index");
+var internalRouter = require("./routes/internal");
 var { genSitemap } = require("./routes/sitemap");
 
-var { cacheUsers } = require("./logic/notes");
+var { cacheUsers, cacheNotes } = require("./logic/notes");
 
 var app = express();
 var minifyHTML = require("express-minify-html");
@@ -92,6 +93,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+app.use(
+  "/internal",
+  (req, res, next) => {
+    next();
+  },
+  internalRouter
+);
+
 // create a middleware to capture domain slug
 app.use(async (req, res, next) => {
   // get the url
@@ -105,8 +114,8 @@ app.use(async (req, res, next) => {
   // then call next()
 
   if (!!Number(process.env.DEBUG)) {
-    res.locals.domainSlug = req.query[process.env.DOMAIN_QUERY_PARAM];
-  } else {
+    res.locals.domainSlug = req.query[process.env.DOMAIN_QUERY_PARAM] || "";
+  } else if (req.hostname) {
     // check if the domain is part of root domain or is it a custom domain
     // if it is a custom domain, then set res.locals.customDomain to true
     // else set it to false
@@ -138,7 +147,8 @@ app.use(async (req, res, next) => {
   );
 
   if (!res.locals.domainSlug) {
-    res.status(404);
+    res.locals.domainSlug = "";
+    next();
   } else {
     next();
   }
@@ -164,8 +174,10 @@ app.use("/", indexRouter);
 cron.schedule("0 */6 * * *", () => {
   console.log("Running a task every 6 hours");
   cacheUsers();
+  cacheNotes();
 });
 cacheUsers();
+cacheNotes();
 
 // error handler
 app.use(function (err, req, res, next) {

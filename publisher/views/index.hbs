@@ -4,17 +4,22 @@
       {{> sidebar}}
     </div>
     <div class="w-full mt-8 sm:mt-0">
-      <div class="max-w-md p-4">
-        <h1 class="mb-2 text-xl font-bold">2023</h1>
-        <article class="prose ">
+      <div class="max-w-2xl p-4">
+        <h2 class="mb-2 text-xl font-bold">2023</h2>
+          <div class="space-y-8">
           {{#if notes}}
-            <ul>
               {{#each notes}}
-                <li><a href="{{url}}">{{title}}</a></li>
+                <a class="post-item flex" href="{{url}}">
+                  <div class="w-32 h-32 flex-shrink-0">{{#if image}}<img class="w-full h-full object-center object-cover" src="{{image}}"/>{{else}}<div class="w-full h-full bg-gray-200"></div>{{/if}}</div>
+                  <div class="ml-6 flex flex-col">
+                    <h3 class="text-xl font-bold leading-4">{{title}}</h3>
+                    <div class="text-xs text-gray-500 mt-1 mb-4"><span>{{readableDate}}</span></div>
+                    <div class="flex-grow">{{{excerpt}}}</div>
+                  </div>
+                </a>
               {{/each}}
-            </ul>
           {{/if}}
-        </article>
+          </div>
       </div>
     </div>
   </div>

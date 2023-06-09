@@ -328,8 +328,10 @@ const yjsServer = Server.configure({
                                     // console.log("Found", rows.length);
                                     if (rows.length > 0) {
                                         if (rows[0].ydoc) {
-                                            return rows[0]?.ydoc;
-                                        } else if (rows[0]?.html) {
+                                            return rows[0]
+                                                ? rows[0].ydoc
+                                                : null;
+                                        } else if (rows[0] && rows[0].html) {
                                             const json =
                                                 MyTipTapTransformerJSON(
                                                     rows[0].html

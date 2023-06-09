@@ -10,7 +10,9 @@ const mainUrl = (res) => {
         res.locals.domainSlug
       }`
     : !!Number(process.env.DEBUG)
-    ? `${process.env.ROOT_DOMAIN}/?${process.env.DOMAIN_QUERY_PARAM}=${res.locals.domainSlug}`
+    ? `http${!!Number(process.env.HTTPS_DOMAIN) ? "s" : ""}://${
+        process.env.ROOT_DOMAIN
+      }/?${process.env.DOMAIN_QUERY_PARAM}=${res.locals.domainSlug}`
     : `http${!!Number(process.env.HTTPS_DOMAIN) ? "s" : ""}://${
         res.locals.domainSlug
       }.${process.env.ROOT_DOMAIN}`;
@@ -78,14 +80,92 @@ router.get("/", async (req, res, next) => {
     return;
   }
 
-  const notes = await getAllNotes({
-    slug: res.locals.domainSlug,
-    customDomain: res.locals.customDomain,
-  });
+  const notes = JSON.parse(
+    JSON.stringify(
+      await getAllNotes({
+        slug: res.locals.domainSlug,
+        customDomain: res.locals.customDomain,
+      })
+    )
+  );
 
   if (notes) {
     notes.map((note) => {
       note.url = createSubUrlWithPath(res, `/${note.slug}`);
+
+      // from note.html get the first non-empty <p> element's content via regex
+      const firstParagraphRegex = /<p>(.*?)<\/p>/;
+      const match = note.html.match(firstParagraphRegex);
+      if (match) {
+        try {
+          let content = match[1].split("<br>");
+          content = content.map((x) => {
+            return {
+              lines: Math.ceil(x.length / 60),
+              content: x,
+            };
+          });
+
+          console.log(content);
+
+          var linesSoFar = [];
+          var lineCount = 0;
+
+          for (let i = 0; i < content.length; i++) {
+            if (lineCount + content[i].lines > 3) {
+              // truncate the content to 81 times how much ever linecount is left to hit 3
+              const linesLeft = 3 - lineCount;
+              const charsLeft = linesLeft * 60;
+              const truncatedContent = content[i].content.substring(
+                0,
+                charsLeft
+              );
+              linesSoFar.push(truncatedContent + "...");
+              break;
+            } else {
+              linesSoFar.push(content[i].content);
+              lineCount += content[i].lines;
+            }
+          }
+
+          note.excerpt = `<p>${linesSoFar.join("<br>")}</p>`;
+        } catch (e) {
+          console.log(e, match);
+        }
+      }
+
+      let readableDate = "";
+
+      // if convert note.published_at to time so far
+      // if time is < 60 minutes, then write x mins ago
+      // if time is < 24 hours, then write x hours ago
+      // if time is < 30 days, then write x days ago
+      // else write MMM DD, YYYY
+
+      const publishedAt = new Date(note.published_at);
+      const now = new Date();
+
+      const diff = now - publishedAt;
+
+      const minutes = Math.floor(diff / 1000 / 60);
+      const hours = Math.floor(diff / 1000 / 60 / 60);
+      const days = Math.floor(diff / 1000 / 60 / 60 / 24);
+
+      if (minutes < 60) {
+        readableDate = `${minutes} minutes ago`;
+      } else if (hours < 24) {
+        readableDate = `${hours} hours ago`;
+      } else if (days < 30) {
+        readableDate = `${days} days ago`;
+      } else {
+        readableDate = `${publishedAt.toLocaleString("default", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })}`;
+      }
+
+      note.readableDate = readableDate;
     });
   }
 
