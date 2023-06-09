@@ -1,6 +1,6 @@
 -- -------------------------------------------------------------
 -- Database: btw
--- Generation Time: 2023-03-28 16:22:10.3490
+-- Generation Time: 2023-06-04 14:36:11.7610
 -- -------------------------------------------------------------
 
 CREATE DATABASE IF NOT EXISTS btw;
@@ -16,6 +16,8 @@ CREATE TABLE "btw"."custom_domains" (
     "id" int4 NOT NULL DEFAULT nextval('btw.custom_domains_id_seq'::regclass),
     "domain" text NOT NULL,
     "user_id" int4 NOT NULL,
+    "umami_site_id" uuid,
+    "share_id" text,
     PRIMARY KEY ("domain","user_id")
 );
 
@@ -44,7 +46,6 @@ CREATE TABLE "btw"."notes" (
     "updated_at" timestamptz NOT NULL,
     "json" json,
     "html" text,
-    "md" text,
     "title" text,
     "id" uuid NOT NULL,
     "ydoc" bytea,
@@ -55,6 +56,7 @@ CREATE TABLE "btw"."notes" (
     "archive" bool,
     "delete" bool,
     "deleted_at" timestamptz,
+    "md" text,
     PRIMARY KEY ("id","user_id")
 );
 
@@ -85,11 +87,14 @@ CREATE TABLE "btw"."users" (
     "processed_email" text NOT NULL,
     "name" text,
     "slug" text,
-    "bio" text,
-    "pic" varchar(255),
-    "twitter" varchar(255),
-    "linkedin" varchar(255),
-    "instagram" varchar(255),
     "created_at" timestamptz NOT NULL,
+    "bio" text,
+    "pic" varchar,
+    "twitter" varchar,
+    "instagram" varchar,
+    "linkedin" varchar,
+    "pro" bool,
+    "umami_site_id" uuid,
+    "share_id" text,
     PRIMARY KEY ("processed_email")
 );

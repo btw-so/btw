@@ -67,14 +67,15 @@ function Root() {
   // const Router = process.env.REACT_APP_ELECTRON ? HashRouter : BrowserRouter;
   const Router = HashRouter;
 
+  Helmet.defaultProps.encodeSpecialCharacters = false;
+
   return (
     <Router>
       <div className="w-full h-full flex-grow flex flex-col">
         <Helmet
           defaultTitle={"btw ∴"}
           defer={false}
-          encodeSpecialCharacters
-          htmlAttributes={{ lang: "pt-br" }}
+          encodeSpecialCharacters={false}
           titleAttributes={{ itemprop: "name", lang: "en-en" }}
           titleTemplate={`%s | btw ∴`}
         >
