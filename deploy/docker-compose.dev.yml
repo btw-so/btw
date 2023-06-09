@@ -5,6 +5,8 @@ services:
         platform: linux/amd64
         container_name: tasks
         build: ../tasks
+        depends_on:
+            - db
         volumes:
             - ../tasks/views:/tasks/views
             - ../tasks/services:/tasks/services
@@ -38,7 +40,7 @@ services:
             DEBUG: 1
             HTTPS_DOMAIN: 0
             NODE_ENV: development
-            TASKS_DATABASE_URL:
+            TASKS_DATABASE_URL: postgres://postgres:postgres@db:5432/btw
             SMTP_HOST:
             SMTP_PORT:
             SMTP_USER:
@@ -61,6 +63,8 @@ services:
         platform: linux/amd64
         container_name: writer
         build: ../writer
+        depends_on:
+            - db
         volumes:
             - ../writer/assets:/writer/assets
             - ../writer/src:/writer/src
@@ -93,6 +97,8 @@ services:
         platform: linux/amd64
         container_name: publisher
         build: ../publisher
+        depends_on:
+            - db
         volumes:
             - ../publisher/views:/publisher/views
             - ../publisher/services:/publisher/services
@@ -116,7 +122,7 @@ services:
             DOMAIN_QUERY_PARAM: domain
             ROOT_DOMAIN: localhost:9222
             PORT: 9222
-            TASKS_DATABASE_URL:
+            TASKS_DATABASE_URL: postgres://postgres:postgres@db:5432/btw
             DEBUG: 1
             HTTPS_DOMAIN: 0
             NODE_ENV: development
@@ -129,3 +135,17 @@ services:
         container_name: redis
         ports:
             - "6379:6379"
+    db:
+        image: postgres:15.2-alpine
+        restart: always
+        container_name: postgres
+        user: postgres
+        environment:
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: btw
+        volumes:
+        - ../btw.sql:/docker-entrypoint-initdb.d/init.sql
+        ports:
+            - "5432:5432"
+        expose:
+            - "5432"
