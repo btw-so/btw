@@ -1036,6 +1036,9 @@ select {
 .flex {
   display: flex;
 }
+.hidden {
+  display: none;
+}
 .h-32 {
   height: 8rem;
 }
@@ -1056,9 +1059,6 @@ select {
 }
 .w-full {
   width: 100%;
-}
-.max-w-2xl {
-  max-width: 42rem;
 }
 .max-w-3xl {
   max-width: 48rem;
@@ -1127,9 +1127,6 @@ select {
 }
 .font-bold {
   font-weight: 700;
-}
-.leading-4 {
-  line-height: 1rem;
 }
 .text-gray-500 {
   --tw-text-opacity: 1;
@@ -1375,6 +1372,10 @@ hr.ProseMirror-selectednode {
 
   .sm\:mt-8 {
     margin-top: 2rem;
+  }
+
+  .sm\:block {
+    display: block;
   }
 
   .sm\:flex-row {

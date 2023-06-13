@@ -471,6 +471,20 @@ function Sidebar(props) {
           ) : null}
         </div>
         <div className="w-full border-t-2 border-gray-200 sidebar-toolkit">
+          {props.share_id ? (
+            <button
+              className={`w-full pb-2 pt-4 flex items-center hover:font-extrabold hover:text-blue-500`}
+              onClick={() => {
+                window.open(
+                  `https://analytics.btw.so/share/${props.share_id}`,
+                  "_blank"
+                );
+              }}
+            >
+              <i className={`ri-1x ri-bar-chart-line mr-1`}></i>
+              <span className="font-extrabold">Analytics</span>
+            </button>
+          ) : null}
           <button
             className={`w-full pb-2 pt-4 flex items-center hover:font-extrabold hover:text-blue-500 ${
               props.settingsPage ? "text-blue-500" : ""

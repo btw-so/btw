@@ -100,9 +100,11 @@ router.get("/", async (req, res, next) => {
         try {
           let content = match[1].split("<br>");
           content = content.map((x) => {
+            // for each x, strip off any html tags. we just need plain text
+            var cleanedupText = x.replace(/(<([^>]+)>)/gi, "");
             return {
-              lines: Math.ceil(x.length / 60),
-              content: x,
+              lines: Math.ceil(cleanedupText.length / 60),
+              content: cleanedupText,
             };
           });
 

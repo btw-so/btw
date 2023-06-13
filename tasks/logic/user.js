@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 const { baseQueue } = require("../services/queue");
 const { customDomainSetupEmail } = require("../logic/email");
 const axios = require("axios");
+const hri = require("human-readable-ids").hri;
 
 // do a POST request to process.env.PUBLISHER_SERVER_URL with user_id of the note
 // to the url /internal/cache/refresh/notes
@@ -30,7 +31,7 @@ const userCacheHelper = (user_id) => {
 };
 
 // add a job that runs every 24 hours for all existing users
-// if umami_sit_id exists, upsert the website name, domain of this site id
+// if umami_site_id exists, upsert the website name, domain of this site id
 // ^ do the same for custom_domains
 baseQueue.add(
     "upsertUmamiSiteId",
@@ -107,7 +108,7 @@ baseQueue.process("upsertUmamiSiteId", async (job, done) => {
 });
 
 baseQueue.process("upsertUmamiSiteIdForUser", async (job, done) => {
-    const { domain, umami_site_id, name, share_id } = job.data;
+    let { domain, umami_site_id, name, share_id } = job.data;
 
     // check that UMAMI_SOURCE AND UMAMI_TOKEN are available in process.env
     if (!process.env.UMAMI_SOURCE || !process.env.UMAMI_TOKEN) {
@@ -151,6 +152,93 @@ baseQueue.add(
         },
     }
 );
+
+baseQueue.add(
+    "createUmamiShareId",
+    {},
+    {
+        repeat: {
+            every: 60 * 60 * 1000,
+        },
+    }
+);
+
+baseQueue.process("createUmamiShareId", async (job, done) => {
+    // schedule a child job for every user
+    // for whom siteid exists but share id is null
+    const tasksDB = await db.getTasksDB();
+
+    const { rows: users } = await tasksDB.query(
+        `SELECT id, name, slug, umami_site_id FROM btw.users WHERE umami_site_id IS NOT NULL AND slug IS NOT NULL AND share_id IS NULL`
+    );
+
+    for (let i = 0; i < users.length; i++) {
+        let domain = `${users[i].slug}.${process.env.ROOT_DOMAIN}`;
+        let name = users[i].name || `Blog - ${users[i].slug}`;
+        let id = users[i].id;
+        umami_site_id = users[i].umami_site_id;
+        let share_id = hri.random();
+        share_id = share_id.replace(/-\d+$/, `-0${id}`);
+
+        // update this data in sql table
+        await tasksDB.query(
+            `UPDATE btw.users SET share_id = $1 WHERE id = $2`,
+            [share_id, id]
+        );
+
+        // upsert the website name, domain of this site id
+        baseQueue.add(
+            "upsertUmamiSiteIdForUser",
+            {
+                domain,
+                umami_site_id,
+                name,
+                share_id,
+            },
+            {
+                removeOnComplete: true,
+                removeOnFail: true,
+            }
+        );
+    }
+
+    // now for custom domains
+    const { rows: custom_domains } = await tasksDB.query(
+        `SELECT domain, btw.custom_domains.umami_site_id, btw.custom_domains.id, btw.custom_domains.share_id, btw.users.name FROM btw.custom_domains LEFT JOIN btw.users ON btw.custom_domains.user_id = btw.users.id WHERE btw.custom_domains.umami_site_id IS NOT NULL AND btw.custom_domains.share_id IS NULL`
+    );
+
+    for (let i = 0; i < custom_domains.length; i++) {
+        let domain = custom_domains[i].domain;
+        let name = custom_domains[i].name || `Blog - ${custom_domains[i].id}`;
+        let id = custom_domains[i].id;
+        let share_id = hri.random();
+        share_id = share_id.replace(/-\d+$/, `-1${id}`);
+        let umami_site_id = custom_domains[i].umami_site_id;
+
+        // update this data in sql table
+        await tasksDB.query(
+            `UPDATE btw.custom_domains SET share_id = $1 WHERE id = $2`,
+            [share_id, id]
+        );
+
+        // upsert the website name, domain of this site id
+        baseQueue.add(
+            "upsertUmamiSiteIdForUser",
+            {
+                domain,
+                umami_site_id,
+                name,
+                share_id,
+            },
+            {
+                removeOnComplete: true,
+                removeOnFail: true,
+            }
+        );
+    }
+
+    done();
+});
 
 baseQueue.process("createUmamiSiteId", async (job, done) => {
     // schedule a child job for every user
@@ -197,7 +285,7 @@ baseQueue.process("createUmamiSiteId", async (job, done) => {
             {
                 domain,
                 name,
-                id: `0${id}`,
+                id,
                 type: "custom_domain",
             },
             {
@@ -223,8 +311,14 @@ baseQueue.process("createUmamiSiteIdForUser", async (job, done) => {
     // DO A POST request to UMAMI_SOURCE on POST /api/websites
     // with body { domain, name }
     // create share_id using hri
-    const hri = require("human-readable-ids").hri;
-    const share_id = hri.random() + "-" + id;
+    // const share_id = hri.random() + "-" + id;
+    let share_id = hri.random();
+    // ^ this gives something of the form <some words separated by hyphen>-<some number>
+    // replace the number with user id
+    share_id = share_id.replace(
+        /-\d+$/,
+        `-${type === "custom_domain" ? "1" : "0"}${id}`
+    );
 
     try {
         const response = await axios.post(

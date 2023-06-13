@@ -68,7 +68,7 @@ import MenuBar from "./TipTapMenuBar";
 import Embed from "./TipTapEmbed";
 import toast from "react-hot-toast";
 
-const limit = 100000;
+const limit = 1000000;
 
 class Tiptap extends React.Component {
   constructor(props) {

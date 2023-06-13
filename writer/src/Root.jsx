@@ -98,6 +98,17 @@ function Root() {
                   slug={user && user.data ? user.data.slug : null}
                   domain={userDomain}
                   proUser={user && user.data ? user.data.pro : null}
+                  share_id={
+                    (user &&
+                    user.data &&
+                    user.data.domains &&
+                    user.data.domains.length > 0
+                      ? user.data.domains[0].share_id
+                      : null) ||
+                    (user && user.data && user.data.share_id
+                      ? user.data.share_id
+                      : null)
+                  }
                 />
               </PrivateRoute>
             }
@@ -111,6 +122,17 @@ function Root() {
                   userId={user && user.data ? user.data.id : null}
                   name={user && user.data ? user.data.name : null}
                   email={user && user.data ? user.data.email : null}
+                  share_id={
+                    (user &&
+                    user.data &&
+                    user.data.domains &&
+                    user.data.domains.length > 0
+                      ? user.data.domains[0].share_id
+                      : null) ||
+                    (user && user.data && user.data.share_id
+                      ? user.data.share_id
+                      : null)
+                  }
                 />
               </PrivateRoute>
             }
