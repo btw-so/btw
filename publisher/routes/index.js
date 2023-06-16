@@ -76,7 +76,7 @@ router.get("/", async (req, res, next) => {
   });
 
   if (!user) {
-    res.render("notfound", { user: true });
+    res.status(404).render("notfound", { user: true });
     return;
   }
 
@@ -185,7 +185,7 @@ router.get("/about", async (req, res, next) => {
   });
 
   if (!user) {
-    res.render("notfound", { user: true });
+    res.status(404).render("notfound", { user: true });
     return;
   }
 
@@ -235,7 +235,7 @@ router.get("/:slug", async (req, res, next) => {
   });
 
   if (!note) {
-    res.render("notfound", { post: true });
+    res.status(404).render("notfound", { post: true });
     return;
   }
 
@@ -247,7 +247,7 @@ router.get("/:slug", async (req, res, next) => {
   });
 
   if (!user) {
-    res.render("notfound", { user: true });
+    res.status(404).render("notfound", { user: true });
     return;
   }
 
