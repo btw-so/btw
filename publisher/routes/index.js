@@ -171,8 +171,25 @@ router.get("/", async (req, res, next) => {
     });
   }
 
+  // convert notes into yearly buckets
+  let notesByYear = {};
+  notes.forEach((note) => {
+    const year = new Date(note.published_at).getFullYear();
+    if (!notesByYear[year]) {
+      notesByYear[year] = [];
+    }
+    notesByYear[year].push(note);
+  });
+
   res.render("index", {
-    notes,
+    notes: Object.keys(notesByYear)
+      .sort((a, b) => Number(b) - Number(a))
+      .map((year) => {
+        return {
+          yr: year,
+          notes: notesByYear[year],
+        };
+      }),
     mainPage: true,
     ...getCommonDeets(req, res, "/", user),
   });

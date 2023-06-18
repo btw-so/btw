@@ -4,22 +4,24 @@
       {{> sidebar}}
     </div>
     <div class="w-full mt-8 sm:mt-0">
-      <div class="p-4" style="max-width: 45rem;">
-        <h2 class="mb-2 text-xl font-bold">2023</h2>
-          <div class="space-y-8">
-          {{#if notes}}
-              {{#each notes}}
-                <a class="post-item flex" href="{{url}}">
-                  <div style="margin-top: 5px;" class="hidden sm:block w-32 h-32 flex-shrink-0">{{#if image}}<img class="w-full h-full object-center object-cover" src="{{image}}"/>{{else}}<div class="w-full h-full bg-gray-200"></div>{{/if}}</div>
-                  <div class="ml-6 flex flex-col">
-                    <h3 class="text-xl font-bold ">{{title}}</h3>
-                    <div class="text-xs text-gray-500 mt-1 mb-4"><span>{{readableDate}}</span></div>
-                    <div class="flex-grow">{{{excerpt}}}</div>
-                  </div>
-                </a>
-              {{/each}}
-          {{/if}}
-          </div>
+      <div class="p-4 space-y-10" style="max-width: 45rem;">
+        {{#each notes}}
+            <div>
+              <h2 class="mb-2 text-xl font-bold">{{yr}}</h2>
+              <div class="space-y-8">
+                  {{#each notes}}
+                  <a class="post-item flex" href="{{url}}">
+                    <div style="margin-top: 5px;" class="hidden sm:block w-32 h-32 flex-shrink-0">{{#if image}}<img class="w-full h-full object-center object-cover" src="{{image}}"/>{{else}}<div class="w-full h-full bg-gray-200"></div>{{/if}}</div>
+                    <div class="ml-6 flex flex-col">
+                      <h3 class="text-xl font-bold ">{{title}}</h3>
+                      <div class="text-xs text-gray-500 mt-1 mb-4"><span>{{readableDate}}</span></div>
+                      <div class="flex-grow">{{{excerpt}}}</div>
+                    </div>
+                  </a>
+                {{/each}}
+              </div>  
+            </div>
+        {{/each}}
       </div>
     </div>
   </div>
