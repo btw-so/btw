@@ -76,7 +76,7 @@ router.get("/", async (req, res, next) => {
   });
 
   if (!user) {
-    res.redirect("/404");
+    res.status(404).render("notfound", { user: true });
     return;
   }
 
@@ -202,7 +202,7 @@ router.get("/about", async (req, res, next) => {
   });
 
   if (!user) {
-    res.redirect("/404");
+    res.status(404).render("notfound", { user: true });
     return;
   }
 
@@ -252,10 +252,7 @@ router.get("/:slug", async (req, res, next) => {
   });
 
   if (!note) {
-    res.status(404);
-    res.send({
-      error: "Note not found",
-    });
+    res.status(404).render("notfound", { post: true });
     return;
   }
 
@@ -267,10 +264,7 @@ router.get("/:slug", async (req, res, next) => {
   });
 
   if (!user) {
-    res.status(404);
-    res.send({
-      error: "User not found",
-    });
+    res.status(404).render("notfound", { user: true });
     return;
   }
 

@@ -1,0 +1,23 @@
+<!-- notfound.hbs -->
+{{#content "body"}}
+
+
+<div class="h-full w-full flex flex-col items-center justify-center mt-8 p-4">
+
+  {{!-- <h1 class="font-bold text-2xl">Post Not Found</h1>
+  <p>The requested post does not exist</p> --}}
+  <!-- notfound.hbs -->
+{{#if user}}
+  <h1 class="font-bold text-2xl">User Not Found</h1>
+  <p>The requested user does not exist.</p>
+{{else if post}}
+  <h1 class="font-bold text-2xl">Post Not Found</h1>
+  <p>The requested post does not exist.</p>
+{{else}}
+  <h1 class="font-bold text-2xl">Not Found</h1>
+  <p>The requested resource does not exist.</p>
+{{/if}}
+
+</div>
+
+{{/content}}
