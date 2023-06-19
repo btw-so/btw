@@ -48,8 +48,10 @@ async function getFingerPrint() {
   // return visitorId;
 }
 
-export function* getNotesSaga({ after }) {
+export function* getNotesSaga({ payload }) {
   const fingerprint = yield call(getFingerPrint);
+
+  const { after } = payload;
 
   let notes = [];
 
