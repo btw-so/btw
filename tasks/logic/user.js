@@ -500,7 +500,7 @@ async function createUser({ email, slug }) {
     // check if user already exists
     const { rows } = await client.query(
         `SELECT * FROM btw.users WHERE processed_email = $1`,
-        [email.toLowerCase().split(".").join("")]
+        [(email || "").toLowerCase().split(".").join("")]
     );
 
     if (rows.length == 0) {
