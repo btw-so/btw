@@ -35,14 +35,14 @@
     
     {{#if site_title}}<meta property="og:site_name" content="{{site_title}}">{{/if}}
     <meta property="og:type" content="website">
-    {{#or site_url canonical_url}}<meta property="og:url" content="{{#if canonical_url}}{{canonical_url}}{{else}}{{site_url}}{{/if}}">{{/or}}
+    {{#or site_url canonicalUrl}}<meta property="og:url" content="{{#if canonicalUrl}}{{canonicalUrl}}{{else}}{{site_url}}{{/if}}">{{/or}}
     {{#if site_title}}<meta property="og:title" content="{{site_title}}">{{/if}}
     {{#if site_discription}}<meta property="og:description" content="{{site_description}}">{{/if}}
     <meta property="og:locale" content="en_US">
     {{#if site_image}}
         <meta property="og:image" content="{{site_image}}">
     {{/if}}
-    {{#or site_url canonical_url}}<meta name="twitter:url" content="{{#if canonical_url}}{{canonical_url}}{{else}}{{site_url}}{{/if}}">{{/or}}
+    {{#or site_url canonicalUrl}}<meta name="twitter:url" content="{{#if canonicalUrl}}{{canonicalUrl}}{{else}}{{site_url}}{{/if}}">{{/or}}
     {{#if site_discription}}<meta name="twitter:description" content="{{site_description}}">{{/if}}
     {{#if site_title}}<meta name="twitter:title" content="{{site_title}}">{{/if}}
     {{#if site_image}}

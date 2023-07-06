@@ -53,6 +53,9 @@ export function* getNotesSaga({ payload }) {
 
   const { after } = payload;
 
+  // check if this api is being called first in the app. use window variable so on reload it fetches fresh again
+  const isInitialFetch = !window.notesInitialFetchDone;
+
   let notes = [];
 
   let page = 1;
@@ -67,7 +70,7 @@ export function* getNotesSaga({ payload }) {
           method: "POST",
           data: {
             fingerprint,
-            after,
+            after: isInitialFetch ? null : after,
             page,
             limit,
           },

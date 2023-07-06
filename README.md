@@ -37,16 +37,15 @@ These instructions will help you to get a copy of the project up and running on 
 
 ### Installation
 
-1. Setup your database using btw.sql file
-2. Replace the variables in deploy/docker-compose.dev.yml
+Set ADMIN_EMAIL and ADMIN_SLUG in deploy/docker-compose.dev.yml. These are the only mandatory fields. Your database will be automatically configured on the first setup. Details of other variables in the docker-compose file:
 
 | Variable Name            | Description                                                                                                         |
 |--------------------------|---------------------------------------------------------------------------------------------------------------------|
-| TASKS_DATABASE_URL       | Set the connection URL to your PG DB                                                                                |
-| ADMIN_EMAIL              | Your email address                                                                                                  |
-| ADMIN_SLUG               | Unique slug                                                                                                         |
+| TASKS_DATABASE_URL       | Connection URL to your PG DB (For development, the URL is already configured)                                                                                |
+| ADMIN_EMAIL              | Your email address (Not optional)                                                                                                  |
+| ADMIN_SLUG               | Unique slug (Not optional)                                                                                                         |
 | ADMIN_OTP                | (OPTIONAL) Set a unique 6 digit code, if you want the writer to be behind OTP login. OTP login turned off by default |
-| SECRET                   | Unique secret                                                                                                       |
+| SECRET                   | Unique secret (change the default secret)                                                                                                       |
 | SMTP_HOST                | SMTP HOST (OPTIONAL, used to email OTPs for login)                                                   |
 | SMTP_PORT                | OPTIONAL                                                                                                                  |
 | SMTP_USER                | OPTIONAL                                                                                                                    |
