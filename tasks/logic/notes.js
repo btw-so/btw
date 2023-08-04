@@ -7,8 +7,6 @@ const { JSDOM } = require("jsdom");
 const turndown = require("turndown")();
 const axios = require("axios");
 
-var NOTE_UPDATE_DEBOUNCES = {};
-
 // do a POST request to process.env.PUBLISHER_SERVER_URL with user_id of the note
 // to the url /internal/cache/refresh/notes
 // this will refresh the cache for the user
@@ -31,6 +29,35 @@ const noteCacheHelper = (user_id) => {
         }
     }
 };
+
+baseQueue.add(
+    "updateNoteCache",
+    {},
+    {
+        repeat: {
+            every: 10 * 60 * 1000,
+        },
+    }
+);
+
+baseQueue.process("updateNoteCache", async (job, done) => {
+    const tasksDB = await db.getTasksDB();
+
+    // get all the notes that are published and are edited in the last 20 minutes
+    // for each note, get the user_id
+    // call noteCacheHelper with user_id
+    const { rows } = await tasksDB.query(
+        `SELECT user_id FROM btw.notes WHERE publish = TRUE AND updated_at > NOW() - INTERVAL '20 minutes'`
+    );
+
+    for (const row of rows) {
+        noteCacheHelper(row.user_id);
+        // wait for 5 seconds before calling the next noteCacheHelper
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
+
+    done();
+});
 
 baseQueue.add(
     "htmlToImage",
@@ -212,14 +239,6 @@ async function upsertNote({ id, user_id, json, html, title: defaultTitle }) {
         ...(json ? [json] : []),
         ...(hasHTML ? [html.replaceAll("\u0000", "")] : []),
     ]);
-
-    if (NOTE_UPDATE_DEBOUNCES[id]) {
-        clearTimeout(NOTE_UPDATE_DEBOUNCES[id]);
-    }
-    NOTE_UPDATE_DEBOUNCES[id] = setTimeout(() => {
-        delete NOTE_UPDATE_DEBOUNCES[id];
-        noteCacheHelper(user_id);
-    }, 10 * 60 * 1000);
 }
 
 async function getNotes({ user_id, page, limit, after = 0 }) {
