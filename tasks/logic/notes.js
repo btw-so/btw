@@ -213,15 +213,13 @@ async function upsertNote({ id, user_id, json, html, title: defaultTitle }) {
         ...(hasHTML ? [html.replaceAll("\u0000", "")] : []),
     ]);
 
-    NOTE_UPDATE_DEBOUNCES[id] = NOTE_UPDATE_DEBOUNCES[id] || null;
     if (NOTE_UPDATE_DEBOUNCES[id]) {
         clearTimeout(NOTE_UPDATE_DEBOUNCES[id]);
-
-        NOTE_UPDATE_DEBOUNCES[id] = setTimeout(() => {
-            delete NOTE_UPDATE_DEBOUNCES[id];
-            noteCacheHelper(user_id);
-        }, 10 * 60 * 1000);
     }
+    NOTE_UPDATE_DEBOUNCES[id] = setTimeout(() => {
+        delete NOTE_UPDATE_DEBOUNCES[id];
+        noteCacheHelper(user_id);
+    }, 10 * 60 * 1000);
 }
 
 async function getNotes({ user_id, page, limit, after = 0 }) {
