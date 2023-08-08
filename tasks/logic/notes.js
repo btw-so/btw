@@ -47,7 +47,7 @@ baseQueue.process("updateNoteCache", async (job, done) => {
     // for each note, get the user_id
     // call noteCacheHelper with user_id
     const { rows } = await tasksDB.query(
-        `SELECT user_id FROM btw.notes WHERE publish = TRUE AND updated_at > NOW() - INTERVAL '20 minutes'`
+        `SELECT DISTINCT user_id FROM btw.notes WHERE publish = TRUE AND updated_at > NOW() - INTERVAL '20 minutes'`
     );
 
     for (const row of rows) {

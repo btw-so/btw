@@ -190,26 +190,34 @@ const UPPY_OPTIONS = {
     },
     secret: process.env.SECRET,
     debug: !!Number(process.env.DEBUG),
-    s3: {
-        getKey: (req, fileName) =>
-            `${Date.now()}/${fileName.split(" ").join("_")}`,
-        key: process.env.S3_KEY,
-        secret: process.env.S3_SECRET,
-        bucket: process.env.S3_BUCKET,
-        endpoint: process.env.S3_ENDPOINT,
-        region: "us-east-1",
-        acl: process.env.COMPANION_AWS_ACL || "public-read",
-        object_url: { public: true },
+    providerOptions: {
+        s3: {
+            getKey: (req, fileName) =>
+                `${Date.now()}/${fileName.split(" ").join("_")}`,
+            key: process.env.S3_KEY,
+            secret: process.env.S3_SECRET,
+            bucket: process.env.S3_BUCKET,
+            endpoint: process.env.S3_ENDPOINT,
+            region: "us-east-1",
+            acl: process.env.COMPANION_AWS_ACL || "public-read",
+            object_url: { public: true },
+        },
     },
     object_url: { public: true },
     corsOrigins: process.env.COMPANION_CLIENT_ORIGINS,
     uploadUrls: process.env.COMPANION_UPLOAD_URLS,
 };
-const { app: companionApp } = companion.app(UPPY_OPTIONS);
+const companionApp = companion.app(UPPY_OPTIONS);
 
 console.log("process.env.COMPANION_AWS_ACL", process.env.COMPANION_AWS_ACL);
 
-app.use("/companion", companionApp);
+app.use(
+    "/companion",
+    cors({
+        origin: process.env.COMPANION_CLIENT_ORIGINS.split(","),
+    }),
+    companionApp
+);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
