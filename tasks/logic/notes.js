@@ -258,13 +258,13 @@ async function getNotes({ user_id, page, limit, after = 0 }) {
 
     // get total number of notes
     const { rows: totalRows } = await pool.query(
-        `SELECT COUNT(*) FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3)`,
+        `SELECT COUNT(*) as count FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3)`,
         [user_id, after, after]
     );
 
     return {
         notes: rows,
-        total: totalRows.length > 1 ? totalRows[0].count : 0,
+        total: Number(totalRows.length > 0 ? totalRows[0].count : 0),
         page,
         limit,
     };

@@ -118,6 +118,8 @@ export function* getNotesSaga({ payload }) {
       window.connectionStatusToastId = null;
     }
 
+    window.notesInitialFetchDone = true;
+
     yield put(getNotesSuccess({ notes }));
   } catch (e) {
     if (!window.connectionStatusToastId) {
