@@ -24,7 +24,7 @@ const mainUrl = (res) => {
 
 const createSubUrlWithPath = (res, path) => {
 	const {domainSlug, customDomain} = res.locals
-	let domain = getDomain(IS_HTTPS_DOMAIN)
+	const domain = getDomain(IS_HTTPS_DOMAIN)
 
 	const domainAndSlug = domain.concat(domainSlug)
 

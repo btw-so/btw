@@ -1,70 +1,75 @@
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
-var exphbs = require("express-handlebars");
-var hbsLayout = require("handlebars-layout");
+var express = require('express')
+var path = require('path')
+var cookieParser = require('cookie-parser')
+var logger = require('morgan')
+var exphbs = require('express-handlebars')
+var hbsLayout = require('handlebars-layout')
 
-var cron = require("node-cron");
+var cron = require('node-cron')
 
-var indexRouter = require("./routes/index");
-var internalRouter = require("./routes/internal");
-var { genSitemap } = require("./routes/sitemap");
+var indexRouter = require('./routes/index')
+var internalRouter = require('./routes/internal')
+var { genSitemap } = require('./routes/sitemap')
 
-var { cacheUsers, cacheNotes } = require("./logic/notes");
+var { cacheUsers, cacheNotes } = require('./logic/notes')
 
-var app = express();
-var minifyHTML = require("express-minify-html");
+var app = express()
+var minifyHTML = require('express-minify-html')
 
 var hbs = exphbs.create({
-  extname: ".hbs",
-  defaultLayout: "base",
-  layoutsDir: path.join(__dirname, "/views/layouts"),
-  partialsDir: path.join(__dirname, "/views/partials"),
-  helpers: require("handlebars-helpers")(), // make sure to call the returned function
-});
+  extname: '.hbs',
+  defaultLayout: 'base',
+  layoutsDir: path.join(__dirname, '/views/layouts'),
+  partialsDir: path.join(__dirname, '/views/partials'),
+  helpers: require('handlebars-helpers')(), // make sure to call the returned function
+})
 
-hbs.handlebars.registerHelper(hbsLayout(hbs.handlebars));
+hbs.handlebars.registerHelper(hbsLayout(hbs.handlebars))
 
 // register new function
-hbs.handlebars.registerHelper("slicer", (str, s, e = null) => str.slice(s, e));
-hbs.handlebars.registerHelper("ifDev", (options) => {
-  if (process.env.NODE_ENV !== "production") {
-    return options.fn(this);
-  } else return options.inverse(this);
-});
-hbs.handlebars.registerHelper("ifIsNthItem", function (options) {
+hbs.handlebars.registerHelper('slicer', (str, s, e = null) => str.slice(s, e))
+hbs.handlebars.registerHelper('ifDev', (options) => {
+  if (process.env.NODE_ENV !== 'production') {
+    return options.fn(this)
+  } else {
+    return options.inverse(this)
+  }
+})
+hbs.handlebars.registerHelper('ifIsNthItem', function (options) {
   var index = options.data.index + 1,
     nth = options.hash.nth,
-    val = options.hash.val;
+    val = options.hash.val
 
-  if (index % nth === val || 0) return options.fn(this);
-  else return options.inverse(this);
-});
-hbs.handlebars.registerHelper("dateddmmyyy", function (str) {
+  if (index % nth === val || 0) {
+    return options.fn(this)
+  } else {
+    return options.inverse(this)
+  }
+})
+hbs.handlebars.registerHelper('dateddmmyyy', function (str) {
   const intervals = [
-    { label: "year", seconds: 31536000 },
-    { label: "month", seconds: 2592000 },
-    { label: "day", seconds: 86400 },
-    { label: "hour", seconds: 3600 },
-    { label: "minute", seconds: 60 },
-    { label: "second", seconds: 1 },
-  ];
+    { label: 'year', seconds: 31536000 },
+    { label: 'month', seconds: 2592000 },
+    { label: 'day', seconds: 86400 },
+    { label: 'hour', seconds: 3600 },
+    { label: 'minute', seconds: 60 },
+    { label: 'second', seconds: 1 },
+  ]
 
   function timeSince(date) {
-    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-    const interval = intervals.find((i) => i.seconds < seconds);
-    const count = Math.floor(seconds / interval.seconds);
-    return `${count} ${interval.label}${count !== 1 ? "s" : ""} ago`;
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+    const interval = intervals.find((i) => i.seconds < seconds)
+    const count = Math.floor(seconds / interval.seconds)
+    return `${count} ${interval.label}${count !== 1 ? 's' : ''} ago`
   }
 
-  return timeSince(new Date(str));
-});
+  return timeSince(new Date(str))
+})
 
 // Minifier setup
 app.use(
   minifyHTML({
-    override: process.env.NODE_ENV === "production",
+    override: process.env.NODE_ENV === 'production',
     exception_url: false,
     htmlMinifier: {
       removeComments: true,
@@ -75,31 +80,31 @@ app.use(
       minifyJS: true,
       minifyCSS: true,
     },
-  })
-);
+  }),
+)
 
-if (process.env.NODE_ENV == "production") {
-  app.set("trust proxy", 1);
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
 }
 
 // view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.engine(".hbs", hbs.engine);
-app.set("view engine", ".hbs");
+app.set('views', path.join(__dirname, 'views'))
+app.engine('.hbs', hbs.engine)
+app.set('view engine', '.hbs')
 
-app.use(logger("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(logger('dev'))
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
+app.use(cookieParser())
+app.use(express.static(path.join(__dirname, 'public')))
 
 app.use(
-  "/internal",
+  '/internal',
   (req, res, next) => {
-    next();
+    next()
   },
-  internalRouter
-);
+  internalRouter,
+)
 
 // create a middleware to capture domain slug
 app.use(async (req, res, next) => {
@@ -113,57 +118,50 @@ app.use(async (req, res, next) => {
   // if domain slug is found, then set it in res.locals.domainSlug
   // then call next()
 
-  if (!!Number(process.env.DEBUG)) {
-    res.locals.domainSlug = req.query[process.env.DOMAIN_QUERY_PARAM] || "";
+  if (Number(process.env.DEBUG)) {
+    res.locals.domainSlug = req.query[process.env.DOMAIN_QUERY_PARAM] || ''
   } else if (req.hostname) {
     // check if the domain is part of root domain or is it a custom domain
     // if it is a custom domain, then set res.locals.customDomain to true
     // else set it to false
 
     // split the hostname at the first dot
-    const dotIndex = req.hostname.indexOf(".");
-    const firstPart = req.hostname.slice(0, dotIndex);
-    const secondPart = req.hostname.slice(dotIndex + 1);
+    const dotIndex = req.hostname.indexOf('.')
+    const firstPart = req.hostname.slice(0, dotIndex)
+    const secondPart = req.hostname.slice(dotIndex + 1)
 
     if (secondPart === process.env.ROOT_DOMAIN) {
-      res.locals.customDomain = false;
+      res.locals.customDomain = false
 
-      res.locals.domainSlug = firstPart;
+      res.locals.domainSlug = firstPart
 
-      if (res.locals.domainSlug === "publish") {
-        res.locals.domainSlug = req.query[process.env.DOMAIN_QUERY_PARAM];
+      if (res.locals.domainSlug === 'publish') {
+        res.locals.domainSlug = req.query[process.env.DOMAIN_QUERY_PARAM]
       }
     } else {
-      res.locals.customDomain = true;
-      res.locals.domainSlug = req.hostname;
+      res.locals.customDomain = true
+      res.locals.domainSlug = req.hostname
     }
   }
 
-  console.log(
-    "A",
-    req.hostname,
-    res.locals.customDomain,
-    res.locals.domainSlug
-  );
-
   if (!res.locals.domainSlug) {
-    res.locals.domainSlug = "";
-    next();
+    res.locals.domainSlug = ''
+    next()
   } else {
-    next();
+    next()
   }
-});
+})
 
 // Sitemap
-app.get("/sitemap.xml", (req, res) => {
+app.get('/sitemap.xml', (req, res) => {
   // genSitemap().then((d) => {
   //   res.set("Content-Type", "text/xml");
   //   res.type("application/xml");
   //   res.send(d);
   // });
-});
+})
 
-app.use("/", indexRouter);
+app.use('/', indexRouter)
 
 // // catch 404 and forward to error handler
 // app.use(function (req, res, next) {
@@ -171,23 +169,24 @@ app.use("/", indexRouter);
 // });
 
 // Run a CRON that runs every 6 hours cacheUsersData
-cron.schedule("0 */6 * * *", () => {
-  console.log("Running a task every 6 hours");
-  cacheUsers();
-  cacheNotes();
-});
-cacheUsers();
-cacheNotes();
+cron.schedule('0 */6 * * *', () => {
+  // eslint-disable-next-line no-console
+  console.log('Running a task every 6 hours')
+  cacheUsers()
+  cacheNotes()
+})
+cacheUsers()
+cacheNotes()
 
 // error handler
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
+  res.locals.message = err.message
+  res.locals.error = req.app.get('env') === 'development' ? err : {}
 
   // render the error page
-  res.status(err.status || 500);
+  res.status(err.status || 500)
   // res.render("error");
-});
+})
 
-module.exports = app;
+module.exports = app

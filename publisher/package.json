@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "prestart": "npm run build:styles",
+    "lint": "eslint --fix ./**/*.js",
     "prest": "cross-env NODE_ENV=production npm run build:prod:styles",
     "start": "cross-env NODE_ENV=development node ./bin/www",
     "startonly": "cross-env NODE_ENV=development node ./bin/www",
@@ -61,5 +62,9 @@
     "tailwindcss": "^3.2.7",
     "uuid": "^8.0.0",
     "xml": "^1.0.1"
+  },
+  "devDependencies": {
+    "eslint": "8.22.0",
+    "prettier": "^2.8.8"
   }
 }

@@ -1,4 +1,4 @@
-const xml = require("xml");
+const xml = require('xml')
 
 function genSitemap() {
   // TODO: (SG)
@@ -6,4 +6,4 @@ function genSitemap() {
 
 module.exports = {
   genSitemap,
-};
+}
