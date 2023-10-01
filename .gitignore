@@ -15,3 +15,7 @@ tasks/node_modules/
 publisher/node_modules/
 
 deployment/
+
+node_modules
+/.idea
+yarn.lock
