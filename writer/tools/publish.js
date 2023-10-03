@@ -1,7 +1,7 @@
-const chalk = require('react-dev-utils/chalk');
-const Rsync = require('rsync');
+import chalk from 'react-dev-utils/chalk';
+import Rsync from 'rsync';
 
-const paths = require('../config/paths');
+import paths from '../config/paths';
 
 function publish() {
   console.log(chalk.blue('Publishing...'));

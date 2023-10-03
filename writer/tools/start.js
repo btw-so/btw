@@ -10,25 +10,25 @@ process.on('unhandledRejection', error => {
 });
 
 // Ensure environment variables are read.
-require('../config/env');
+import '../config/env';
 
-const chalk = require('react-dev-utils/chalk');
-const webpack = require('webpack');
-const WebpackDevServer = require('webpack-dev-server');
-const clearConsole = require('react-dev-utils/clearConsole');
-const { checkBrowsers } = require('react-dev-utils/browsersHelper');
-const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles');
-const openBrowser = require('react-dev-utils/openBrowser');
-const {
+import chalk from 'react-dev-utils/chalk';
+import webpack from 'webpack';
+import WebpackDevServer from 'webpack-dev-server';
+import clearConsole from 'react-dev-utils/clearConsole';
+import { checkBrowsers } from 'react-dev-utils/browsersHelper';
+import checkRequiredFiles from 'react-dev-utils/checkRequiredFiles';
+import openBrowser from 'react-dev-utils/openBrowser';
+import {
   choosePort,
   createCompiler,
   prepareProxy,
   prepareUrls,
-} = require('react-dev-utils/WebpackDevServerUtils');
+} from 'react-dev-utils/WebpackDevServerUtils';
 
-const paths = require('../config/paths');
-const configFactory = require('../config/webpack.config');
-const createDevServerConfig = require('../config/webpackDevServer.config');
+import paths from '../config/paths';
+import configFactory from '../config/webpack.config';
+import createDevServerConfig from '../config/webpackDevServer.config';
 
 const isInteractive = process.stdout.isTTY;
 
