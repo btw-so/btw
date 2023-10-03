@@ -228,8 +228,7 @@ export default {
         });
 
         const changesMade =
-          ((draft.notesMap[payload.id] || {}).html || "") !==
-          (payload.content || "");
+          ((draft.notesMap[payload.id] || {}).md || "") !== (md || "");
 
         draft.notesMap[payload.id] = Object.assign(
           {},
