@@ -1,7 +1,7 @@
 module.exports = {
-  content: ["./views/**/*.hbs"],
+  content: ['./views/**/*.hbs'],
   theme: {
     extend: {},
   },
-  plugins: [require("@tailwindcss/typography"), require("@tailwindcss/forms")],
-};
+  plugins: [require('@tailwindcss/typography'), require('@tailwindcss/forms')],
+}
