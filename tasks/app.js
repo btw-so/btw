@@ -367,7 +367,13 @@ const yjsServer = Server.configure({
                     resolve(
                         db.getTasksDB().then((db) => {
                             return db.query(
-                                `INSERT INTO btw.notes (id, user_id, ydoc, created_at, updated_at) VALUES($1, $2, $3, $4, $5) ON CONFLICT(id, user_id) DO UPDATE SET ydoc = $3, updated_at = $4 RETURNING ydoc`,
+                                `INSERT INTO btw.notes (id, user_id, ydoc, created_at, updated_at) VALUES($1, $2, $3, $4, $5) ON CONFLICT(id, user_id) DO UPDATE SET ydoc = $3, updated_at = CASE WHEN
+                                notes.ydoc <> EXCLUDED.ydoc
+                                OR FALSE THEN
+                                EXCLUDED.updated_at
+                                ELSE
+                                notes.updated_at
+                            END RETURNING ydoc`,
                                 [
                                     id,
                                     Number(user_id),

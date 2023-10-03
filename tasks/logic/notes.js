@@ -228,7 +228,14 @@ async function upsertNote({ id, user_id, json, html, title: defaultTitle }) {
         json ? `json = $${jsonnum},` : ""
     } ${hasHTML ? `html = $${htmlnum},` : ""} ${
         title ? `title = $${titlenum},` : ""
-    } updated_at = $4`;
+    } updated_at = CASE WHEN notes."json"::jsonb @> EXCLUDED.json::jsonb
+    OR notes.html <> EXCLUDED.html
+    OR notes.title <> EXCLUDED.title
+    OR FALSE THEN
+    EXCLUDED.updated_at
+    ELSE
+    notes.updated_at
+END`;
 
     await pool.query(query, [
         id,

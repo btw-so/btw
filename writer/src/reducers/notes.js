@@ -227,16 +227,28 @@ export default {
           md: (md || "").replace(/!\[.*?\]\(.*?\)/g, ""),
         });
 
+        const changesMade =
+          ((draft.notesMap[payload.id] || {}).html || "") !==
+          (payload.content || "");
+
         draft.notesMap[payload.id] = Object.assign(
           {},
           draft.notesMap[payload.id] || {},
           {
             html: payload.content,
-            updated_at: Date.now(),
             md,
             title: title || "",
+            ...(changesMade
+              ? {
+                  updated_at: Date.now(),
+                }
+              : {}),
           }
         );
+
+        draft.notesList.data = Object.keys(draft.notesMap).sort((a, b) => {
+          return draft.notesMap[b].updated_at - draft.notesMap[a].updated_at;
+        });
       });
 
     builder
