@@ -42,8 +42,8 @@ Set ADMIN_EMAIL and ADMIN_SLUG in deploy/docker-compose.dev.yml. These are the o
 | Variable Name            | Description                                                                                                         |
 |--------------------------|---------------------------------------------------------------------------------------------------------------------|
 | TASKS_DATABASE_URL       | Connection URL to your PG DB (For development, the URL is already configured)                                                                                |
-| ADMIN_EMAIL              | Your email address (Not optional)                                                                                                  |
-| ADMIN_SLUG               | Unique slug (Not optional)                                                                                                         |
+| ADMIN_EMAIL              | Your email address (REQUIRED)                                                                                                  |
+| ADMIN_SLUG               | Unique slug (REQUIRED)                                                                                                         |
 | ADMIN_OTP                | (OPTIONAL) Set a unique 6 digit code, if you want the writer to be behind OTP login. OTP login turned off by default |
 | SECRET                   | Unique secret (change the default secret)                                                                                                       |
 | SMTP_HOST                | SMTP HOST (OPTIONAL, used to email OTPs for login)                                                   |
