@@ -115,7 +115,7 @@ router.get("/sitemap.xml", async (req, res, next) => {
       .map(
         (note) => `
     <url>
-      <loc>${createSubUrlWithPath(res, note.slug)}</loc>
+      <loc>${note.url}</loc>
       <changefreq>daily</changefreq>
       <priority>0.8</priority>
     </url>
