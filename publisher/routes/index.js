@@ -69,6 +69,64 @@ const getCommonDeets = (
   };
 };
 
+router.get("/sitemap.xml", async (req, res, next) => {
+  const user = await getUserBySlug({
+    slug: res.locals.domainSlug,
+    customDomain: res.locals.customDomain,
+  });
+
+  if (!user) {
+    res.status(404).render("notfound", { user: true });
+    return;
+  }
+
+  const notes = await getAllNotes({
+    slug: res.locals.domainSlug,
+    customDomain: res.locals.customDomain,
+  });
+
+  if (notes) {
+    notes.map((note) => {
+      note.url = createSubUrlWithPath(res, `/${note.slug}`);
+    });
+  }
+
+  // create SEO friendly xml file with urls
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  <urlset
+    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0"
+    xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+    xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
+  >
+    <url>
+      <loc>${mainUrl(res)}</loc>
+      <changefreq>daily</changefreq>
+      <priority>1.0</priority>
+    </url>
+    <url>
+      <loc>${createSubUrlWithPath(res, "/about")}</loc>
+      <changefreq>daily</changefreq>
+      <priority>1.0</priority>
+    </url>
+    ${notes
+      .map(
+        (note) => `
+    <url>
+      <loc>${createSubUrlWithPath(res, note.slug)}</loc>
+      <changefreq>daily</changefreq>
+      <priority>0.8</priority>
+    </url>
+    `
+      )
+      .join("")}
+  </urlset>`;
+  res.header("Content-Type", "application/xml");
+  res.send(xml);
+});
+
 router.get("/", async (req, res, next) => {
   const user = await getUserBySlug({
     slug: res.locals.domainSlug,

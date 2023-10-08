@@ -154,15 +154,6 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Sitemap
-app.get("/sitemap.xml", (req, res) => {
-  // genSitemap().then((d) => {
-  //   res.set("Content-Type", "text/xml");
-  //   res.type("application/xml");
-  //   res.send(d);
-  // });
-});
-
 app.use("/", indexRouter);
 
 // // catch 404 and forward to error handler
