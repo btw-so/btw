@@ -391,7 +391,7 @@ async function getUserFromToken({ token, fingerprint }) {
         // Single user mode and admin otp is not set. so we return admin user always
         const { rows } = await client.query(
             `SELECT * FROM btw.users WHERE email = $1`,
-            [process.env.ADMIN_EMAIL]
+            [process.env.ADMIN_EMAIL.split(",")[0]]
         );
 
         client.release();

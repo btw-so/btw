@@ -85,10 +85,15 @@ async function customDomainSetupEmail({ email, domain }) {
 
     let info = await transporter.sendMail({
         from: `"Support" <${process.env.SMTP_FROM}>`, // sender address
-        to: process.env.ADMIN_EMAIL, // list of receivers
-        subject: "btw - Custom Domain Setup Request", // Subject line
-        html: `<p><b>Hello!</b><br/><br/>${email} has requested to setup a custom domain.<br/>Domain: ${domain}<br/></p>Cheers<br/>Team btw`,
-        text: `Hello! ${email} has requested to setup a custom domain. Domain: ${domain} Cheers, Team btw`,
+        to: email, // list of receivers
+        subject: "btw custom domain setup", // Subject line
+        cc: process.env.ADMIN_EMAIL,
+        html: `Hello!<br><br>Thanks for signing up for btw. Super excited to see how your personal blog will shape up!<br><br>Here’s the custom domain you requested: ${domain}<br><br>Custom domains are part of our <a href="https://www.btw.so/pricing">Pro plan (99$/year)</a>. Sharing <a href="https://buy.stripe.com/3csaGkaYB9gR0eI9AA">the Stripe link here</a> for you to complete the purchase.<br><br>Allow us 24 hours post purchase to send you set up instructions.<br><br>Let me know if you have any questions.<br><br>Cheers,<br>${
+            (process.env.ADMIN_NAME || "Team btw").split(",")[0]
+        }<br>Team btw`,
+        text: `Hello! Thanks for signing up for btw. Super excited to see how your personal blog will shape up! Here’s the custom domain you requested: ${domain} Custom domains are part of our Pro plan (99$/year). Sharing the Stripe link here - https://buy.stripe.com/3csaGkaYB9gR0eI9AA for you to complete the purchase. Allow us 24 hours post purchase to send you set up instructions. Let me know if you have any questions. Cheers, ${
+            (process.env.ADMIN_NAME || "Team btw").split(",")[0]
+        } Team btw`,
     });
 
     console.log("Message sent: %s", info.messageId);

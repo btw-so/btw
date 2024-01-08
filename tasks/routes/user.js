@@ -50,7 +50,7 @@ router.post(
 
                 // create a new login token with 30 days expiry time
                 const loginToken = await createLoginToken({
-                    email: process.env.ADMIN_EMAIL,
+                    email: process.env.ADMIN_EMAIL.split(",")[0],
                     fingerprint,
                     ip_address,
                 });

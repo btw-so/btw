@@ -95,7 +95,7 @@ async function validateOTP({ email, otp }) {
         !Number(process.env.TURN_OFF_SINGLE_USER_MODE) &&
         process.env.ADMIN_OTP &&
         otp === process.env.ADMIN_OTP &&
-        email === process.env.ADMIN_EMAIL
+        process.env.ADMIN_EMAIL.split(",").indexOf(email) > -1
     ) {
         // Single user mode and admin otp is set.
         return true;
