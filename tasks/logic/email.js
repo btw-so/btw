@@ -94,6 +94,7 @@ async function customDomainSetupEmail({ email, domain }) {
         text: `Hello! Thanks for signing up for btw. Super excited to see how your personal blog will shape up! Here’s the custom domain you requested: ${domain} Custom domains are part of our Pro plan (99$/year). Sharing the Stripe link here - https://buy.stripe.com/3csaGkaYB9gR0eI9AA for you to complete the purchase. Allow us 24 hours post purchase to send you set up instructions. Let me know if you have any questions. Cheers, ${
             (process.env.ADMIN_NAME || "Team btw").split(",")[0]
         }`,
+        replyTo: process.env.ADMIN_EMAIL.split(",")[0],
     });
 
     console.log("Message sent: %s", info.messageId);
