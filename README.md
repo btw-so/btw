@@ -62,6 +62,10 @@ Set ADMIN_EMAIL and ADMIN_SLUG in deploy/docker-compose.dev.yml. These are the o
 1. Execute the following commands from the deploy folder:
     ```
     docker-compose -f docker-compose.dev.yml up
+    ```   
+   If you receive an error message (`/buildx_buildkit_buildxbuilder0 is already in use`), use this command instead:
+    ```
+    BUILDKIT=1 docker compose -f docker-compose.dev.yml up
     ```
 2. Visit localhost:9000 to login and start writing
 3. If you set your slug and publish any articles, you can view them at localhost:9222?domain=<admin slug>
