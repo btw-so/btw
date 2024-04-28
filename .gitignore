@@ -8,10 +8,17 @@ writer/node_modules/
 writer/reports/
 writer/webpack.stats.json
 writer/src/enterprise
+writer/.DS_Store
 
 writer/out/
 
 tasks/node_modules/
+tasks/.DS_Store
+
 publisher/node_modules/
+publisher/.DS_Store
 
 deployment/
+deployment/.DS_Store
+
+.DS_Store
