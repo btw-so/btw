@@ -155,7 +155,8 @@ export function* verifyOtp({ payload }) {
 
 export function* updateUser({ payload }) {
   const fingerprint = yield call(getFingerPrint);
-  const { name, slug, bio, pic, twitter, linkedin, instagram } = payload || {};
+  const { name, slug, bio, pic, twitter, linkedin, instagram, settings } =
+    payload || {};
 
   const toastId = toast.loading("Updating user details");
 
@@ -173,6 +174,7 @@ export function* updateUser({ payload }) {
           twitter,
           linkedin,
           instagram,
+          settings,
         },
       })
     );

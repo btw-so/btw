@@ -96,5 +96,6 @@ CREATE TABLE "btw"."users" (
     "pro" bool,
     "umami_site_id" uuid,
     "share_id" text,
+    "settings" json,
     PRIMARY KEY ("processed_email")
 );

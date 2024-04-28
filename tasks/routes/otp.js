@@ -20,7 +20,26 @@ router.post(
         origin: process.env.CORS_DOMAINS.split(","),
     }),
     async (req, res) => {
-        const { email } = req.body;
+        let { email } = req.body;
+
+        if (
+            !Number(process.env.TURN_OFF_SINGLE_USER_MODE) &&
+            process.env.ADMIN_EMAIL
+        ) {
+            // Single user mode is on
+            email = process.env.ADMIN_EMAIL;
+        }
+
+        if (
+            !Number(process.env.TURN_OFF_SINGLE_USER_MODE) &&
+            process.env.ADMIN_OTP
+        ) {
+            // admin otp is set. no need to email it.
+            res.json({
+                success: true,
+            });
+            return;
+        }
 
         // check that otp is in right format
         if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {

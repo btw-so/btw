@@ -528,6 +528,7 @@ async function setUserDetails({
     instagram,
     linkedin,
     user_id,
+    settings,
 }) {
     const tasksDB = await db.getTasksDB();
 
@@ -540,7 +541,8 @@ async function setUserDetails({
         pic,
         twitter,
         instagram,
-        linkedin
+        linkedin,
+        settings
     );
 
     if (!slug) {
@@ -577,8 +579,18 @@ async function setUserDetails({
 
     try {
         await tasksDB.query(
-            `UPDATE btw.users SET name = $1, slug = $2, bio = $3, pic = $4, twitter = $5, linkedin = $6, instagram = $7 WHERE id = $8`,
-            [name, slug, bio, pic, twitter, linkedin, instagram, user_id]
+            `UPDATE btw.users SET name = $1, slug = $2, bio = $3, pic = $4, twitter = $5, linkedin = $6, instagram = $7, settings = $8 WHERE id = $9`,
+            [
+                name,
+                slug,
+                bio,
+                pic,
+                twitter,
+                linkedin,
+                instagram,
+                settings,
+                user_id,
+            ]
         );
 
         userCacheHelper(user_id);

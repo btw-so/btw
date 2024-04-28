@@ -67,11 +67,9 @@ router.post(
                         : {}),
                 });
             } else if (
-                !Number(
-                    process.env.TURN_OFF_SINGLE_USER_MODE &&
-                        !process.env.ADMIN_OTP &&
-                        loginToken
-                )
+                !Number(process.env.TURN_OFF_SINGLE_USER_MODE) &&
+                !process.env.ADMIN_OTP &&
+                loginToken
             ) {
                 // single user mode. otp is not set. loginToken exists.
                 // check that this logintoken exists. if it doesn't exist, then delete the cookie so that user state will be forced to be reset
@@ -182,6 +180,7 @@ router.post(
             twitter,
             linkedin,
             instagram,
+            settings,
         } = req.body || {};
 
         // get loginToken as btw_uuid cookie
@@ -203,6 +202,7 @@ router.post(
                     twitter,
                     linkedin,
                     instagram,
+                    settings,
                 })
             );
         } catch (e) {
