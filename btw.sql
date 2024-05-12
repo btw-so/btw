@@ -100,3 +100,17 @@ CREATE TABLE "btw"."users" (
     "settings" json,
     PRIMARY KEY ("processed_email")
 );
+
+-- Table Definition
+CREATE TABLE "btw"."nodes" (
+    "id" varchar NOT NULL,
+    "user_id" int4 NOT NULL,
+    "text" varchar,
+    "checked" bool,
+    "collapsed" bool,
+    "parent_id" varchar,
+    "pos" float4,
+    "updated_at" timestamptz,
+    "checked_date" timestamptz,
+    PRIMARY KEY ("id","user_id")
+);
