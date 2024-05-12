@@ -88,6 +88,25 @@ export const searchNotesFailure = createAction(
   })
 );
 
+export const makeNotePrivate = createAction(
+  ActionTypes.MAKE_NOTE_PRIVATE,
+  (data) => ({
+    payload: data,
+  })
+);
+export const makeNotePrivateSuccess = createAction(
+  ActionTypes.MAKE_NOTE_PRIVATE_SUCCESS,
+  (data) => ({
+    payload: data,
+  })
+);
+export const makeNotePrivateFailure = createAction(
+  ActionTypes.MAKE_NOTE_PRIVATE_FAILURE,
+  (data) => ({
+    payload: data,
+  })
+);
+
 export const publishNote = createAction(ActionTypes.PUBLISH_NOTE, (data) => ({
   payload: data,
 }));

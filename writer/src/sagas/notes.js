@@ -18,6 +18,8 @@ import {
   publishNoteSuccess,
   publishNoteFailure,
   archiveNoteSuccess,
+  makeNotePrivateSuccess,
+  makeNotePrivateFailure,
   archiveNoteFailure,
   deleteNoteSuccess,
   deleteNoteFailure,
@@ -484,6 +486,84 @@ export function* setNoteSlug({ payload }) {
   }
 }
 
+export function* makeNotePrivate({ payload }) {
+  const { id, private: privated, user_id } = payload;
+  const fingerprint = yield call(getFingerPrint);
+
+  const toastId = toast.loading(
+    `${privated ? "Marking the note private" : "Making the note public"}...`
+  );
+
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/notes/update/private`,
+
+        method: "POST",
+        data: {
+          fingerprint,
+          id,
+          private: privated,
+          user_id,
+        },
+      })
+    );
+
+    const { success, data, error } = res;
+    if (success && !error) {
+      toast.success(`Note ${privated ? "is private" : "is public"}`, {
+        id: toastId,
+      });
+
+      yield call(() => getNote({ payload: { id } }));
+
+      yield put(makeNotePrivateSuccess(data));
+    } else {
+      toast.error(
+        `Something went wrong ${
+          privated ? "making the note private" : "making the note public"
+        }.. Try again.`,
+        { id: toastId }
+      );
+
+      yield call(() => getNote({ payload: { id } }));
+
+      yield put(
+        makeNotePrivateFailure({
+          error:
+            error ||
+            `Something went wrong ${
+              privated ? "making the note private" : "making the note public"
+            }`,
+        })
+      );
+      return;
+    }
+  } catch (e) {
+    console.log(e);
+    toast.error(
+      `Something went wrong ${
+        privated ? "making the note private" : "making the note public"
+      } the note. Try again.`,
+      { id: toastId }
+    );
+
+    yield call(() => getNote({ payload: { id } }));
+
+    yield put(
+      publishNoteFailure({
+        error:
+          e.message ||
+          `Something went wrong ${
+            privated ? "making the note private" : "making the note public"
+          }.`,
+      })
+    );
+
+    return;
+  }
+}
+
 export function* publishNote({ payload }) {
   const { id, publish, user_id } = payload;
   const fingerprint = yield call(getFingerPrint);
@@ -572,5 +652,6 @@ export default function* root() {
     takeEvery(ActionTypes.DELETE_NOTE, deleteNote),
     takeEvery(ActionTypes.GET_NOTE, getNote),
     takeEvery(ActionTypes.SET_NOTE_SLUG, setNoteSlug),
+    takeEvery(ActionTypes.MAKE_NOTE_PRIVATE, makeNotePrivate),
   ]);
 }

@@ -57,6 +57,7 @@ CREATE TABLE "btw"."notes" (
     "deleted_at" timestamptz,
     "md" text,
     "image" text,
+    "private" bool,
     PRIMARY KEY ("id","user_id")
 );
 
