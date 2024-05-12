@@ -22,6 +22,7 @@ import NotFound from "routes/NotFound";
 import PublicRoute from "./components/PublicRoute";
 import PrivateRoute from "./components/PrivateRoute";
 import Settings from "./routes/Settings";
+import List from "./routes/List";
 
 function Root() {
   const dispatch = useDispatch();
@@ -98,6 +99,16 @@ function Root() {
                   slug={user && user.data ? user.data.slug : null}
                   domain={userDomain}
                   proUser={user && user.data ? user.data.pro : null}
+                  adminUser={
+                    user &&
+                    user.data &&
+                    user.data.pro &&
+                    user.data.email &&
+                    [
+                      "siddhartha.gunti191@gmail.com",
+                      "deepti.vchopra@gmail.com",
+                    ].includes(user.data.email)
+                  }
                   share_id={
                     (user &&
                     user.data &&
@@ -113,6 +124,19 @@ function Root() {
               </PrivateRoute>
             }
             path="/dash"
+          />
+          <Route
+            className="flex flex-grow"
+            element={
+              <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
+                <List
+                  userId={user && user.data ? user.data.id : null}
+                  name={user && user.data ? user.data.name : null}
+                  email={user && user.data ? user.data.email : null}
+                />
+              </PrivateRoute>
+            }
+            path="/list"
           />
           <Route
             className="flex flex-grow"

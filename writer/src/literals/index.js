@@ -59,6 +59,18 @@ export const ActionTypes = keyMirror({
   SEARCH_NOTES: undefined,
   SEARCH_NOTES_SUCCESS: undefined,
   SEARCH_NOTES_FAILURE: undefined,
+  GET_LIST: undefined,
+  GET_LIST_SUCCESS: undefined,
+  GET_LIST_FAILURE: undefined,
+  NEW_LIST_NODE: undefined,
+  EDIT_LIST_NODE_POS: undefined,
+  EDIT_LIST_NODE_CONTENT: undefined,
+  UPSERT_LIST_NODE: undefined,
+  CHANGE_SELECTED_NODE: undefined,
+  BATCH_PUSH_NODES: undefined,
+  MAKE_NOTE_PRIVATE: undefined,
+  MAKE_NOTE_PRIVATE_SUCCESS: undefined,
+  MAKE_NOTE_PRIVATE_FAILURE: undefined,
 });
 
 export const STATUS = {

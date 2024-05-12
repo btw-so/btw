@@ -81,7 +81,7 @@ router.get("/sitemap.xml", async (req, res, next) => {
     return;
   }
 
-  const notes = JSON.parse(
+  let notes = JSON.parse(
     JSON.stringify(
       await getAllNotes({
         slug: res.locals.domainSlug,
@@ -91,6 +91,7 @@ router.get("/sitemap.xml", async (req, res, next) => {
   );
 
   if (notes) {
+    notes = notes.filter((note) => !note.private);
     notes.map((note) => {
       note.url = createSubUrlWithPath(res, `/${note.slug}`);
     });
@@ -236,13 +237,15 @@ router.get("/", async (req, res, next) => {
 
   // convert notes into yearly buckets
   let notesByYear = {};
-  notes.forEach((note) => {
-    const year = new Date(note.published_at).getFullYear();
-    if (!notesByYear[year]) {
-      notesByYear[year] = [];
-    }
-    notesByYear[year].push(note);
-  });
+  notes
+    .filter((x) => !x.private)
+    .forEach((note) => {
+      const year = new Date(note.published_at).getFullYear();
+      if (!notesByYear[year]) {
+        notesByYear[year] = [];
+      }
+      notesByYear[year].push(note);
+    });
 
   res.render("index", {
     notes: Object.keys(notesByYear)

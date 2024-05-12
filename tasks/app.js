@@ -133,6 +133,7 @@ var MyTipTapTransformerJSON = (html) => generateJSON(html, extensions);
 var indexRouter = require("./routes/index");
 var otpRouter = require("./routes/otp");
 var notesRouter = require("./routes/notes");
+var listRouter = require("./routes/list");
 var { baseQueue } = require("./services/queue");
 var { upsertNote, getNote } = require("./logic/notes");
 
@@ -169,6 +170,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/otp", otpRouter);
 app.use("/notes", notesRouter);
+app.use("/list", listRouter);
 app.use("/user", require("./routes/user"));
 
 // Queue monitor

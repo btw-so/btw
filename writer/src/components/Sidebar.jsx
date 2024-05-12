@@ -487,6 +487,23 @@ function Sidebar(props) {
           ) : null}
           <button
             className={`w-full pb-2 pt-4 flex items-center hover:font-extrabold hover:text-blue-500 ${
+              props.listPage ? "text-blue-500" : ""
+            }`}
+            onClick={() => {
+              dispatch(
+                selectNote({
+                  id: undefined,
+                })
+              );
+              setSidebarIsOpen(false);
+              navigate("/list");
+            }}
+          >
+            <i className={`ri-1x ri-list-check mr-1`}></i>
+            <span className="font-extrabold">The list</span>
+          </button>
+          <button
+            className={`w-full pb-2 pt-4 flex items-center hover:font-extrabold hover:text-blue-500 ${
               props.settingsPage ? "text-blue-500" : ""
             }`}
             onClick={() => {
