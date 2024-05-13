@@ -489,6 +489,39 @@ baseQueue.process("importNote", async (job, done) => {
     done();
 });
 
+async function makeNotePrivate({ user_id, id }) {
+    // set private to true
+
+    const pool = await db.getTasksDB();
+
+    await pool.query(
+        `UPDATE btw.notes SET private = true WHERE id = $1 AND user_id = $2`,
+        [id, user_id]
+    );
+
+    noteCacheHelper(user_id);
+
+    return {
+        success: true,
+    };
+}
+
+async function makeNotePublic({ user_id, id }) {
+    // set private to false
+    const pool = await db.getTasksDB();
+
+    await pool.query(
+        `UPDATE btw.notes SET private = false WHERE id = $1 AND user_id = $2`,
+        [id, user_id]
+    );
+
+    noteCacheHelper(user_id);
+
+    return {
+        success: true,
+    };
+}
+
 module.exports = {
     getNote,
     upsertNote,
@@ -502,4 +535,6 @@ module.exports = {
     unarchiveNote,
     setNoteSlug,
     noteCacheHelper,
+    makeNotePrivate,
+    makeNotePublic,
 };
