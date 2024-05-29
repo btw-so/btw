@@ -54,7 +54,7 @@ async function getList({
             WHERE user_id = $2 AND id = $1 AND updated_at >= $3
             UNION ALL
             SELECT n.id, n.user_id, n.parent_id, c.depth + 1
-            FROM btw.nodes n
+            FROM (SELECT * from btw.nodes where user_id = $2) as n
             JOIN node_cte c ON n.parent_id = c.id
             WHERE c.depth < 10
         )

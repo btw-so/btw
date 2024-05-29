@@ -133,6 +133,16 @@ function Root() {
                   userId={user && user.data ? user.data.id : null}
                   name={user && user.data ? user.data.name : null}
                   email={user && user.data ? user.data.email : null}
+                  adminUser={
+                    user &&
+                    user.data &&
+                    user.data.pro &&
+                    user.data.email &&
+                    [
+                      "siddhartha.gunti191@gmail.com",
+                      "deepti.vchopra@gmail.com",
+                    ].includes(user.data.email)
+                  }
                 />
               </PrivateRoute>
             }
@@ -156,6 +166,16 @@ function Root() {
                     (user && user.data && user.data.share_id
                       ? user.data.share_id
                       : null)
+                  }
+                  adminUser={
+                    user &&
+                    user.data &&
+                    user.data.pro &&
+                    user.data.email &&
+                    [
+                      "siddhartha.gunti191@gmail.com",
+                      "deepti.vchopra@gmail.com",
+                    ].includes(user.data.email)
                   }
                 />
               </PrivateRoute>
