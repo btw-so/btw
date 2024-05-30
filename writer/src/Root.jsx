@@ -146,7 +146,7 @@ function Root() {
                 />
               </PrivateRoute>
             }
-            path="/list"
+            path="/the-list"
           />
           <Route
             className="flex flex-grow"
