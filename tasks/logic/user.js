@@ -638,7 +638,7 @@ async function addUserDomain({ domain, user_id }) {
 
     try {
         await tasksDB.query(
-            `INSERT INTO btw.custom_domains (domain, user_id) VALUES ($1, $2) ON CONFLICT (domain, user_id) DO UPDATE SET domain = EXCLUDED.domain`,
+            `INSERT INTO btw.custom_domains (domain, user_id) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET domain = EXCLUDED.domain`,
             [domain || "", user_id]
         );
 
