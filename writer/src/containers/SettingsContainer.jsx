@@ -476,7 +476,7 @@ function SettingsContainer(props) {
                 onChange={(e) => {
                   // only allow changing domain if current domain is empty
                   // later we can have delete domain + add domain functionality so multiple domains with multiple tag bindings can be setup
-                  if (currentDomain) {
+                  if (currentDomain && (isUserPro || isAdmin)) {
                     return;
                   }
                   setDomain(e.target.value);
