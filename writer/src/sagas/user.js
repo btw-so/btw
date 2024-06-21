@@ -231,13 +231,17 @@ export function* addCustomDomain({ payload }) {
     if (success) {
       yield put(addCustomDomainSuccess());
 
-      toast.success(`Added domain: ${domain}`, {
-        id: toastId,
-      });
+      if (domain) {
+        toast.success(`Added domain: ${domain}`, {
+          id: toastId,
+        });
 
-      toast.success(
-        "Domain verification instructions will be sent to your email with in 24 hours"
-      );
+        toast.success(
+          "Domain verification instructions will be sent to your email with in 24 hours"
+        );
+      } else {
+        toast.success("Domain removed successfully");
+      }
 
       // call getUserSaga to update the user in the store
       yield call(getUserSaga);

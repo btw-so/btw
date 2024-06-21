@@ -639,7 +639,7 @@ async function addUserDomain({ domain, user_id }) {
     try {
         await tasksDB.query(
             `INSERT INTO btw.custom_domains (domain, user_id) VALUES ($1, $2)`,
-            [domain, user_id]
+            [domain || "", user_id]
         );
 
         // get user email
@@ -648,7 +648,7 @@ async function addUserDomain({ domain, user_id }) {
             [user_id]
         );
 
-        if (users.length > 0) {
+        if (users.length > 0 && domain) {
             const user = users[0];
 
             customDomainSetupEmail({
