@@ -124,12 +124,16 @@ export default ({
       action: () => showImageUploader && showImageUploader(),
       isActive: () => false,
     },
-    {
-      icon: "html5-line",
-      title: "Embed",
-      action: () => showEmbedUploader && showEmbedUploader(),
-      isActive: () => false,
-    },
+    ...(process.env.REACT_APP_EMBEDDED
+      ? []
+      : [
+          {
+            icon: "html5-line",
+            title: "Embed",
+            action: () => showEmbedUploader && showEmbedUploader(),
+            isActive: () => false,
+          },
+        ]),
     {
       type: "divider",
     },
