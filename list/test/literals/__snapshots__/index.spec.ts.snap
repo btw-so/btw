@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`literals should match the snapshot 1`] = `
+Object {
+  "GITHUB_GET_REPOS_FAILURE": "GITHUB_GET_REPOS_FAILURE",
+  "GITHUB_GET_REPOS_REQUEST": "GITHUB_GET_REPOS_REQUEST",
+  "GITHUB_GET_REPOS_SUCCESS": "GITHUB_GET_REPOS_SUCCESS",
+  "HIDE_ALERT": "HIDE_ALERT",
+  "SET_APP_OPTIONS": "SET_APP_OPTIONS",
+  "SHOW_ALERT": "SHOW_ALERT",
+  "USER_LOGIN_FAILURE": "USER_LOGIN_FAILURE",
+  "USER_LOGIN_REQUEST": "USER_LOGIN_REQUEST",
+  "USER_LOGIN_SUCCESS": "USER_LOGIN_SUCCESS",
+  "USER_LOGOUT_FAILURE": "USER_LOGOUT_FAILURE",
+  "USER_LOGOUT_REQUEST": "USER_LOGOUT_REQUEST",
+  "USER_LOGOUT_SUCCESS": "USER_LOGOUT_SUCCESS",
+}
+`;
+
+exports[`literals should match the snapshot 2`] = `
+Object {
+  "ERROR": "error",
+  "IDLE": "idle",
+  "READY": "ready",
+  "RUNNING": "running",
+  "SUCCESS": "success",
+}
+`;

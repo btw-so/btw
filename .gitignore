@@ -1,3 +1,17 @@
+list/.tmp
+list/.sass-cache
+list/.publish
+list/coverage/
+list/build/
+list/dist/
+list/node_modules/
+list/reports/
+list/webpack.stats.json
+list/src/enterprise
+list/.DS_Store
+
+list/out/
+
 writer/.tmp
 writer/.sass-cache
 writer/.publish

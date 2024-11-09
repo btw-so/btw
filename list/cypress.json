@@ -1,0 +1,9 @@
+{
+  "baseUrl": "http://localhost:9000",
+  "chromeWebSecurity": false,
+  "integrationFolder": "cypress/integration",
+  "projectId": "up2gfx",
+  "video": false,
+  "viewportHeight": 800,
+  "viewportWidth": 1280
+}
