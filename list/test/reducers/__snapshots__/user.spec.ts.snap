@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User USER_LOGIN should handle REQUEST 1`] = `
+Object {
+  "isAuthenticated": false,
+  "status": "running",
+}
+`;
+
+exports[`User USER_LOGIN should handle SUCCESS 1`] = `
+Object {
+  "isAuthenticated": true,
+  "status": "ready",
+}
+`;
+
+exports[`User USER_LOGOUT should handle REQUEST 1`] = `
+Object {
+  "isAuthenticated": false,
+  "status": "running",
+}
+`;
+
+exports[`User USER_LOGOUT should handle SUCCESS 1`] = `
+Object {
+  "isAuthenticated": false,
+  "status": "idle",
+}
+`;
+
+exports[`User should return the initial state 1`] = `
+Object {
+  "isAuthenticated": false,
+  "status": "idle",
+}
+`;

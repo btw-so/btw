@@ -1,0 +1,484 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Alert should render the "danger" type 1`] = `
+.c3 {
+  box-sizing: border-box;
+  padding-left: 8px;
+}
+
+.c0 {
+  box-sizing: border-box;
+  background-color: #ff4444;
+  border: 1px solid #ff4444;
+  color: #fff;
+  border-radius: 0px;
+  font-size: inherit;
+  line-height: 1.4;
+  max-width: 450px;
+  padding: 10px 12px;
+  width: 100%;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+}
+
+.c0 a {
+  color: #fff;
+}
+
+.c2 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c2 svg {
+  height: auto;
+  max-height: 100%;
+  width: 24px;
+}
+
+.c1 {
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  background-color: #ff4444;
+  color: #fff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+<div
+  class="c0"
+  data-testid="Alert"
+  display="flex"
+  role="alert"
+>
+  <div
+    class="c1"
+  >
+    <svg
+      class="c2"
+      height="100%"
+      src="/media/icons/times-circle.svg"
+      width="24px"
+    />
+  </div>
+  <div
+    class="c3"
+  >
+    <p>
+      This is an error message
+    </p>
+  </div>
+</div>
+`;
+
+exports[`Alert should render the "dark" type 1`] = `
+.c3 {
+  box-sizing: border-box;
+  padding-left: 8px;
+}
+
+.c0 {
+  box-sizing: border-box;
+  background-color: #212121;
+  border: 1px solid #212121;
+  color: #fff;
+  border-radius: 0px;
+  font-size: inherit;
+  line-height: 1.4;
+  max-width: 450px;
+  padding: 10px 12px;
+  width: 100%;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+}
+
+.c0 a {
+  color: #fff;
+}
+
+.c2 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c2 svg {
+  height: auto;
+  max-height: 100%;
+  width: 24px;
+}
+
+.c1 {
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  background-color: #212121;
+  color: #fff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+<div
+  class="c0"
+  data-testid="Alert"
+  display="flex"
+  role="alert"
+>
+  <div
+    class="c1"
+  >
+    <svg
+      class="c2"
+      height="100%"
+      src="/media/icons/bell-o.svg"
+      width="24px"
+    />
+  </div>
+  <div
+    class="c3"
+  >
+    <div>
+      This is a message
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Alert should render the "info" type 1`] = `
+.c3 {
+  box-sizing: border-box;
+  padding-left: 8px;
+}
+
+.c0 {
+  box-sizing: border-box;
+  background-color: #33b5e5;
+  border: 1px solid #33b5e5;
+  color: #000;
+  border-radius: 0px;
+  font-size: inherit;
+  line-height: 1.4;
+  max-width: 450px;
+  padding: 10px 12px;
+  width: 100%;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+}
+
+.c0 a {
+  color: #000;
+}
+
+.c2 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c2 svg {
+  height: auto;
+  max-height: 100%;
+  width: 24px;
+}
+
+.c1 {
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  background-color: #33b5e5;
+  color: #fff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+<div
+  class="c0"
+  data-testid="Alert"
+  display="flex"
+  role="alert"
+>
+  <div
+    class="c1"
+  >
+    <svg
+      class="c2"
+      height="100%"
+      src="/media/icons/question-circle.svg"
+      width="24px"
+    />
+  </div>
+  <div
+    class="c3"
+  >
+    This is an info message
+  </div>
+</div>
+`;
+
+exports[`Alert should render the "success" type 1`] = `
+.c3 {
+  box-sizing: border-box;
+  padding-left: 8px;
+}
+
+.c0 {
+  box-sizing: border-box;
+  background-color: #00C851;
+  border: 1px solid #00C851;
+  color: #fff;
+  border-radius: 0px;
+  font-size: inherit;
+  line-height: 1.4;
+  max-width: 450px;
+  padding: 10px 12px;
+  width: 100%;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+}
+
+.c0 a {
+  color: #fff;
+}
+
+.c2 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c2 svg {
+  height: auto;
+  max-height: 100%;
+  width: 24px;
+}
+
+.c1 {
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  background-color: #00C851;
+  color: #fff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+<div
+  class="c0"
+  data-testid="Alert"
+  display="flex"
+  role="alert"
+>
+  <div
+    class="c1"
+  >
+    <svg
+      class="c2"
+      height="100%"
+      src="/media/icons/check-circle.svg"
+      width="24px"
+    />
+  </div>
+  <div
+    class="c3"
+  >
+    This is a success message
+  </div>
+</div>
+`;
+
+exports[`Alert should render the "warning" type 1`] = `
+.c3 {
+  box-sizing: border-box;
+  padding-left: 8px;
+}
+
+.c0 {
+  box-sizing: border-box;
+  background-color: #fda509;
+  border: 1px solid #fda509;
+  color: #000;
+  border-radius: 0px;
+  font-size: inherit;
+  line-height: 1.4;
+  max-width: 450px;
+  padding: 10px 12px;
+  width: 100%;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+}
+
+.c0 a {
+  color: #000;
+}
+
+.c2 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c2 svg {
+  height: auto;
+  max-height: 100%;
+  width: 24px;
+}
+
+.c1 {
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  background-color: #fda509;
+  color: #fff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+<div
+  class="c0"
+  data-testid="Alert"
+  display="flex"
+  role="alert"
+>
+  <div
+    class="c1"
+  >
+    <svg
+      class="c2"
+      height="100%"
+      src="/media/icons/exclamation-circle.svg"
+      width="24px"
+    />
+  </div>
+  <div
+    class="c3"
+  >
+    This is a warning message
+  </div>
+</div>
+`;
+
+exports[`Alert should render the default alert 1`] = `
+.c3 {
+  box-sizing: border-box;
+  padding-left: 8px;
+}
+
+.c0 {
+  box-sizing: border-box;
+  background-color: #4e4141;
+  border: 1px solid #4e4141;
+  color: #fff;
+  border-radius: 0px;
+  font-size: inherit;
+  line-height: 1.4;
+  max-width: 450px;
+  padding: 10px 12px;
+  width: 100%;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+}
+
+.c0 a {
+  color: #fff;
+}
+
+.c2 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c2 svg {
+  height: auto;
+  max-height: 100%;
+  width: 24px;
+}
+
+.c1 {
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  color: #fff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+<div
+  class="c0"
+  data-testid="Alert"
+  display="flex"
+  role="alert"
+>
+  <div
+    class="c1"
+  >
+    <svg
+      class="c2"
+      height="100%"
+      src="/media/icons/dot-circle-o.svg"
+      width="24px"
+    />
+  </div>
+  <div
+    class="c3"
+  >
+    Basic Alert
+  </div>
+</div>
+`;

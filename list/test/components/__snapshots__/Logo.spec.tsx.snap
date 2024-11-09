@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Logo should render properly 1`] = `
+.c0 {
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  font-size: 0;
+}
+
+.c0 svg {
+  height: 4.2rem;
+  max-height: 100%;
+  width: auto;
+}
+
+<div>
+  <div
+    class="c0"
+  >
+    <svg
+      src="/media/brand/icon.svg"
+    />
+  </div>
+</div>
+`;

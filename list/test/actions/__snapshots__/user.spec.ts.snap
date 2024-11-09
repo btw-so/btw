@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`actions/user logOut 1`] = `
+Object {
+  "payload": undefined,
+  "type": "USER_LOGOUT_REQUEST",
+}
+`;
+
+exports[`actions/user login 1`] = `
+Object {
+  "payload": undefined,
+  "type": "USER_LOGIN_REQUEST",
+}
+`;

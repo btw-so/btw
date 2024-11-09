@@ -1,0 +1,101 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SystemAlerts should render all zones 1`] = `
+.c1 {
+  position: fixed;
+  z-index: 1000;
+}
+
+.c1 > div > * + * {
+  margin-top: 16px;
+}
+
+.c2 {
+  left: 16px;
+  top: 16px;
+  width: 26rem;
+}
+
+.c3 {
+  right: 16px;
+  top: 16px;
+  width: 26rem;
+}
+
+.c4 {
+  bottom: 16px;
+  left: 16px;
+  width: 26rem;
+}
+
+.c5 {
+  bottom: 16px;
+  right: 16px;
+  width: 26rem;
+}
+
+.c0 {
+  pointer-events: none;
+  position: fixed;
+  z-index: 1000;
+}
+
+@media screen and (min-width:768px) {
+  .c2 {
+    width: 32rem;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c3 {
+    width: 32rem;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c4 {
+    width: 32rem;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c5 {
+    width: 32rem;
+  }
+}
+
+<div>
+  <div
+    class="c0"
+  >
+    <div
+      class="c1 c2"
+    >
+      <div
+        class="transition"
+      />
+    </div>
+    <div
+      class="c1 c3"
+    >
+      <div
+        class="transition"
+      />
+    </div>
+    <div
+      class="c1 c4"
+    >
+      <div
+        class="transition"
+      />
+    </div>
+    <div
+      class="c1 c5"
+    >
+      <div
+        class="transition"
+      />
+    </div>
+  </div>
+</div>
+`;

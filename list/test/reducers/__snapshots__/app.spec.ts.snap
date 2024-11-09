@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`reducers/app should handle SET_APP_OPTIONS 1`] = `
+Object {
+  "query": "test",
+}
+`;
+
+exports[`reducers/app should return the initial state 1`] = `
+Object {
+  "query": "react",
+}
+`;

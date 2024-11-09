@@ -1,0 +1,62 @@
+{
+  "extends": [
+    "@gilbarbara/eslint-config"
+  ],
+  "env": {
+    "browser": true,
+    "cypress/globals": true
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {},
+      "typescript": {},
+      "webpack": {
+        "config": "config/webpack.config.js"
+      }
+    }
+  },
+  "globals": {
+    "fetch": false,
+    "ga": false,
+    "APP__BRANCH": false,
+    "APP__BUILD_DATE": false,
+    "APP__GITHASH": false,
+    "APP__VERSION": false
+  },
+  "plugins": [
+    "cypress",
+    "redux-saga"
+  ],
+  "overrides": [
+    {
+      "files": ["test/**/*.ts?(x)"],
+      "globals": {
+        "jsdom": false,
+        "navigate": true,
+        "renderWithRedux": true
+      },
+      "parserOptions": {
+        "project": "./tsconfig.json",
+        "tsconfigRootDir": "./test/"
+      },
+      "rules": {
+        "no-console": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
+        "react/function-component-definition": "off"
+      }
+    },
+    {
+      "files": ["config/**/*", "tools/**/*"],
+      "rules": {
+        "no-console": "off",
+        "import/no-dynamic-require": "off"
+      }
+    }
+  ],
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "react/state-in-constructor": "off"
+  }
+}

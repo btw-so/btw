@@ -1,0 +1,903 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Root should render properly for anonymous users 1`] = `
+.c10 {
+  box-sizing: border-box;
+  border-top: 0.1rem solid #ddd;
+}
+
+.c7 {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #fff;
+  border: 1px solid #fff;
+  color: #000;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  border-radius: 32px;
+  box-shadow: none;
+  cursor: pointer;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 22px;
+  line-height: 1;
+  padding: 14px 32px;
+  -webkit-text-decoration: none;
+  text-decoration: none;
+  width: auto;
+  text-transform: uppercase;
+}
+
+.c7:disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.c7:focus {
+  outline-color: #fff;
+}
+
+.c3 {
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  position: relative;
+  width: 100%;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.c11 {
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  position: relative;
+  width: 100%;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.c12 {
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+.c9 {
+  box-sizing: border-box;
+  color: inherit;
+  display: inline-block;
+  line-height: 1.4;
+  margin-left: 8px;
+}
+
+.c8 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c8 svg {
+  height: auto;
+  max-height: 100%;
+  width: 20px;
+}
+
+.c5 {
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  font-size: 0;
+}
+
+.c5 svg {
+  height: 4.2rem;
+  max-height: 100%;
+  width: auto;
+}
+
+.c14 {
+  position: fixed;
+  z-index: 1000;
+}
+
+.c14 > div > * + * {
+  margin-top: 16px;
+}
+
+.c15 {
+  left: 16px;
+  top: 16px;
+  width: 26rem;
+}
+
+.c16 {
+  right: 16px;
+  top: 16px;
+  width: 26rem;
+}
+
+.c17 {
+  bottom: 16px;
+  left: 16px;
+  width: 26rem;
+}
+
+.c18 {
+  bottom: 16px;
+  right: 16px;
+  width: 26rem;
+}
+
+.c13 {
+  pointer-events: none;
+  position: fixed;
+  z-index: 1000;
+}
+
+.c2 {
+  background: #000 linear-gradient(to bottom,#00657e 0%,#002529 100%) fixed;
+  color: #fff;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.c2:before {
+  background: linear-gradient(to bottom,#000,#fff);
+  bottom: 0;
+  content: '';
+  left: 0;
+  opacity: 0.4;
+  position: absolute;
+  right: 0;
+  top: 0;
+  -webkit-transform: rotate(-20deg) scale(2) translate(0,45%);
+  -ms-transform: rotate(-20deg) scale(2) translate(0,45%);
+  transform: rotate(-20deg) scale(2) translate(0,45%);
+}
+
+.c4 {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.c4 svg {
+  height: 10rem;
+  width: auto;
+}
+
+.c6 {
+  color: #fff;
+  font-size: 3.5rem;
+  line-height: 1.4;
+  margin-bottom: 16px;
+  margin-top: 0;
+  text-align: center;
+}
+
+.c0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-height: 100vh;
+  opacity: 1 !important;
+  position: relative;
+  -webkit-transition: opacity 0.5s;
+  transition: opacity 0.5s;
+}
+
+.c1 {
+  min-height: 100vh;
+  padding: 0;
+}
+
+@media screen and (min-width:1024px) {
+  .c3 {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+@media screen and (min-width:1024px) {
+  .c11 {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c15 {
+    width: 32rem;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c16 {
+    width: 32rem;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c17 {
+    width: 32rem;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c18 {
+    width: 32rem;
+  }
+}
+
+@media screen and (min-width:1024px) {
+  .c4 svg {
+    height: 15rem;
+  }
+}
+
+@media screen and (min-width:1024px) {
+  .c6 {
+    font-size: 4rem;
+  }
+}
+
+<div
+  class="c0"
+  data-testid="app"
+>
+  <div>
+    Helmet
+  </div>
+  <main
+    class="c1"
+  >
+    <div
+      class="c2"
+      data-testid="Home"
+    >
+      <div
+        class="c3"
+      >
+        <div
+          class="c4"
+        >
+          <div
+            class="c5"
+          >
+            <svg
+              src="/media/brand/icon.svg"
+            />
+          </div>
+        </div>
+        <h1
+          class="c6"
+        >
+          React Redux Saga Boilerplate
+        </h1>
+        <button
+          class="c7"
+          data-testid="Login"
+          type="button"
+        >
+          <svg
+            class="c8"
+            height="100%"
+            src="/media/icons/sign-in.svg"
+            width="20px"
+          />
+          <span
+            class="c9"
+          >
+            Start
+          </span>
+        </button>
+      </div>
+    </div>
+  </main>
+  <footer
+    class="c10"
+  >
+    <div
+      class="c11"
+    >
+      <div
+        class="c12"
+      >
+        <iframe
+          frameborder="0"
+          height="20px"
+          scrolling="0"
+          src="https://ghbtns.com/github-btn.html?user=gilbarbara&repo=react-redux-saga-boilerplate&type=star&count=true"
+          title="GitHub Stars"
+          width="110px"
+        />
+        <iframe
+          frameborder="0"
+          height="20px"
+          scrolling="0"
+          src="https://ghbtns.com/github-btn.html?user=gilbarbara&type=follow&count=true"
+          title="GitHub Follow"
+          width="130px"
+        />
+      </div>
+    </div>
+  </footer>
+  <div
+    class="c13"
+  >
+    <div
+      class="c14 c15"
+    >
+      <div />
+    </div>
+    <div
+      class="c14 c16"
+    >
+      <div />
+    </div>
+    <div
+      class="c14 c17"
+    >
+      <div />
+    </div>
+    <div
+      class="c14 c18"
+    >
+      <div />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Root should render properly for logged users 1`] = `
+.c8 {
+  box-sizing: border-box;
+  border-top: 0.1rem solid #ddd;
+}
+
+.c21 {
+  box-sizing: border-box;
+  padding-left: 16px;
+}
+
+.c18 {
+  box-sizing: border-box;
+  background-color: #00C851;
+  border: 1px solid #00C851;
+  color: #fff;
+  border-radius: 0px;
+  font-size: inherit;
+  line-height: 1.4;
+  max-width: 450px;
+  padding: 10px 12px;
+  width: 100%;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+}
+
+.c18 a {
+  color: #fff;
+}
+
+.c9 {
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  position: relative;
+  width: 100%;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.c2 {
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  position: relative;
+  width: 100%;
+}
+
+.c10 {
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+.c6 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c6 svg {
+  height: auto;
+  max-height: 100%;
+  width: 16px;
+}
+
+.c20 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c20 svg {
+  height: auto;
+  max-height: 100%;
+  width: 24px;
+}
+
+.c23 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c23 svg {
+  height: auto;
+  max-height: 100%;
+  width: 10px;
+}
+
+.c4 {
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  font-size: 0;
+}
+
+.c4 svg {
+  height: 4.2rem;
+  max-height: 100%;
+  width: auto;
+}
+
+.c1 {
+  background-color: #113740;
+  height: 70px;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 200;
+}
+
+.c1:before {
+  background-color: #00b4d5;
+  bottom: 0;
+  content: '';
+  height: 0.2rem;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.c3 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  height: 100%;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  padding-top: 8px;
+}
+
+.c5 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  color: #fff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 1.3rem;
+  padding: 8px;
+}
+
+.c5.active {
+  color: #fff;
+}
+
+.c5 span {
+  display: inline-block;
+  margin-right: 0.4rem;
+  text-transform: uppercase;
+}
+
+.c19 {
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  background-color: #00C851;
+  color: #fff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.c22 {
+  background-color: #00C851;
+  color: #fff;
+  line-height: 0;
+  pointer-events: all;
+  position: absolute;
+  right: 4px;
+  top: 4px;
+}
+
+.c17 {
+  will-change: opacity,transform;
+}
+
+.c17.slide-left-appear,
+.c17.slide-left-enter {
+  opacity: 0.01;
+  -webkit-transform: translate3d(100%,0,0);
+  -ms-transform: translate3d(100%,0,0);
+  transform: translate3d(100%,0,0);
+}
+
+.c17.slide-left-appear.slide-left-appear-active {
+  opacity: 1;
+  -webkit-transform: translate3d(0,0,0);
+  -ms-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  -webkit-transition: 0.3s opacity,0.3s -webkit-transform cubic-bezier(0.35,0.01,0.77,0.34);
+  -webkit-transition: 0.3s opacity,0.3s transform cubic-bezier(0.35,0.01,0.77,0.34);
+  transition: 0.3s opacity,0.3s transform cubic-bezier(0.35,0.01,0.77,0.34);
+}
+
+.c17.slide-left-enter.slide-left-enter-active {
+  opacity: 1;
+  -webkit-transform: translate3d(0,0,0);
+  -ms-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  -webkit-transition: 0.3s opacity,0.3s -webkit-transform cubic-bezier(0.35,0.01,0.77,0.34);
+  -webkit-transition: 0.3s opacity,0.3s transform cubic-bezier(0.35,0.01,0.77,0.34);
+  transition: 0.3s opacity,0.3s transform cubic-bezier(0.35,0.01,0.77,0.34);
+}
+
+.c17.slide-left-exit {
+  opacity: 1;
+  -webkit-transform: translate3d(0,0,0);
+  -ms-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+}
+
+.c17.slide-left-exit.slide-left-exit-active {
+  opacity: 0.01;
+  -webkit-transform: translate3d(100%,0,0);
+  -ms-transform: translate3d(100%,0,0);
+  transform: translate3d(100%,0,0);
+  -webkit-transition: 0.3s opacity,0.3s -webkit-transform cubic-bezier(0.35,0.01,0.77,0.34);
+  -webkit-transition: 0.3s opacity,0.3s transform cubic-bezier(0.35,0.01,0.77,0.34);
+  transition: 0.3s opacity,0.3s transform cubic-bezier(0.35,0.01,0.77,0.34);
+}
+
+.c12 {
+  position: fixed;
+  z-index: 1000;
+}
+
+.c12 > div > * + * {
+  margin-top: 16px;
+}
+
+.c13 {
+  left: 16px;
+  top: 16px;
+  width: 26rem;
+}
+
+.c14 {
+  right: 16px;
+  top: 16px;
+  width: 26rem;
+}
+
+.c15 {
+  bottom: 16px;
+  left: 16px;
+  width: 26rem;
+}
+
+.c16 {
+  bottom: 16px;
+  right: 16px;
+  width: 26rem;
+}
+
+.c11 {
+  pointer-events: none;
+  position: fixed;
+  z-index: 1000;
+}
+
+.c0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-height: 100vh;
+  opacity: 1 !important;
+  position: relative;
+  -webkit-transition: opacity 0.5s;
+  transition: opacity 0.5s;
+}
+
+.c7 {
+  min-height: 100vh;
+  padding: 70px 0 0;
+}
+
+@media screen and (min-width:1024px) {
+
+}
+
+@media screen and (min-width:1024px) {
+  .c9 {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+@media screen and (min-width:1024px) {
+  .c2 {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+@media screen and (min-width:1024px) {
+  .c5 {
+    font-size: 1.6rem;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c13 {
+    width: 32rem;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c14 {
+    width: 32rem;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c15 {
+    width: 32rem;
+  }
+}
+
+@media screen and (min-width:768px) {
+  .c16 {
+    width: 32rem;
+  }
+}
+
+@media screen and (min-width:1024px) {
+
+}
+
+@media screen and (min-width:1024px) {
+
+}
+
+<div
+  class="c0"
+  data-testid="app"
+>
+  <div>
+    Helmet
+  </div>
+  <header
+    class="c1"
+    data-testid="Header"
+  >
+    <div
+      class="c2 c3"
+    >
+      <div
+        class="c4"
+      >
+        <svg
+          src="/media/brand/icon.svg"
+        />
+      </div>
+      <button
+        class="c5"
+      >
+        <span>
+          logout
+        </span>
+        <svg
+          class="c6"
+          height="100%"
+          src="/media/icons/sign-out.svg"
+          width="16px"
+        />
+      </button>
+    </div>
+  </header>
+  <main
+    class="c7"
+  >
+    <div
+      data-component-name="Navigate"
+    >
+      NAVIGATE
+    </div>
+  </main>
+  <footer
+    class="c8"
+  >
+    <div
+      class="c9"
+    >
+      <div
+        class="c10"
+      >
+        <iframe
+          frameborder="0"
+          height="20px"
+          scrolling="0"
+          src="https://ghbtns.com/github-btn.html?user=gilbarbara&repo=react-redux-saga-boilerplate&type=star&count=true"
+          title="GitHub Stars"
+          width="110px"
+        />
+        <iframe
+          frameborder="0"
+          height="20px"
+          scrolling="0"
+          src="https://ghbtns.com/github-btn.html?user=gilbarbara&type=follow&count=true"
+          title="GitHub Follow"
+          width="130px"
+        />
+      </div>
+    </div>
+  </footer>
+  <div
+    class="c11"
+  >
+    <div
+      class="c12 c13"
+    >
+      <div />
+    </div>
+    <div
+      class="c12 c14"
+    >
+      <div />
+    </div>
+    <div
+      class="c12 c15"
+    >
+      <div />
+    </div>
+    <div
+      class="c12 c16"
+    >
+      <div>
+        <div
+          class="c17 slide-left-enter slide-left-enter-active"
+        >
+          <div
+            class="c18"
+            data-testid="Alert"
+            display="flex"
+            role="alert"
+          >
+            <div
+              class="c19"
+            >
+              <svg
+                class="c20"
+                height="100%"
+                src="/media/icons/bell.svg"
+                width="24px"
+              />
+            </div>
+            <div
+              class="c21"
+            >
+              Hello! And welcome!
+            </div>
+            <button
+              class="c22"
+              data-id="8cdee72f-28d4-4441-91f0-c61f6e3d9684"
+              type="button"
+            >
+              <svg
+                class="c23"
+                height="100%"
+                src="/media/icons/times.svg"
+                width="10px"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

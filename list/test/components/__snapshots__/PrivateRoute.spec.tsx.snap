@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PrivateRoute should allow navigation for authenticated access 1`] = `
+<div>
+  <div>
+    PRIVATE
+  </div>
+</div>
+`;
+
+exports[`PrivateRoute should redirect for unauthenticated access 1`] = `
+<div>
+  <div
+    data-component-name="Navigate"
+  >
+    NAVIGATE
+  </div>
+</div>
+`;

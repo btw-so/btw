@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Transition should not render if transition don't exist 1`] = `<div />`;
+
+exports[`Transition should render properly 1`] = `
+.c0 {
+  will-change: opacity,transform;
+}
+
+.c0.fade-appear,
+.c0.fade-enter {
+  opacity: 0.01;
+}
+
+.c0.fade-appear.fade-appear-active {
+  opacity: 1;
+  -webkit-transition: 0.3s opacity;
+  transition: 0.3s opacity;
+}
+
+.c0.fade-enter.fade-enter-active {
+  opacity: 1;
+  -webkit-transition: 0.3s opacity;
+  transition: 0.3s opacity;
+}
+
+.c0.fade-exit {
+  opacity: 1;
+}
+
+.c0.fade-exit.fade-exit-active {
+  opacity: 0.01;
+  -webkit-transition: 0.3s opacity;
+  transition: 0.3s opacity;
+}
+
+<div>
+  <div>
+    <div
+      class="c0 fade-appear fade-appear-active"
+    >
+      <div
+        class="transition"
+      />
+    </div>
+  </div>
+</div>
+`;

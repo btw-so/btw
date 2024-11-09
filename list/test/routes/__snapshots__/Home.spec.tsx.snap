@@ -1,0 +1,207 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Home should render properly 1`] = `
+.c5 {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #fff;
+  border: 1px solid #fff;
+  color: #000;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  border-radius: 0px;
+  box-shadow: none;
+  cursor: pointer;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 22px;
+  line-height: 1;
+  padding: 12px 20px;
+  -webkit-text-decoration: none;
+  text-decoration: none;
+  width: auto;
+  text-transform: uppercase;
+}
+
+.c5:disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.c5:focus {
+  outline-color: #fff;
+}
+
+.c1 {
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  position: relative;
+  width: 100%;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.c7 {
+  box-sizing: border-box;
+  color: inherit;
+  display: inline-block;
+  line-height: 1.4;
+  margin-left: 8px;
+}
+
+.c0 {
+  background: #000 linear-gradient(to bottom,#00657e 0%,#002529 100%) fixed;
+  color: #fff;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.c0:before {
+  background: linear-gradient(to bottom,#000,#fff);
+  bottom: 0;
+  content: '';
+  left: 0;
+  opacity: 0.4;
+  position: absolute;
+  right: 0;
+  top: 0;
+  -webkit-transform: rotate(-20deg) scale(2) translate(0,45%);
+  -ms-transform: rotate(-20deg) scale(2) translate(0,45%);
+  transform: rotate(-20deg) scale(2) translate(0,45%);
+}
+
+.c6 {
+  display: inline-block;
+  line-height: 0;
+}
+
+.c6 svg {
+  height: auto;
+  max-height: 100%;
+  width: 20px;
+}
+
+.c3 {
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  font-size: 0;
+}
+
+.c3 svg {
+  height: 4.2rem;
+  max-height: 100%;
+  width: auto;
+}
+
+.c2 {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.c2 svg {
+  height: 10rem;
+  width: auto;
+}
+
+.c4 {
+  color: #fff;
+  font-size: 3.5rem;
+  line-height: 1.4;
+  margin-bottom: 16px;
+  margin-top: 0;
+  text-align: center;
+}
+
+@media screen and (min-width:1024px) {
+  .c1 {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+@media screen and (min-width:1024px) {
+  .c2 svg {
+    height: 15rem;
+  }
+}
+
+@media screen and (min-width:1024px) {
+  .c4 {
+    font-size: 4rem;
+  }
+}
+
+<div
+  class="c0"
+  data-testid="Home"
+>
+  <div
+    class="c1"
+  >
+    <div
+      class="c2"
+    >
+      <div
+        class="c3"
+      >
+        <svg
+          src="/media/brand/icon.svg"
+        />
+      </div>
+    </div>
+    <h1
+      class="c4"
+    >
+      React Redux Saga Boilerplate
+    </h1>
+    <button
+      class="c5"
+      data-testid="Login"
+      type="button"
+    >
+      <svg
+        class="c6"
+        height="100%"
+        src="/media/icons/sign-in.svg"
+        width="20px"
+      />
+      <span
+        class="c7"
+      >
+        Start
+      </span>
+    </button>
+  </div>
+</div>
+`;

@@ -1,0 +1,20 @@
+{
+  "extends": "@gilbarbara/tsconfig",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "lib": ["dom", "dom.iterable", "esnext", "webworker"],
+    "outDir": "build",
+    "paths": {
+      "*": ["src/*"],
+      "assets/*": ["assets/*"],
+      "test/*": ["test/*"],
+      "test-utils": ["test/__setup__/test-utils"]
+    },
+    "skipLibCheck": true,
+    "target": "es5",
+    "jsx": "react",
+    "noImplicitAny": false
+  },
+  "include": ["src/**/*", "electron-starter.js"]
+}

@@ -60,6 +60,40 @@ services:
             ADMIN_SLUG:
         links:
             - redis
+    list:
+        platform: linux/amd64
+        container_name: list
+        build: ../list
+        depends_on:
+            - db
+        volumes:
+            - ../list/assets:/list/assets
+            - ../list/src:/list/src
+            - ../list/tools:/list/tools
+            - ../list/build:/list/build
+            - ../list/package.json:/list/package.json
+            - ../list/tsconfig.json:/list/tsconfig.json
+        working_dir: /list
+        ports:
+            - "9300:9300"
+        expose:
+            - "9300"
+        environment:
+            NODE_TLS_REJECT_UNAUTHORIZED: "0"
+            NEW_RELIC_NO_CONFIG_FILE: 1
+            NEW_RELIC_ENABLED: 0
+            APP_NAME: list
+            DOMAIN: localhost:9300
+            REACT_APP_YJS_DOMAIN: ws://localhost:9211
+            ROOT_DOMAIN: localhost
+            PORT: 9300
+            DEBUG: 1
+            HTTPS_DOMAIN: 0
+            NODE_ENV: development
+            REACT_APP_TASKS_PUBLIC_URL: "http://localhost:9210"
+            REACT_APP_UPPY_COMPANION_URL: "http://localhost:9210/companion"
+            REACT_APP_S3_ENDPOINT:
+            SECRET: CHANGE THIS AND SET YOUR SECRET
     writer:
         platform: linux/amd64
         container_name: writer

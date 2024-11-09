@@ -1,0 +1,245 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GitHub should render a loader and dispatch the action 1`] = `
+.c3 {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #fff;
+  border: 1px solid #4e4141;
+  color: #4e4141;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  border-radius: 0px;
+  box-shadow: none;
+  cursor: pointer;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+  padding: 8px 14px;
+  -webkit-text-decoration: none;
+  text-decoration: none;
+  width: auto;
+}
+
+.c3:disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.c3:focus {
+  outline-color: #4e4141;
+}
+
+.c2 {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #4e4141;
+  border: 1px solid #4e4141;
+  color: #fff;
+  -webkit-animation: bhbJZt 0.5s linear infinite;
+  animation: bhbJZt 0.5s linear infinite;
+  background-image: repeating-linear-gradient( 45deg, rgba(255,255,255,0.4), rgba(255,255,255,0.4) 20px, transparent 20px, transparent 40px );
+  background-size: 56px 56px;
+  pointer-events: none;
+  -webkit-transition: none !important;
+  transition: none !important;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  border-radius: 0px;
+  box-shadow: none;
+  cursor: pointer;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+  padding: 8px 14px;
+  -webkit-text-decoration: none;
+  text-decoration: none;
+  width: auto;
+}
+
+.c2:disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.c2:focus {
+  outline-color: #4e4141;
+}
+
+.c1 {
+  box-sizing: border-box;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+}
+
+.c1 > button + button {
+  margin-left: -1px;
+}
+
+.c1 > button:first-of-type {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.c1 > button:last-of-type {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+}
+
+.c1 > button:not(:first-of-type):not(:last-of-type) {
+  border-radius: 0;
+}
+
+.c0 {
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+
+.c4 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 32px;
+  margin: 2rem auto;
+  position: relative;
+  width: 32px;
+}
+
+.c4 > div {
+  -webkit-animation: hqrBsq 1.15s infinite cubic-bezier(0.2,0.6,0.36,1);
+  animation: hqrBsq 1.15s infinite cubic-bezier(0.2,0.6,0.36,1);
+  border: 0 solid #00b4d5;
+  border-radius: 50%;
+  box-sizing: border-box;
+  height: 0;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translate(-50%,-50%);
+  -ms-transform: translate(-50%,-50%);
+  transform: translate(-50%,-50%);
+  width: 0;
+}
+
+<div>
+  <div
+    data-testid="GitHubWrapper"
+  >
+    <div
+      class="c0"
+    >
+      <div
+        aria-label="GitHub Selector"
+        class="c1"
+        data-testid="GitHubSelector"
+        role="group"
+      >
+        <button
+          class="c2"
+          data-value="react"
+          type="button"
+        >
+          React
+        </button>
+        <button
+          class="c3"
+          data-value="redux"
+          type="button"
+        >
+          Redux
+        </button>
+      </div>
+    </div>
+    <div
+      class="c4"
+      color="#00b4d5"
+      data-testid="Loader"
+      size="32"
+      type="grow"
+    >
+      <div />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`GitHub should render a message if there's no data 1`] = `
+<h3>
+  Nothing found
+</h3>
+`;
+
+exports[`GitHub should render the repos 1`] = `
+<div data-testid="GitHubGrid"
+     data-value="react"
+     width="[object Object]"
+     class="sc-bjUoiL fMZXtX"
+>
+  <a href="https://github.com/freeCodeCamp/freeCodeCamp"
+     target="_blank"
+     class="sc-cxabCf gJbJSN Item-sc-jn8jzz-0 eHJsUR"
+  >
+    <img alt="freeCodeCamp"
+         src="https://avatars0.githubusercontent.com/u/9892522?v=4"
+         class="sc-hHLeRK bOPpni"
+    >
+    <div class="ItemHeader-sc-jn8jzz-1 ikJHPS">
+      <h5 class="sc-dIouRR kcAabS">
+        freeCodeCamp
+      </h5>
+      <small>
+        freeCodeCamp
+      </small>
+    </div>
+    <p class="sc-gicCDI RpExH">
+      freeCodeCamp.org's open source codebase and curriculum. Learn to code at home.
+    </p>
+  </a>
+  <a href="https://github.com/facebook/react"
+     target="_blank"
+     class="sc-cxabCf gJbJSN Item-sc-jn8jzz-0 eHJsUR"
+  >
+    <img alt="facebook"
+         src="https://avatars3.githubusercontent.com/u/69631?v=4"
+         class="sc-hHLeRK bOPpni"
+    >
+    <div class="ItemHeader-sc-jn8jzz-1 ikJHPS">
+      <h5 class="sc-dIouRR kcAabS">
+        react
+      </h5>
+      <small>
+        facebook
+      </small>
+    </div>
+    <p class="sc-gicCDI RpExH">
+      A declarative, efficient, and flexible JavaScript library for building user interfaces.
+    </p>
+  </a>
+</div>
+`;
