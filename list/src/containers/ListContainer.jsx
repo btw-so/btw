@@ -996,7 +996,7 @@ const Parent = ({
           onDrop={onDrop}
         />
       ) : null}
-      {!nodeDBMap[id].collapsed &&
+      {(!nodeDBMap[id].collapsed || id === selectedListId) &&
       nodeUIMap[id] &&
       nodeUIMap[id].children &&
       nodeUIMap[id].children.length > 0 &&
