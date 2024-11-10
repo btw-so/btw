@@ -395,3 +395,9 @@ hr.ProseMirror-selectednode {
 *::-webkit-scrollbar-thumb:active {
   background-color: #bbbbbb;
 }
+
+
+/* apply pink-600 */
+.list-canvas strong {
+  @apply text-pink-600;
+}
