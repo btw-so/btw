@@ -953,7 +953,7 @@ function ListContainer(props) {
 
           <ContentEditable
             id={selectedListId}
-            classes={"text-xl font-bold"}
+            classes={"text-xl font-bold mb-4"}
             val={nodeDBMap[selectedListId].text}
             setVal={(val) => {
               upsertHelper({
