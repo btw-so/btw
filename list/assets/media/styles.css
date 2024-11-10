@@ -2731,11 +2731,11 @@ hr.ProseMirror-selectednode {
   background-color: #bbbbbb;
 }
 
-/* apply orange-600 */
+/* apply pink-600 */
 
 .list-canvas strong {
   --tw-text-opacity: 1;
-  color: rgb(234 88 12 / var(--tw-text-opacity));
+  color: rgb(219 39 119 / var(--tw-text-opacity));
 }
 
 @media (min-width: 1024px) {
