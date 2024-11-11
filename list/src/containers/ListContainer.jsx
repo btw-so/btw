@@ -634,7 +634,7 @@ const Node = ({
                 }
               }}
             >
-              {node.collapsed || keepCollapsed ? (
+              {(node && node.collapsed) || keepCollapsed ? (
                 <i
                   className={`ri-arrow-right-s-line text-gray-400 group-hover:text-gray-600 transition-colors duration-300`}
                 ></i>
@@ -786,7 +786,7 @@ const Parent = ({
 
             const firstChild = hasChildren ? nodeUIMap[id].children[0] : null;
 
-            const isCollapsed = hasChildren && !!nodeDBMap[id].collapsed;
+            const isCollapsed = hasChildren && !!nodeDBMap[id]?.collapsed;
 
             onNewNode({
               id: Date.now().toString(16),
@@ -1131,7 +1131,7 @@ function ListContainer(props) {
     }, 200);
   }, []);
 
-  const firstParentOfCurrentSelection = nodeDBMap[
+  const firstParentOfCurrentSelection = nodeDBMap[selectedListId] && nodeDBMap[
     nodeDBMap[selectedListId].parent_id
   ]
     ? nodeDBMap[selectedListId].parent_id
@@ -1287,7 +1287,7 @@ function ListContainer(props) {
           <ContentEditable
             id={selectedListId}
             classes={"text-xl font-bold mb-4"}
-            val={nodeDBMap[selectedListId].text}
+            val={nodeDBMap[selectedListId]?.text || ""}
             setVal={(val) => {
               upsertHelper({
                 id: selectedListId,
