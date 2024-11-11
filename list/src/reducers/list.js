@@ -96,6 +96,28 @@ export default {
     });
 
     builder.addCase(getListSuccess, (draft, { payload }) => {
+      if (payload.isInitialFetch) {
+        // delete "init" node in nodeDBMap and make children of home as empty in nodeUIMap
+        // delete draft.nodeDBMap.init;
+        // draft.nodeUIMap.home.children = [];
+
+        draft.nodeDBMap = {
+          home: {
+            id: "home",
+            parent_id: null,
+            text: "Home",
+            checked: false,
+            pos: 1,
+          },
+        };
+
+        draft.nodeUIMap = {
+          home: {
+            children: [],
+          },
+        };
+      }
+
       for (var node of payload.nodes) {
         if (
           draft.nodeDBMap[node.id] &&

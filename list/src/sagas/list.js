@@ -126,7 +126,7 @@ export function* getListSaga({ payload }) {
         limit = _limit;
         page = _page + 1;
 
-        yield put(getListSuccess({ nodes, partial: true }));
+        yield put(getListSuccess({ nodes, partial: true, isInitialFetch }));
 
         if (nodes.length >= total) {
           break;
