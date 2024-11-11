@@ -794,11 +794,10 @@ const Parent = ({
                 hasChildren && !isCollapsed ? id : nodeDBMap[id].parent_id,
               pos:
                 hasChildren && !isCollapsed
-                  ? (0 + nodeDBMap[firstChild].pos) / 2 + getRandomNonce()
+                  ? (0 + nodeDBMap[firstChild].pos) / 2
                   : isItLastChild
-                  ? (nodeDBMap[id].pos + MAX_POS) / 2 + getRandomNonce()
-                  : (nodeDBMap[id].pos + nodeDBMap[currentSibling].pos) / 2 +
-                    getRandomNonce(),
+                  ? (nodeDBMap[id].pos + 1)
+                  : (nodeDBMap[id].pos + nodeDBMap[currentSibling].pos) / 2,
               text: "",
               new: true,
             });
@@ -829,10 +828,8 @@ const Parent = ({
                 id: id,
                 parent_id: currentElderSister,
                 pos: currentElderSistersLastChild
-                  ? (nodeDBMap[currentElderSistersLastChild].pos + MAX_POS) /
-                      2 +
-                    getRandomNonce()
-                  : 1 + getRandomNonce(),
+                  ? (nodeDBMap[currentElderSistersLastChild].pos + 1)
+                  : 1,
                 posChange: true,
               });
             }
@@ -863,10 +860,8 @@ const Parent = ({
                 pos: elderSistersNextSister
                   ? (nodeDBMap[elderSister].pos +
                       nodeDBMap[elderSistersNextSister].pos) /
-                      2 +
-                    getRandomNonce()
-                  : (nodeDBMap[elderSister].pos + MAX_POS) / 2 +
-                    getRandomNonce(),
+                      2
+                  : (nodeDBMap[elderSister].pos + 1),
                 posChange: true,
               });
             }
@@ -1303,8 +1298,8 @@ function ListContainer(props) {
                   nodeUIMap[selectedListId] &&
                   nodeUIMap[selectedListId].children &&
                   nodeUIMap[selectedListId].children.length > 0
-                    ? (nodeDBMap[selectedListId].pos + 0) / 2 + getRandomNonce()
-                    : 1 + getRandomNonce(),
+                    ? (nodeDBMap[selectedListId].pos + 0) / 2
+                    : 1,
                 text: "",
                 new: true,
               });
