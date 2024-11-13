@@ -168,7 +168,7 @@ const ContentEditable = ({
 }) => {
   const contentEditableRef = useRef(null);
   const cursorPositionRef = useRef(null);
-  const lastFormattedTextRef = useRef('');
+  const lastFormattedTextRef = useRef("");
   const formatTimeoutRef = useRef(null);
 
   // Simple function to get cursor position as a number
@@ -214,33 +214,33 @@ const ContentEditable = ({
 
   // Check if text needs formatting (contains **)
   const needsFormatting = (text) => {
-    return text.includes('**');
+    return text.includes("**");
   };
 
   // Format text with bold sections
   const formatDisplayText = useCallback((text) => {
-    if (!text) return document.createTextNode('');
-    
+    if (!text) return document.createTextNode("");
+
     // If no formatting needed, just return text node
     if (!needsFormatting(text)) {
       return document.createTextNode(text);
     }
-    
+
     const fragment = document.createDocumentFragment();
     const parts = text.split(/(\*\*.*?\*\*)/g);
-    
-    parts.forEach(part => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        const strong = document.createElement('strong');
+
+    parts.forEach((part) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        const strong = document.createElement("strong");
         strong.textContent = part.slice(2, -2);
-        fragment.appendChild(document.createTextNode('**'));
+        fragment.appendChild(document.createTextNode("**"));
         fragment.appendChild(strong);
-        fragment.appendChild(document.createTextNode('**'));
+        fragment.appendChild(document.createTextNode("**"));
       } else {
         fragment.appendChild(document.createTextNode(part));
       }
     });
-    
+
     return fragment;
   }, []);
 
@@ -248,7 +248,7 @@ const ContentEditable = ({
   const handleInput = (event) => {
     const newText = event.target.textContent;
     setVal(newText);
-    
+
     // Only schedule formatting if text contains **
     if (needsFormatting(newText)) {
       if (formatTimeoutRef.current) {
@@ -257,18 +257,18 @@ const ContentEditable = ({
 
       formatTimeoutRef.current = setTimeout(() => {
         if (!contentEditableRef.current) return;
-        
+
         if (newText !== lastFormattedTextRef.current) {
           cursorPositionRef.current = getCursorPosition();
-          
-          contentEditableRef.current.innerHTML = '';
+
+          contentEditableRef.current.innerHTML = "";
           contentEditableRef.current.appendChild(formatDisplayText(newText));
-          
+
           requestAnimationFrame(() => {
             setCursorPosition(cursorPositionRef.current);
             cursorPositionRef.current = null;
           });
-          
+
           lastFormattedTextRef.current = newText;
         }
       }, 100);
@@ -281,17 +281,17 @@ const ContentEditable = ({
 
     // Skip if content is already correct
     if (el.textContent === val) return;
-    
+
     cursorPositionRef.current = getCursorPosition();
-    
-    el.innerHTML = '';
+
+    el.innerHTML = "";
     el.appendChild(formatDisplayText(val));
-    
+
     requestAnimationFrame(() => {
       setCursorPosition(cursorPositionRef.current);
       cursorPositionRef.current = null;
     });
-    
+
     lastFormattedTextRef.current = val;
   }, [val, formatDisplayText]);
 
@@ -327,11 +327,16 @@ const ContentEditable = ({
         onUpArrow?.({ moveToEnd: true });
       }
     } else if (event.key === "ArrowRight") {
-      if (getCursorPosition() === contentEditableRef.current?.textContent.length) {
+      if (
+        getCursorPosition() === contentEditableRef.current?.textContent.length
+      ) {
         event.preventDefault();
         onDownArrow?.({ moveToStart: true });
       }
-    } else if ((event.key === "Backspace" || event.key === "Delete") && (!val || val === "")) {
+    } else if (
+      (event.key === "Backspace" || event.key === "Delete") &&
+      (!val || val === "")
+    ) {
       event.preventDefault();
       onDeleteNode?.();
     }
@@ -349,17 +354,17 @@ const ContentEditable = ({
         wordBreak: "break-all",
         userSelect: "text",
         WebkitUserModify: "read-write-plaintext-only",
-        ...styles
+        ...styles,
       }}
       onBeforeInput={(event) => {
-        if (event?.inputType?.startsWith('format')) {
+        if (event?.inputType?.startsWith("format")) {
           event.preventDefault();
         }
       }}
       onPaste={(event) => {
         event.preventDefault();
-        const text = event.clipboardData.getData('text/plain');
-        document.execCommand('insertText', false, text);
+        const text = event.clipboardData.getData("text/plain");
+        document.execCommand("insertText", false, text);
       }}
       tabIndex="-1"
     />
@@ -382,7 +387,6 @@ const ContentEditable = ({
 //   const contentEditableRef = useRef(null);
 //   const lastCursorPosition = useRef(null);
 
-
 //   // useEffect(() => {
 //   //   if (contentEditableRef.current.textContent !== val) {
 //   //     contentEditableRef.current.textContent = val;
@@ -397,9 +401,6 @@ const ContentEditable = ({
 //       contentEditableRef.current.appendChild(formattedContent);
 //     }
 //   }, [val]);
-
-
-
 
 //   const handleKeyDown = (event) => {
 //     if (event.key === "Enter") {
@@ -467,7 +468,7 @@ const ContentEditable = ({
 //     const container = document.createDocumentFragment();
 //     // Updated regex to capture the ** markers as well
 //     const parts = text.split(/(\*\*.*?\*\*)/g);
-    
+
 //     parts.forEach((part) => {
 //       if (part.startsWith('**') && part.endsWith('**')) {
 //         // Keep the ** markers in text but make middle part bold
@@ -475,7 +476,7 @@ const ContentEditable = ({
 //         const strongElement = document.createElement('strong');
 //         strongElement.textContent = part.slice(2, -2);
 //         const textNode2 = document.createTextNode('**');
-        
+
 //         container.appendChild(textNode1);
 //         container.appendChild(strongElement);
 //         container.appendChild(textNode2);
@@ -483,7 +484,7 @@ const ContentEditable = ({
 //         container.appendChild(document.createTextNode(part));
 //       }
 //     });
-    
+
 //     return container;
 //   };
 
@@ -491,14 +492,13 @@ const ContentEditable = ({
 //   const getCursorPosition = () => {
 //     const selection = window.getSelection();
 //     if (selection.rangeCount === 0) return 0;
-    
+
 //     const range = selection.getRangeAt(0);
 //     const preCaretRange = range.cloneRange();
 //     preCaretRange.selectNodeContents(contentEditableRef.current);
 //     preCaretRange.setEnd(range.endContainer, range.endOffset);
 //     return preCaretRange.toString().length;
 //   };
-
 
 //    // Function to set cursor position
 //    const setCursorPosition = (position) => {
@@ -533,8 +533,6 @@ const ContentEditable = ({
 //       sel.addRange(range);
 //     }
 //   };
-
-
 
 //   return (
 //     <div
@@ -618,7 +616,10 @@ const Node = ({
       onDrop={(e) => onDrop(e, node.id)}
     >
       <div className="flex group relative">
-        <div className="w-4 h-4 absolute -top-0 -left-4" onDragStart={(e) => onDragStart(e, node.id)}>
+        <div
+          className="w-4 h-4 absolute -top-0 -left-4"
+          onDragStart={(e) => onDragStart(e, node.id)}
+        >
           {hasChildren ? (
             <a
               className={"w-4 mt-1 h-4 flex items-center cursor-pointer"}
@@ -699,7 +700,9 @@ const Node = ({
         }}
       >
         <ContentEditable
-          classes={`leading-6 font-medium ${node.checked ? "text-gray-500 " : ""}`}
+          classes={`leading-6 max-w-2xl font-medium ${
+            node.checked ? "text-gray-500 " : ""
+          }`}
           id={node.id}
           val={node.text}
           setVal={(val) => {
@@ -796,7 +799,7 @@ const Parent = ({
                 hasChildren && !isCollapsed
                   ? (0 + nodeDBMap[firstChild].pos) / 2
                   : isItLastChild
-                  ? (nodeDBMap[id].pos + 1)
+                  ? nodeDBMap[id].pos + 1
                   : (nodeDBMap[id].pos + nodeDBMap[currentSibling].pos) / 2,
               text: "",
               new: true,
@@ -828,7 +831,7 @@ const Parent = ({
                 id: id,
                 parent_id: currentElderSister,
                 pos: currentElderSistersLastChild
-                  ? (nodeDBMap[currentElderSistersLastChild].pos + 1)
+                  ? nodeDBMap[currentElderSistersLastChild].pos + 1
                   : 1,
                 posChange: true,
               });
@@ -860,8 +863,8 @@ const Parent = ({
                 pos: elderSistersNextSister
                   ? (nodeDBMap[elderSister].pos +
                       nodeDBMap[elderSistersNextSister].pos) /
-                      2
-                  : (nodeDBMap[elderSister].pos + 1),
+                    2
+                  : nodeDBMap[elderSister].pos + 1,
                 posChange: true,
               });
             }
@@ -1088,6 +1091,64 @@ function ListContainer(props) {
     return () => clearInterval(interval);
   }, [updatedNodeIds]);
 
+  const nodeDBMapRef = useRef(nodeDBMap);
+  const nodeUIMapRef = useRef(nodeUIMap);
+
+  useEffect(() => {
+    nodeDBMapRef.current = nodeDBMap;
+    nodeUIMapRef.current = nodeUIMap;
+  }, [nodeDBMap, nodeUIMap]);
+
+  const debouncedRunner = useCallback(
+    debounce(() => {
+      const parentsSet = new Set();
+
+      // Use refs to get the latest values
+    const currentNodeDBMap = nodeDBMapRef.current;
+    const currentNodeUIMap = nodeUIMapRef.current;
+
+      // Find nodes where pos has at least 5 decimal places
+      for (let nodeId in currentNodeDBMap) {
+        const node = currentNodeDBMap[nodeId];
+        const posStr = node.pos.toString();
+        const decimalIndex = posStr.indexOf(".");
+
+        // Check if there are at least 5 decimal places
+        if (decimalIndex !== -1 && posStr.length - decimalIndex - 1 >= 5) {
+          console.log("nodeId", nodeId, posStr);
+          parentsSet.add(node.parent_id);
+        }
+      }
+
+      // For each parent ID, reset the pos values of its children
+      parentsSet.forEach((parentId) => {
+        const children = currentNodeUIMap[parentId]?.children || [];
+        const sortedChildren = children
+          .slice()
+          .sort((a, b) => currentNodeDBMap[a].pos - currentNodeDBMap[b].pos);
+
+        // TODO: NEED A NEW ACTION FOR THIS. SO THAT ALL POSES CHANGE AT ONCE.
+        sortedChildren.forEach((childId, index) => {
+          upsertHelper({
+            id: childId,
+            pos: index + 1,
+            parent_id: parentId,
+            posChange: true,
+          });
+        });
+
+        // Update UI and mark the nodes for backend update
+        setUpdatedNodeIds((prev) => ({
+          ...prev,
+          ...Object.fromEntries(
+            sortedChildren.map((childId) => [childId, true])
+          ),
+        }));
+      });
+    }, 20000),
+    [nodeDBMap, nodeUIMap]
+  );
+
   const lastSuccessfulCallTimeRef = useRef(lastSuccessfulCallTime);
 
   // Update ref whenever lastSuccessfulCallTime changes
@@ -1126,11 +1187,10 @@ function ListContainer(props) {
     }, 200);
   }, []);
 
-  const firstParentOfCurrentSelection = nodeDBMap[selectedListId] && nodeDBMap[
-    nodeDBMap[selectedListId].parent_id
-  ]
-    ? nodeDBMap[selectedListId].parent_id
-    : null;
+  const firstParentOfCurrentSelection =
+    nodeDBMap[selectedListId] && nodeDBMap[nodeDBMap[selectedListId].parent_id]
+      ? nodeDBMap[selectedListId].parent_id
+      : null;
   const secondParentOfCurrentSelection =
     firstParentOfCurrentSelection &&
     nodeDBMap[nodeDBMap[firstParentOfCurrentSelection].parent_id]
@@ -1149,8 +1209,9 @@ function ListContainer(props) {
     });
 
     dispatch(upsertListNode(d));
-  };
 
+    debouncedRunner();
+  };
 
   // Drag handlers
   const handleDragStart = (e, id) => {
@@ -1183,9 +1244,16 @@ function ListContainer(props) {
     const targetParentId = targetNode.parent_id;
 
     // Calculate new position
-    const targetIndex = nodeUIMap[targetParentId].children.indexOf(targetNodeId);
-    const beforeNode = dropPosition === "above" ? nodeUIMap[targetParentId].children[targetIndex - 1] : targetNodeId;
-    const afterNode = dropPosition === "below" ? nodeUIMap[targetParentId].children[targetIndex + 1] : targetNodeId;
+    const targetIndex =
+      nodeUIMap[targetParentId].children.indexOf(targetNodeId);
+    const beforeNode =
+      dropPosition === "above"
+        ? nodeUIMap[targetParentId].children[targetIndex - 1]
+        : targetNodeId;
+    const afterNode =
+      dropPosition === "below"
+        ? nodeUIMap[targetParentId].children[targetIndex + 1]
+        : targetNodeId;
     const newPos = calculateNewPosition(draggedNode, beforeNode, afterNode);
 
     // Dispatch changes
