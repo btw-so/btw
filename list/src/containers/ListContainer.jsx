@@ -1091,64 +1091,6 @@ function ListContainer(props) {
     return () => clearInterval(interval);
   }, [updatedNodeIds]);
 
-  const nodeDBMapRef = useRef(nodeDBMap);
-  const nodeUIMapRef = useRef(nodeUIMap);
-
-  useEffect(() => {
-    nodeDBMapRef.current = nodeDBMap;
-    nodeUIMapRef.current = nodeUIMap;
-  }, [nodeDBMap, nodeUIMap]);
-
-  // const debouncedRunner = useCallback(
-  //   debounce(() => {
-  //     const parentsSet = new Set();
-
-  //     // Use refs to get the latest values
-  //   const currentNodeDBMap = nodeDBMapRef.current;
-  //   const currentNodeUIMap = nodeUIMapRef.current;
-
-  //     // Find nodes where pos has at least 5 decimal places
-  //     for (let nodeId in currentNodeDBMap) {
-  //       const node = currentNodeDBMap[nodeId];
-  //       const posStr = node.pos.toString();
-  //       const decimalIndex = posStr.indexOf(".");
-
-  //       // Check if there are at least 5 decimal places
-  //       if (decimalIndex !== -1 && posStr.length - decimalIndex - 1 >= 5) {
-  //         console.log("nodeId", nodeId, posStr);
-  //         parentsSet.add(node.parent_id);
-  //       }
-  //     }
-
-  //     // For each parent ID, reset the pos values of its children
-  //     parentsSet.forEach((parentId) => {
-  //       const children = currentNodeUIMap[parentId]?.children || [];
-  //       const sortedChildren = children
-  //         .slice()
-  //         .sort((a, b) => currentNodeDBMap[a].pos - currentNodeDBMap[b].pos);
-
-  //       // TODO: NEED A NEW ACTION FOR THIS. SO THAT ALL POSES CHANGE AT ONCE.
-  //       sortedChildren.forEach((childId, index) => {
-  //         upsertHelper({
-  //           id: childId,
-  //           pos: index + 1,
-  //           parent_id: parentId,
-  //           posChange: true,
-  //         });
-  //       });
-
-  //       // Update UI and mark the nodes for backend update
-  //       setUpdatedNodeIds((prev) => ({
-  //         ...prev,
-  //         ...Object.fromEntries(
-  //           sortedChildren.map((childId) => [childId, true])
-  //         ),
-  //       }));
-  //     });
-  //   }, 20000),
-  //   [nodeDBMap, nodeUIMap]
-  // );
-
   const lastSuccessfulCallTimeRef = useRef(lastSuccessfulCallTime);
 
   // Update ref whenever lastSuccessfulCallTime changes
@@ -1210,7 +1152,6 @@ function ListContainer(props) {
 
     dispatch(upsertListNode(d));
 
-    // debouncedRunner();
   };
 
   // Drag handlers
