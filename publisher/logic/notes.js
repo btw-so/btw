@@ -43,11 +43,6 @@ async function cacheNotes({ user_id } = {}) {
   if (user_id) {
     NOTE_SLUG_CACHE["" + user_id] = temp;
   }
-
-  console.log(
-    `Notes cache complete ${user_id ? "for user_id " + user_id : ""}`,
-    NOTE_SLUG_CACHE
-  );
 }
 
 async function cacheUsers({ user_id } = {}) {
@@ -113,11 +108,6 @@ async function cacheUsers({ user_id } = {}) {
 
     offset += limit;
   }
-
-  console.log(
-    `User cache complete ${user_id ? "for user_id " + user_id : ""}`,
-    USER_CACHE
-  );
 }
 
 async function getAllNotes({ slug, customDomain }) {
