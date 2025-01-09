@@ -172,7 +172,6 @@ router.get("/", async (req, res, next) => {
             };
           });
 
-          console.log(content);
 
           var linesSoFar = [];
           var lineCount = 0;
@@ -315,11 +314,6 @@ router.get("/:slug", async (req, res, next) => {
     noteSlug: req.params.slug,
   });
 
-  console.log({
-    slug: res.locals.domainSlug,
-    customDomain: res.locals.customDomain,
-    noteSlug: req.params.slug,
-  });
 
   if (!note) {
     res.status(404).render("notfound", { post: true });
