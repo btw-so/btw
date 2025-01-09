@@ -139,13 +139,6 @@ app.use(async (req, res, next) => {
     }
   }
 
-  console.log(
-    "A",
-    req.hostname,
-    res.locals.customDomain,
-    res.locals.domainSlug
-  );
-
   if (!res.locals.domainSlug) {
     res.locals.domainSlug = "";
     next();
@@ -163,7 +156,6 @@ app.use("/", indexRouter);
 
 // Run a CRON that runs every 6 hours cacheUsersData
 cron.schedule("0 */6 * * *", () => {
-  console.log("Running a task every 6 hours");
   cacheUsers();
   cacheNotes();
 });
