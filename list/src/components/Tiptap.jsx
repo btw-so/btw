@@ -104,7 +104,7 @@ class Tiptap extends React.Component {
 
       this.provider = new HocuspocusProvider({
         url: process.env.REACT_APP_YJS_DOMAIN,
-        name: `note.${props.userId}.${props.docId}`,
+        name: `note.${props.userId}.${props.docId}${props.usecase ? `.${props.usecase}` : ""}`,
         document: ydoc,
         token: `${props.token}:::${genFingerprint()}`,
         onDisconnect: () => {
@@ -138,7 +138,9 @@ class Tiptap extends React.Component {
         Dropcursor,
         Gapcursor,
         HardBreak,
-        Heading,
+        ...(this.props.disallowH1 && !this.props.mandatoryH1
+          ? [Heading.configure({ levels: [2, 3, 4, 5, 6] })]
+          : [Heading]),
         Highlight,
         HorizontalRule,
         Italic,
@@ -194,7 +196,7 @@ class Tiptap extends React.Component {
       editorProps: {
         attributes: {
           class:
-            "prose prose-sm lg:prose-lg focus:outline-none flex-grow p-2 mt-2 max-w-full",
+            "prose prose-sm lg:prose-base prose-p:leading-normal focus:outline-none flex-grow p-2 mt-2 max-w-full",
         },
       },
       content: props.content || "",
@@ -293,6 +295,7 @@ class Tiptap extends React.Component {
         style={{ minHeight: 0 }}
       >
         <MenuBar
+          disallowH1={this.props.disallowH1}
           customMenu={this.props.customMenu}
           editor={this.editor}
           showImageUploader={() => {

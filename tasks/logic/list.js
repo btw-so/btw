@@ -25,17 +25,36 @@ async function getList({
 
     // Define the CTE and query for hierarchical data up to 10 levels deep
     const query = `
-        WITH RECURSIVE node_cte AS (
-            SELECT id, user_id, text, checked, collapsed, checked_date, parent_id, pos, updated_at, 1 AS depth
-            FROM btw.nodes
-            WHERE user_id = $2 AND id = $1 AND updated_at >= $3
-            UNION ALL
-            SELECT n.id, n.user_id, n.text, n.checked, n.collapsed, n.checked_date, n.parent_id, n.pos, n.updated_at, c.depth + 1
-            FROM (SELECT * from btw.nodes where user_id = $2) as n
-            JOIN node_cte c ON n.parent_id = c.id
-            WHERE c.depth < 10
-        )
-        SELECT * FROM node_cte ORDER BY depth ASC, pos DESC LIMIT $4 OFFSET $5;
+    WITH RECURSIVE node_cte AS (
+    SELECT 
+        id, user_id, text, checked, collapsed, checked_date, parent_id, pos, updated_at, note_id, 1 AS depth
+    FROM 
+        btw.nodes
+    WHERE 
+        user_id = $2 AND id = $1 AND updated_at >= $3
+    UNION ALL
+    SELECT 
+        n.id, n.user_id, n.text, n.checked, n.collapsed, n.checked_date, n.parent_id, n.pos, n.updated_at, n.note_id, c.depth + 1
+    FROM 
+        (SELECT * FROM btw.nodes WHERE user_id = $2) AS n
+    JOIN 
+        node_cte c ON n.parent_id = c.id
+    WHERE 
+        c.depth < 10
+)
+SELECT 
+    nct.*, 
+    CASE 
+        WHEN notes.id IS NOT NULL AND notes.html IS NOT NULL AND notes.html <> '' AND notes.html <> '<p></p>' THEN TRUE
+        ELSE FALSE
+    END AS note_exists
+FROM 
+    node_cte nct
+LEFT JOIN 
+    btw.notes ON nct.note_id = notes.id AND notes.user_id = nct.user_id
+ORDER BY 
+    nct.depth ASC, nct.pos DESC
+LIMIT $4 OFFSET $5;
     `;
 
     const rows = await pool.query(query, [
@@ -80,12 +99,13 @@ async function upsertNode({
     collapsed,
     parent_id,
     pos,
+    note_id,
 }) {
     const pool = await db.getTasksDB();
 
     const query = `
-    INSERT INTO btw.nodes (id, user_id, text, checked, checked_date, collapsed, parent_id, pos, updated_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    INSERT INTO btw.nodes (id, user_id, text, checked, checked_date, collapsed, parent_id, pos, updated_at, note_id)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     ON CONFLICT (user_id, id) DO UPDATE SET
         user_id = EXCLUDED.user_id,
         text = EXCLUDED.text,
@@ -94,7 +114,8 @@ async function upsertNode({
         collapsed = EXCLUDED.collapsed,
         parent_id = EXCLUDED.parent_id,
         updated_at = $9,
-        pos = EXCLUDED.pos;
+        pos = EXCLUDED.pos,
+        note_id = EXCLUDED.note_id;
 `;
     try {
         const res = await pool.query(query, [
@@ -107,6 +128,7 @@ async function upsertNode({
             parent_id,
             pos,
             new Date(),
+            note_id,
         ]);
         console.log("Upsert successful:", res);
     } catch (err) {

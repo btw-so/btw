@@ -4,6 +4,7 @@ import github, { githubState } from './github';
 import user, { userState } from './user';
 import otp, { otpState } from './user';
 import list, { listState } from './list';
+import notes, { notesState } from './notes';
 
 export const initialState = {
   alerts: alertsState,
@@ -11,7 +12,8 @@ export const initialState = {
   github: githubState,
   user: userState,
   otp: otpState,
-  list: listState
+  list: listState,
+  notes: notesState,
 };
 
 export default {
@@ -20,5 +22,6 @@ export default {
   ...github,
   ...user,
   ...otp,
-  ...list
+  ...list,
+  ...notes,
 };
