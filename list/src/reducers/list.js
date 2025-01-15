@@ -32,6 +32,7 @@ export const listState = {
       text: "Home",
       checked: false,
       pos: 1,
+      note_id: "00000000-0000-0000-0000-000000000000",
     },
     init: {
       id: "init",
@@ -41,6 +42,7 @@ export const listState = {
       pos: 1,
       checked: false,
       checked_date: null,
+      note_id: "11111111-1111-1111-1111-111111111111",
     },
   },
   nodeUIMap: {

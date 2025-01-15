@@ -325,6 +325,8 @@ const yjsServer = Server.configure({
                 // console.log("fetching", documentName);
                 const id = documentName.split("note.")[1].split(".")[1];
                 const user_id = documentName.split("note.")[1].split(".")[0];
+                let usecase = documentName.split("note.")[1].split(".").length > 2 ? documentName.split("note.")[1].split(".")[2] : null;
+
 
                 return new Promise((resolve, reject) => {
                     resolve(
@@ -364,12 +366,13 @@ const yjsServer = Server.configure({
                 // console.log("storing", documentName);
                 const id = documentName.split("note.")[1].split(".")[1];
                 const user_id = documentName.split("note.")[1].split(".")[0];
+                let usecase = documentName.split("note.")[1].split(".").length > 2 ? documentName.split("note.")[1].split(".")[2] : null;
 
                 return new Promise((resolve, reject) => {
                     resolve(
                         db.getTasksDB().then((db) => {
                             return db.query(
-                                `INSERT INTO btw.notes (id, user_id, ydoc, created_at, updated_at) VALUES($1, $2, $3, $4, $5) ON CONFLICT(id, user_id) DO UPDATE SET ydoc = $3, updated_at = CASE WHEN
+                                `INSERT INTO btw.notes (id, user_id, ydoc, created_at, updated_at, tags) VALUES($1, $2, $3, $4, $5, $6) ON CONFLICT(id, user_id) DO UPDATE SET ydoc = $3, updated_at = CASE WHEN
                                 notes.ydoc <> EXCLUDED.ydoc
                                 OR FALSE THEN
                                 EXCLUDED.updated_at
@@ -382,6 +385,7 @@ const yjsServer = Server.configure({
                                     state,
                                     new Date(),
                                     new Date(),
+                                    usecase || ""
                                 ]
                             );
                         })

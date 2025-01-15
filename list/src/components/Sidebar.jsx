@@ -7,8 +7,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { STATUS } from "../literals";
 import useLocalStorage from "../hooks/useLocalStorage";
-import {
-} from "../actions";
+import { changeSelectedNode } from "../actions";
 
 function Sidebar(props) {
   const [token, setToken] = useCookie(
@@ -19,7 +18,6 @@ function Sidebar(props) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
-
   const [sidebarIsOpen, setSidebarIsOpen] = useLocalStorage(
     "sidebarIsOpen",
     false
@@ -27,7 +25,7 @@ function Sidebar(props) {
 
   // useInterval(() => {
   //   if (token && notesState.notesList.status !== STATUS.RUNNING) {
-//     dispatch(
+  //     dispatch(
   //       getNotes({
   //         after: notesState.notesList.lastSuccessAt || 0,
   //       })
@@ -267,7 +265,21 @@ function Sidebar(props) {
           </button> */}
         </div>
         <div className="flex-grow overflow-y-auto">
-          <div className="p-4">Pinned nodes, recent nodes and archived nodes to come here</div>
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => {
+              dispatch(
+                changeSelectedNode({
+                  id: "home",
+                })
+              );
+            }}
+          >
+            <span className="mr-1 pt-0.5">
+              <i className="ri-bookmark-line ri-1x"></i>
+            </span>
+            <span>Home</span>
+          </div>
         </div>
         <div className="w-full border-t-2 border-gray-200 sidebar-toolkit">
           <button
@@ -275,11 +287,6 @@ function Sidebar(props) {
               props.settingsPage ? "text-blue-500" : ""
             }`}
             onClick={() => {
-              dispatch(
-                selectNote({
-                  id: undefined,
-                })
-              );
               setSidebarIsOpen(false);
               navigate("/settings");
             }}

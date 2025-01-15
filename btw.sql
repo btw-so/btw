@@ -112,5 +112,6 @@ CREATE TABLE "btw"."nodes" (
     "pos" float4,
     "updated_at" timestamptz,
     "checked_date" timestamptz,
-    PRIMARY KEY ("id","user_id")
+    PRIMARY KEY ("id","user_id"),
+    "note_id" uuid
 );

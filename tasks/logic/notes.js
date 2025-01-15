@@ -259,13 +259,13 @@ async function getNotes({ user_id, page, limit, after = 0 }) {
     limit = Number(limit);
     after = new Date(after);
     const { rows } = await pool.query(
-        `SELECT id, user_id, title, md, created_at, updated_at, published_at, publish, private, slug, ydoc, delete, archive, deleted_at FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
+        `SELECT id, user_id, title, md, created_at, updated_at, published_at, publish, private, slug, ydoc, delete, archive, deleted_at FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) AND tags <> 'list' ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
         [user_id, after, after, limit, (page - 1) * limit]
     );
 
     // get total number of notes
     const { rows: totalRows } = await pool.query(
-        `SELECT COUNT(*) as count FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3)`,
+        `SELECT COUNT(*) as count FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) AND tags <> 'list'`,
         [user_id, after, after]
     );
 

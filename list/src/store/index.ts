@@ -21,7 +21,7 @@ const rootReducer = persistCombineReducers<RootState>(
     key: "rrsb",
     stateReconciler: autoMergeLevel2,
     storage,
-    blacklist: ["otp", "actions"],
+    blacklist: ["otp", "actions", "list", "notes"],
     timeout: 0,
     version: 1,
   },

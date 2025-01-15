@@ -6,7 +6,7 @@ import { STATUS } from "../literals";
 import useCookie from "../hooks/useCookie";
 import UppyComponent from "../components/Uppy";
 import useLocalStorage from "../hooks/useLocalStorage";
-import { selectUser, selectList } from "../selectors";
+import { selectUser, selectList, selectNotes } from "../selectors";
 import {
   updateUser,
   upsertListNode,
@@ -30,6 +30,12 @@ let dropPosition = null;
 
 function getRandomNonce() {
   return Math.floor(Math.random() * 10000) / 10000;
+}
+
+function getUUID() {
+  // create random uuid manually
+  const random = crypto.randomUUID();
+  return random;
 }
 
 function getCursorDetails() {
@@ -658,8 +664,17 @@ const Node = ({
           >
             <i
               className={`ri-checkbox-blank-circle-fill ${
+                node.note_exists ? "hidden" : ""
+              } ${node.checked ? "text-gray-500" : "text-gray-900"} ri-xxs`}
+            ></i>
+
+            <i
+              className={`ri-quill-pen-fill ${node.note_exists ? "" : "hidden"} ${
                 node.checked ? "text-gray-500" : "text-gray-900"
-              } ri-xxs`}
+              } ri-sm absolute`}
+              style={{
+                left: "-0.185rem"
+              }}
             ></i>
 
             <i
@@ -802,6 +817,7 @@ const Parent = ({
                   ? nodeDBMap[id].pos + 1
                   : (nodeDBMap[id].pos + nodeDBMap[currentSibling].pos) / 2,
               text: "",
+              note_id: getUUID(),
               new: true,
             });
           }}
@@ -1041,12 +1057,16 @@ function ListContainer(props) {
     listState;
   const [updatedNodeIds, setUpdatedNodeIds] = useState({});
 
+  const notesState = useAppSelector(selectNotes);
+
   const { changed } = useTreeChanges(userState);
 
   const [token, setToken] = useCookie(
     process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
     ""
   );
+
+  const tiptapRef = useRef(null);
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -1151,7 +1171,6 @@ function ListContainer(props) {
     });
 
     dispatch(upsertListNode(d));
-
   };
 
   // Drag handlers
@@ -1219,8 +1238,8 @@ function ListContainer(props) {
   return (
     <AppWrapper {...props} listPage={true}>
       {token && props.userId ? (
-        <div className="p-6 h-full overflow-y-auto list-canvas">
-          <nav className="flex" aria-label="Breadcrumb">
+        <div className="pt-6 pb-6 md:pb-0 h-full flex flex-col list-canvas">
+          <nav className="flex px-6" aria-label="Breadcrumb">
             <ol role="list" className="flex items-center space-x-1">
               {thirdParentOfCurrentSelection ? (
                 <li>
@@ -1290,7 +1309,7 @@ function ListContainer(props) {
 
           <ContentEditable
             id={selectedListId}
-            classes={"text-xl font-bold mb-4"}
+            classes={"text-xl font-bold mb-2 px-6"}
             val={nodeDBMap[selectedListId]?.text || ""}
             setVal={(val) => {
               upsertHelper({
@@ -1330,52 +1349,97 @@ function ListContainer(props) {
             }}
           />
 
-          <Parent
-            nodeUIMap={nodeUIMap}
-            nodeDBMap={nodeDBMap}
-            id={selectedListId}
-            onTextChange={({ id, text }) => {
-              upsertHelper({
-                id,
-                text,
-              });
-            }}
-            onlyRenderChildren={true}
-            onNewNode={(d) => {
-              upsertHelper(d);
-              setTimeout(() => {
-                focusOnNode({ id: d.id });
-              }, 50);
-            }}
-            selectedListId={selectedListId}
-            focusOnNode={(d) => {
-              focusOnNode(d);
-            }}
-            level={0}
-            toggleChecked={(d) => {
-              upsertHelper(d);
-            }}
-            toggleCollapsed={(d) => {
-              upsertHelper(d);
-            }}
-            deleteNode={(d) => {
-              upsertHelper({
-                id: d.id,
-                parent_id: "limbo",
-                posChange: true,
-              });
-            }}
-            zoomIntoNode={(d) => {
-              dispatch(
-                changeSelectedNode({
-                  id: d.id,
-                })
-              );
-            }}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          />
+          <div className="flex pl-2 flex-grow overflow-y-hidden flex-col md:flex-row border-t-2 border-gray-200">
+            <div className="flex pl-4 flex-col h-full overflow-y-auto md:w-1/2 border-b-2 border-gray-200 md:border-b-0 md:border-r-2 md:border-gray-200 pt-6 md:pr-6">
+              <Parent
+                nodeUIMap={nodeUIMap}
+                nodeDBMap={nodeDBMap}
+                id={selectedListId}
+                onTextChange={({ id, text }) => {
+                  upsertHelper({
+                    id,
+                    text,
+                  });
+                }}
+                onlyRenderChildren={true}
+                onNewNode={(d) => {
+                  upsertHelper(d);
+                  setTimeout(() => {
+                    focusOnNode({ id: d.id });
+                  }, 50);
+                }}
+                selectedListId={selectedListId}
+                focusOnNode={(d) => {
+                  focusOnNode(d);
+                }}
+                level={0}
+                toggleChecked={(d) => {
+                  upsertHelper(d);
+                }}
+                toggleCollapsed={(d) => {
+                  upsertHelper(d);
+                }}
+                deleteNode={(d) => {
+                  upsertHelper({
+                    id: d.id,
+                    parent_id: "limbo",
+                    posChange: true,
+                  });
+                }}
+                zoomIntoNode={(d) => {
+                  dispatch(
+                    changeSelectedNode({
+                      id: d.id,
+                    })
+                  );
+                }}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              />
+            </div>
+            <div className="flex flex-col h-full overflow-y-auto md:w-1/2 text-black font-medium md:p-4">
+              <Tiptap
+                ref={tiptapRef}
+                reviewerMode={false}
+                usecase="list"
+                className="h-full flex-grow p-6"
+                note={
+                  notesState.notesMap[nodeDBMap[selectedListId]?.note_id || ""]
+                }
+                key={nodeDBMap[selectedListId]?.note_id}
+                token={token}
+                userId={props.userId}
+                email={props.email}
+                name={props.name}
+                docId={nodeDBMap[selectedListId]?.note_id}
+                savedContent={
+                  notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
+                    ?.content || ""
+                }
+                enableServerSync={true}
+                mandatoryH1={false}
+                disallowH1={true}
+                onChange={(html) => {
+                  const isEmpty = (content) =>
+                    !content || content == "<h1></h1>";
+                  if (
+                    (isEmpty(html) &&
+                      isEmpty(
+                        notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
+                          ?.content || ""
+                      )) ||
+                    html ===
+                      notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
+                        ?.content ||
+                    ""
+                  ) {
+                    return;
+                  }
+                }}
+              />
+            </div>
+          </div>
         </div>
       ) : null}
     </AppWrapper>

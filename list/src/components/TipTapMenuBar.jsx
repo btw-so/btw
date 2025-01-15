@@ -15,6 +15,7 @@ export default ({
   showImageUploader,
   showEmbedUploader,
   customMenu,
+  disallowH1,
 }) => {
   const setLink = useCallback(() => {
     const previousUrl = editor.getAttributes("link").href;
@@ -82,12 +83,16 @@ export default ({
     {
       type: "divider",
     },
-    {
-      icon: "h-1",
-      title: "Heading 1",
-      action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-      isActive: () => editor.isActive("heading", { level: 1 }),
-    },
+    ...(disallowH1
+      ? []
+      : [
+          {
+            icon: "h-1",
+            title: "Heading 1",
+            action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
+            isActive: () => editor.isActive("heading", { level: 1 }),
+          },
+        ]),
     {
       icon: "h-2",
       title: "Heading 2",

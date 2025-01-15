@@ -24,3 +24,8 @@ export const selectList = createSelector(
   (state) => state.list,
   (list) => list
 );
+
+export const selectNotes = createSelector(
+  (state) => state.notes,
+  (notes) => notes
+);  

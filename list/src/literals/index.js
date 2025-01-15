@@ -37,6 +37,10 @@ export const ActionTypes = keyMirror({
   UPSERT_LIST_NODE: undefined,
   CHANGE_SELECTED_NODE: undefined,
   BATCH_PUSH_NODES: undefined,
+  SAVE_NOTE_CONTENT: undefined,
+  GET_NOTE: undefined,
+  GET_NOTE_SUCCESS: undefined,
+  GET_NOTE_FAILURE: undefined,
 });
 
 export const STATUS = {
