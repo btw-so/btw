@@ -1330,6 +1330,7 @@ function ListContainer(props) {
                     : 1,
                 text: "",
                 new: true,
+                note_id: getUUID(),
               });
 
               setTimeout(() => {
