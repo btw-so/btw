@@ -346,6 +346,7 @@ class Tiptap extends React.Component {
             }}
           >
             <UppyComponent
+              folder={`list/${this.props.userId}/notes/${this.props.docId}`}
               allowedFileTypes={[
                 "image/png",
                 "image/gif",

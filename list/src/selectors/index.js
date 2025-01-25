@@ -28,4 +28,9 @@ export const selectList = createSelector(
 export const selectNotes = createSelector(
   (state) => state.notes,
   (notes) => notes
-);  
+);
+
+export const selectFiles = createSelector(
+  (state) => state.files,
+  (files) => files
+);

@@ -6,15 +6,18 @@ import { STATUS } from "../literals";
 import useCookie from "../hooks/useCookie";
 import UppyComponent from "../components/Uppy";
 import useLocalStorage from "../hooks/useLocalStorage";
-import { selectUser, selectList, selectNotes } from "../selectors";
+import { selectUser, selectList, selectNotes, selectFiles } from "../selectors";
 import {
   updateUser,
   upsertListNode,
   changeSelectedNode,
   getList,
   batchPushNodes,
+  getFile,
+  addFile,
 } from "../actions";
 import useTreeChanges from "tree-changes-hook";
+import FileViewer from "react-file-viewer";
 import Tiptap from "../components/Tiptap";
 import { Switch } from "@headlessui/react";
 import { debounce } from "lodash";
@@ -664,16 +667,27 @@ const Node = ({
           >
             <i
               className={`ri-checkbox-blank-circle-fill ${
-                node.note_exists ? "hidden" : ""
+                node.note_exists || node.file_id ? "hidden" : ""
               } ${node.checked ? "text-gray-500" : "text-gray-900"} ri-xxs`}
             ></i>
 
             <i
-              className={`ri-quill-pen-fill ${node.note_exists ? "" : "hidden"} ${
+              className={`ri-quill-pen-fill ${
+                node.note_exists ? "" : "hidden"
+              } ${
                 node.checked ? "text-gray-500" : "text-gray-900"
               } ri-sm absolute`}
               style={{
-                left: "-0.185rem"
+                left: "-0.185rem",
+              }}
+            ></i>
+
+            <i
+              className={`ri-attachment-2 ${node.file_id ? "" : "hidden"} ${
+                node.checked ? "text-gray-500" : "text-gray-900"
+              } ri-sm absolute`}
+              style={{
+                left: "-0.185rem",
               }}
             ></i>
 
@@ -1048,6 +1062,67 @@ const Parent = ({
   );
 };
 
+function FileWrapper({ fileLoading, fileSuccess, fileError, fileUrl }) {
+  if (fileLoading) {
+    <div className="animate-spin">
+      <i className="ri-reset-right-line"></i>
+    </div>;
+  } else if (fileError) {
+    <div className="">
+      <div className="p-4">
+        <div className="flex items-start">
+          <div className="shrink-0">
+            <i className="ri-error-warning-line"></i>
+          </div>
+          <div className="ml-3 w-0 flex-1 pt-0.5">
+            <p className="text-sm font-medium text-gray-900">
+              Error loading file
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>;
+  } else if (fileSuccess) {
+    const supportedFileTypes = [
+      "png",
+      "jpg",
+      "jpeg",
+      "gif",
+      "pdf",
+      "csv",
+      "xslx",
+      "docx",
+      "mp4",
+      "webm",
+      "mp3",
+    ];
+
+    const ErrorComponent = () => {
+      return (
+        <div>
+          <p>Error loading file</p>
+          <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+            Download the file directly
+          </a>
+        </div>
+      );
+    };
+
+    return supportedFileTypes.filter((x) => fileUrl.endsWith(x)).length > 0 ? (
+      <FileViewer
+        fileType={supportedFileTypes.filter((x) => fileUrl.endsWith(x))[0]}
+        filePath={fileUrl}
+        errorComponent={ErrorComponent}
+        onError={() => {
+          console.log("error");
+        }}
+      />
+    ) : (
+      <ErrorComponent />
+    );
+  }
+}
+
 function ListContainer(props) {
   const dispatch = useDispatch();
   const userState = useAppSelector(selectUser);
@@ -1058,13 +1133,20 @@ function ListContainer(props) {
   const [updatedNodeIds, setUpdatedNodeIds] = useState({});
 
   const notesState = useAppSelector(selectNotes);
-
+  const filesState = useAppSelector(selectFiles);
   const { changed } = useTreeChanges(userState);
 
   const [token, setToken] = useCookie(
     process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
     ""
   );
+
+  const fileLoading =
+    filesState[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.RUNNING;
+  const fileError =
+    filesState[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.ERROR;
+  const fileSuccess =
+    filesState[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.SUCCESS;
 
   const tiptapRef = useRef(null);
 
@@ -1109,7 +1191,7 @@ function ListContainer(props) {
       }
     }, 10000);
     return () => clearInterval(interval);
-  }, [updatedNodeIds]);
+  }, [updatedNodeIds, nodeDBMap, selectedListId]);
 
   const lastSuccessfulCallTimeRef = useRef(lastSuccessfulCallTime);
 
@@ -1350,95 +1432,182 @@ function ListContainer(props) {
             }}
           />
 
-          <div className="flex pl-2 flex-grow overflow-y-hidden flex-col md:flex-row border-t-2 border-gray-200">
-            <div className="flex pl-4 flex-col h-full overflow-y-auto md:w-1/2 border-b-2 border-gray-200 md:border-b-0 md:border-r-2 md:border-gray-200 pt-6 md:pr-6">
-              <Parent
-                nodeUIMap={nodeUIMap}
-                nodeDBMap={nodeDBMap}
-                id={selectedListId}
-                onTextChange={({ id, text }) => {
-                  upsertHelper({
-                    id,
-                    text,
-                  });
-                }}
-                onlyRenderChildren={true}
-                onNewNode={(d) => {
-                  upsertHelper(d);
-                  setTimeout(() => {
-                    focusOnNode({ id: d.id });
-                  }, 50);
-                }}
-                selectedListId={selectedListId}
-                focusOnNode={(d) => {
-                  focusOnNode(d);
-                }}
-                level={0}
-                toggleChecked={(d) => {
-                  upsertHelper(d);
-                }}
-                toggleCollapsed={(d) => {
-                  upsertHelper(d);
-                }}
-                deleteNode={(d) => {
-                  upsertHelper({
-                    id: d.id,
-                    parent_id: "limbo",
-                    posChange: true,
-                  });
-                }}
-                zoomIntoNode={(d) => {
-                  dispatch(
-                    changeSelectedNode({
+          <div className="flex flex-grow overflow-y-hidden flex-col md:flex-row border-t-2 border-gray-200">
+            <div className="flex flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-2 border-gray-200 md:border-b-0 md:border-r-2 md:border-gray-200 ">
+              <div
+                className="pl-6 list-parent pt-6 md:pr-6 overflow-y-auto pb-6"
+                style={{ height: "calc(100% - 64px)" }}
+              >
+                <Parent
+                  nodeUIMap={nodeUIMap}
+                  nodeDBMap={nodeDBMap}
+                  id={selectedListId}
+                  onTextChange={({ id, text }) => {
+                    upsertHelper({
+                      id,
+                      text,
+                    });
+                  }}
+                  onlyRenderChildren={true}
+                  onNewNode={(d) => {
+                    upsertHelper(d);
+                    setTimeout(() => {
+                      focusOnNode({ id: d.id });
+                    }, 50);
+                  }}
+                  selectedListId={selectedListId}
+                  focusOnNode={(d) => {
+                    focusOnNode(d);
+                  }}
+                  level={0}
+                  toggleChecked={(d) => {
+                    upsertHelper(d);
+                  }}
+                  toggleCollapsed={(d) => {
+                    upsertHelper(d);
+                  }}
+                  deleteNode={(d) => {
+                    upsertHelper({
                       id: d.id,
-                    })
-                  );
+                      parent_id: "limbo",
+                      posChange: true,
+                    });
+                  }}
+                  zoomIntoNode={(d) => {
+                    dispatch(
+                      changeSelectedNode({
+                        id: d.id,
+                      })
+                    );
+                  }}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                />
+              </div>
+              <div
+                className="h-16 overflow-y-hidden max-h-16 opacity-50 uppy-parent"
+                style={{
+                  fontFamily: "Satoshi !important",
                 }}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-              />
+              >
+                <UppyComponent
+                  maxFileSize={20 * 1024 * 1024}
+                  autoReset={true}
+                  autoProceed={true}
+                  maxNumberOfFiles={5}
+                  folder={`list/${props.userId}/files`}
+                  allowedFileTypes={[
+                    "image/*", // Allow all image types (e.g., .jpg, .png, .gif)
+                    "application/pdf", // PDF files
+                    "text/plain", // Text files (.txt)
+                    "application/vnd.ms-excel", // Old Excel format (.xls)
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // New Excel format (.xlsx)
+                  ]}
+                  onResults={(res) => {
+                    console.log("res", res);
+                    for (var i = 0; i < res.urls.length; i++) {
+                      const url = res.urls[i];
+                      const name = res.names[i];
+                      const id = Date.now().toString(16);
+                      const file_id = getUUID();
+
+                      const hasChildren =
+                        nodeUIMap[selectedListId] &&
+                        nodeUIMap[selectedListId].children &&
+                        nodeUIMap[selectedListId].children.length > 0;
+
+                      const pos = hasChildren
+                        ? (nodeDBMap[
+                            nodeUIMap[selectedListId].children[
+                              nodeUIMap[selectedListId].children.length - 1
+                            ]
+                          ]?.pos || 0) + 1
+                        : 1;
+
+                      // add a new file node.
+                      upsertHelper({
+                        id,
+                        parent_id: selectedListId,
+                        pos,
+                        text: name,
+                        new: true,
+                        note_id: getUUID(),
+                        file_id,
+                      });
+
+                      // add the file to the files state.
+                      dispatch(
+                        addFile({
+                          id: file_id,
+                          url,
+                          name,
+                          user_id: props.userId,
+                        })
+                      );
+
+                      setTimeout(() => {
+                        focusOnNode({ id });
+                      }, 200);
+                    }
+                  }}
+                />
+              </div>
             </div>
-            <div className="flex flex-col h-full overflow-y-auto md:w-1/2 text-black font-medium md:p-4">
-              <Tiptap
-                ref={tiptapRef}
-                reviewerMode={false}
-                usecase="list"
-                className="h-full flex-grow p-6"
-                note={
-                  notesState.notesMap[nodeDBMap[selectedListId]?.note_id || ""]
-                }
-                key={nodeDBMap[selectedListId]?.note_id}
-                token={token}
-                userId={props.userId}
-                email={props.email}
-                name={props.name}
-                docId={nodeDBMap[selectedListId]?.note_id}
-                savedContent={
-                  notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
-                    ?.content || ""
-                }
-                enableServerSync={true}
-                mandatoryH1={false}
-                disallowH1={true}
-                onChange={(html) => {
-                  const isEmpty = (content) =>
-                    !content || content == "<h1></h1>";
-                  if (
-                    (isEmpty(html) &&
-                      isEmpty(
-                        notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
-                          ?.content || ""
-                      )) ||
-                    html ===
-                      notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
-                        ?.content ||
-                    ""
-                  ) {
-                    return;
+            <div className="flex flex-col h-full overflow-y-auto md:flex-grow text-black font-medium md:p-4">
+              {nodeDBMap[selectedListId]?.file_id ? (
+                <FileWrapper
+                  fileLoading={fileLoading}
+                  fileSuccess={fileSuccess}
+                  fileError={fileError}
+                  fileUrl={
+                    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.url
                   }
-                }}
-              />
+                />
+              ) : (
+                <Tiptap
+                  ref={tiptapRef}
+                  reviewerMode={false}
+                  usecase="list"
+                  className="h-full flex-grow p-6"
+                  note={
+                    notesState.notesMap[
+                      nodeDBMap[selectedListId]?.note_id || ""
+                    ]
+                  }
+                  key={nodeDBMap[selectedListId]?.note_id}
+                  token={token}
+                  userId={props.userId}
+                  email={props.email}
+                  name={props.name}
+                  docId={nodeDBMap[selectedListId]?.note_id}
+                  savedContent={
+                    notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
+                      ?.content || ""
+                  }
+                  enableServerSync={true}
+                  mandatoryH1={false}
+                  disallowH1={true}
+                  onChange={(html) => {
+                    const isEmpty = (content) =>
+                      !content || content == "<h1></h1>";
+                    if (
+                      (isEmpty(html) &&
+                        isEmpty(
+                          notesState.notesMap[
+                            nodeDBMap[selectedListId]?.note_id
+                          ]?.content || ""
+                        )) ||
+                      html ===
+                        notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
+                          ?.content ||
+                      ""
+                    ) {
+                      return;
+                    }
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>

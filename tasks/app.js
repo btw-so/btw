@@ -134,6 +134,7 @@ var indexRouter = require("./routes/index");
 var otpRouter = require("./routes/otp");
 var notesRouter = require("./routes/notes");
 var listRouter = require("./routes/list");
+var filesRouter = require("./routes/files");
 var { baseQueue } = require("./services/queue");
 var { upsertNote, getNote } = require("./logic/notes");
 
@@ -171,6 +172,7 @@ app.use("/", indexRouter);
 app.use("/otp", otpRouter);
 app.use("/notes", notesRouter);
 app.use("/list", listRouter);
+app.use("/files", filesRouter);
 app.use("/user", require("./routes/user"));
 
 // Queue monitor
@@ -194,8 +196,6 @@ const UPPY_OPTIONS = {
     debug: !!Number(process.env.DEBUG),
     providerOptions: {
         s3: {
-            getKey: (req, fileName) =>
-                `${Date.now()}/${fileName.split(" ").join("_")}`,
             key: process.env.S3_KEY,
             secret: process.env.S3_SECRET,
             bucket: process.env.S3_BUCKET,
@@ -203,6 +203,9 @@ const UPPY_OPTIONS = {
             region: "us-east-1",
             acl: process.env.COMPANION_AWS_ACL || "public-read",
             object_url: { public: true },
+            getKey: (req, fileName) => {
+                return req.query.metadata?.fileName || fileName;
+            },
         },
     },
     object_url: { public: true },
