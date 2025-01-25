@@ -17,7 +17,6 @@ import {
   addFile,
 } from "../actions";
 import useTreeChanges from "tree-changes-hook";
-import FileViewer from "react-file-viewer";
 import Tiptap from "../components/Tiptap";
 import { Switch } from "@headlessui/react";
 import { debounce } from "lodash";
@@ -1084,17 +1083,15 @@ function FileWrapper({ fileLoading, fileSuccess, fileError, fileUrl }) {
     </div>;
   } else if (fileSuccess) {
     const supportedFileTypes = [
-      "png",
-      "jpg",
-      "jpeg",
-      "gif",
       "pdf",
-      "csv",
-      "xslx",
       "docx",
-      "mp4",
-      "webm",
-      "mp3",
+      "txt",
+      "html",
+      "doc",
+      "ppt",
+      "pptx",
+      "xls",
+      "xlsx",
     ];
 
     const ErrorComponent = () => {
@@ -1108,18 +1105,17 @@ function FileWrapper({ fileLoading, fileSuccess, fileError, fileUrl }) {
       );
     };
 
-    return supportedFileTypes.filter((x) => fileUrl.endsWith(x)).length > 0 ? (
-      <FileViewer
-        fileType={supportedFileTypes.filter((x) => fileUrl.endsWith(x))[0]}
-        filePath={fileUrl}
-        errorComponent={ErrorComponent}
-        onError={() => {
-          console.log("error");
-        }}
-      />
-    ) : (
-      <ErrorComponent />
-    );
+    if (
+      fileUrl.endsWith(".png") ||
+      fileUrl.endsWith(".jpg") ||
+      fileUrl.endsWith(".jpeg")
+    ) {
+      return <img src={fileUrl} />;
+    } else if (fileUrl.endsWith(".pdf")) {
+      // TODO
+    } else {
+      return <ErrorComponent />;
+    }
   }
 }
 
