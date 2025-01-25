@@ -113,5 +113,22 @@ CREATE TABLE "btw"."nodes" (
     "updated_at" timestamptz,
     "checked_date" timestamptz,
     PRIMARY KEY ("id","user_id"),
-    "note_id" uuid
+    "note_id" uuid,
+    "file_id" uuid
 );
+
+-- Table Definition
+CREATE TABLE "btw"."files" (
+    "id" uuid NOT NULL,
+    "user_id" int4 NOT NULL,
+    "name" text,
+    "url" text,
+    "created_at" timestamptz,
+    "raw_text" text,
+    "structured_text" text,
+    "type" text,
+    "metadata" json,
+    PRIMARY KEY ("id","user_id")
+);
+
+

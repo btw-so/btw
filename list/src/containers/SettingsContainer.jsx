@@ -256,6 +256,7 @@ function SettingsContainer(props) {
                       maxNumberOfFiles={1}
                       allowedFileTypes={["image/*"]}
                       allowMultipleUploads={false}
+                      folder={`list/${props.userId}/profile`}
                       onResults={(res) => {
                         let url =
                           res.urls && res.urls.length > 0 ? res.urls[0] : "";

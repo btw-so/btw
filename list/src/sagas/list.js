@@ -27,6 +27,7 @@ import {
   getListFailure,
   getListSuccess,
   resetState,
+  getFile,
 } from "../actions";
 
 async function getServerTime({ attempts = 1 }) {
@@ -117,6 +118,20 @@ export function* getListSaga({ payload }) {
           },
         })
       );
+
+      // if the node is fetched and if the node has a non-empty file_id, then let's fetch the file
+      const nodesWithFile = nodes.filter(
+        (node) => node.id === id && node.file_id
+      );
+
+      if (nodesWithFile.length > 0) {
+        yield call(() =>
+          getFile({
+            file_id: nodesWithFile[0].file_id,
+            user_id: nodesWithFile[0].user_id,
+          })
+        );
+      }
 
       const { success, data, error, isLoggedIn } = res;
       if (success && isLoggedIn && !error) {

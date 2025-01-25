@@ -41,6 +41,12 @@ export const ActionTypes = keyMirror({
   GET_NOTE: undefined,
   GET_NOTE_SUCCESS: undefined,
   GET_NOTE_FAILURE: undefined,
+  ADD_FILE: undefined,
+  ADD_FILE_SUCCESS: undefined,
+  ADD_FILE_FAILURE: undefined,
+  GET_FILE: undefined,
+  GET_FILE_SUCCESS: undefined,
+  GET_FILE_FAILURE: undefined,
 });
 
 export const STATUS = {

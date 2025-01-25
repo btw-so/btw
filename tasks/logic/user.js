@@ -494,6 +494,13 @@ async function createLoginToken({ email, fingerprint, ip_address }) {
 
 // function to create user
 async function createUser({ email, slug }) {
+    if (!email) {
+        return {
+            success: false,
+            error: "Email is required",
+        };
+    }
+
     const tasksDB = await db.getTasksDB();
     const client = await tasksDB.connect();
 
