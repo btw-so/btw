@@ -40,9 +40,9 @@ export default {
         }
       })
       .addCase(getFileSuccess, (draft, { payload }) => {
-        draft.filesMap[payload.file_id].status = STATUS.SUCCESS;
-        draft.filesMap[payload.file_id].error = null;
-        draft.filesMap[payload.file_id].file = payload.file;
+        draft.filesMap[payload.file.id].status = STATUS.SUCCESS;
+        draft.filesMap[payload.file.id].error = null;
+        draft.filesMap[payload.file.id].file = payload.file;
       })
       .addCase(getFileFailure, (draft, { payload }) => {
         draft.filesMap[payload.file_id].status = STATUS.ERROR;
@@ -50,3 +50,4 @@ export default {
       });
   }),
 };
+

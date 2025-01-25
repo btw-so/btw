@@ -60,11 +60,12 @@ export function* getFile({ payload }) {
     if (success && !error && data.file) {
       yield put(getFileSuccess({ ...data }));
     } else {
-      yield put(getFileFailure({ error: error || "Something went wrong getting the file" }));
+      yield put(getFileFailure({ file_id, error: error || "Something went wrong getting the file" }));
       toast.error("Something went wrong getting the file. Try again.");
     }
   } catch (e) {
-    yield put(getFileFailure({ error: "Something went wrong getting the file" }));
+    console.log(e);
+    yield put(getFileFailure({ file_id, error: "Something went wrong getting the file" }));
     toast.error("Something went wrong getting the file. Try again.");
   }
 }
