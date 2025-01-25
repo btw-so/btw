@@ -1063,41 +1063,32 @@ const Parent = ({
 
 function FileWrapper({ fileLoading, fileSuccess, fileError, fileUrl }) {
   if (fileLoading) {
-    <div className="animate-spin">
-      <i className="ri-reset-right-line"></i>
-    </div>;
+    return (
+      <div className="animate-spin">
+        <i className="ri-reset-right-line"></i>
+      </div>
+    );
   } else if (fileError) {
-    <div className="">
-      <div className="p-4">
-        <div className="flex items-start">
-          <div className="shrink-0">
-            <i className="ri-error-warning-line"></i>
-          </div>
-          <div className="ml-3 w-0 flex-1 pt-0.5">
-            <p className="text-sm font-medium text-gray-900">
-              Error loading file
-            </p>
+    return (
+      <div className="">
+        <div className="p-4">
+          <div className="flex items-start">
+            <div className="shrink-0">
+              <i className="ri-error-warning-line"></i>
+            </div>
+            <div className="ml-3 w-0 flex-1 pt-0.5">
+              <p className="text-sm font-medium text-gray-900">
+                Error loading file
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>;
+    );
   } else if (fileSuccess) {
-    const supportedFileTypes = [
-      "pdf",
-      "docx",
-      "txt",
-      "html",
-      "doc",
-      "ppt",
-      "pptx",
-      "xls",
-      "xlsx",
-    ];
-
     const ErrorComponent = () => {
       return (
         <div>
-          <p>Error loading file</p>
           <a href={fileUrl} target="_blank" rel="noopener noreferrer">
             Download the file directly
           </a>
@@ -1112,10 +1103,16 @@ function FileWrapper({ fileLoading, fileSuccess, fileError, fileUrl }) {
     ) {
       return <img src={fileUrl} />;
     } else if (fileUrl.endsWith(".pdf")) {
-      // TODO
+      return <iframe src={`https://docs.google.com/gview?url=${fileUrl}&embedded=true`} width="100%" height="100%" frameBorder="0" />;
+    } else if (fileUrl.endsWith(".mp4") || fileUrl.endsWith(".mov") || fileUrl.endsWith(".avi") || fileUrl.endsWith(".wmv") || fileUrl.endsWith(".flv") || fileUrl.endsWith(".webm")) {
+      return <video src={fileUrl} controls />;
+    } else if (fileUrl.endsWith(".mp3") || fileUrl.endsWith(".wav") || fileUrl.endsWith(".ogg") || fileUrl.endsWith(".flac") || fileUrl.endsWith(".aac")) {
+      return <audio src={fileUrl} controls />;
     } else {
       return <ErrorComponent />;
     }
+  } else {
+    return null;
   }
 }
 
@@ -1138,11 +1135,11 @@ function ListContainer(props) {
   );
 
   const fileLoading =
-    filesState[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.RUNNING;
+    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.RUNNING;
   const fileError =
-    filesState[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.ERROR;
+    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.ERROR;
   const fileSuccess =
-    filesState[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.SUCCESS;
+    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.SUCCESS;
 
   const tiptapRef = useRef(null);
 
@@ -1204,6 +1201,19 @@ function ListContainer(props) {
           after: lastSuccessfulCallTimeRef.current || 0,
         })
       );
+
+      // if this node has a file_id and if that file_id is not in the filesState, then get the file
+      if (
+        nodeDBMap[selectedListId]?.file_id &&
+        !filesState.filesMap[nodeDBMap[selectedListId]?.file_id]
+      ) {
+        dispatch(
+          getFile({
+            file_id: nodeDBMap[selectedListId]?.file_id,
+            user_id: props.userId,
+          })
+        );
+      }
     }, 10000);
 
     // Clean up the interval
@@ -1217,6 +1227,18 @@ function ListContainer(props) {
         after: 0,
       })
     );
+    // if this node has a file_id and if that file_id is not in the filesState, then get the file
+    if (
+      nodeDBMap[selectedListId]?.file_id &&
+      !filesState.filesMap[nodeDBMap[selectedListId]?.file_id]
+    ) {
+      dispatch(
+        getFile({
+          file_id: nodeDBMap[selectedListId]?.file_id,
+          user_id: props.userId,
+        })
+      );
+    }
   }, [selectedListId]);
 
   const isUserPro = !!(user.data || {}).pro;
@@ -1557,7 +1579,7 @@ function ListContainer(props) {
                   fileSuccess={fileSuccess}
                   fileError={fileError}
                   fileUrl={
-                    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.url
+                    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.file?.url
                   }
                 />
               ) : (

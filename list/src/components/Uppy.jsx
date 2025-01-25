@@ -39,11 +39,20 @@ class UppyComponent extends React.Component {
     });
 
     this.uppy.on("file-added", (file) => {
-      // strip extension from fileName to attach to the end of the folder name. consider the case where the extension might not be present. it shouldnt break anything.
-      let name = file.name.split(".")[0];
-      let extension = file.name.split(".")[1] || "";
+      // Get the last dot index to correctly separate the name and extension
+      let lastDotIndex = file.name.lastIndexOf(".");
+      let name =
+        lastDotIndex !== -1 ? file.name.substring(0, lastDotIndex) : file.name;
+      let extension =
+        lastDotIndex !== -1 ? file.name.substring(lastDotIndex + 1) : "";
+
+      // Sanitize the name
       name = name.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+
+      // Generate a random nonce
       const nonce = Math.random().toString(36).substring(2, 8);
+
+      // Set file metadata
       this.uppy.setFileMeta(file.id, {
         folder: this.props.folder || "default",
         fileName: `${this.props.folder || "default"}/${name}_${nonce}${
@@ -54,6 +63,7 @@ class UppyComponent extends React.Component {
         }`,
       });
 
+      // Auto-proceed with upload if enabled
       if (this.props.autoProceed) {
         this.uppy.upload();
       }
