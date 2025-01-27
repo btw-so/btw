@@ -205,7 +205,7 @@ async function upsertNote({ id, user_id, json, html, title: defaultTitle }) {
         try {
             title = json.content[0].content[0].text;
         } catch (e) {
-            console.log(e);
+            // console.log(e);
         }
     }
 
