@@ -262,7 +262,7 @@
   "scripts": {
     "start": "node tools/start",
     "build": "node tools/build",
-    "build:serve": "npm run build && npm run serve",
+    "build:serve": "NODE_OPTIONS=--max_old_space_size=4096 npm run build && npm run serve",
     "analyze": "NODE_ENV=production webpack --config config/webpack.config.js --profile --json > webpack.stats.json",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx src config test tools",
     "lint:styles": "stylelint 'src/**/*.{ts,tsx}'",
