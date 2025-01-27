@@ -89,9 +89,11 @@ export default ({
           {
             icon: "h-1",
             title: "Heading 1",
-            action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
+            action: () =>
+              editor.chain().focus().toggleHeading({ level: 1 }).run(),
             isActive: () => editor.isActive("heading", { level: 1 }),
           },
+        ]),
     {
       icon: "h-2",
       title: "Heading 2",
