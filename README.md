@@ -12,7 +12,7 @@ You can [sign up](https://btw.so) and use btw without installing anything. You c
 
 ### Demo blogs published using btw:
 
--   [deeptichopra.com](https://www.deeptichopra.com/about)
+-   [dc.btw.so](https://dc.btw.so/)
 -   [siddg.com](https://www.siddg.com/about)
 
 ## Table of contents
