@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const yargs = require('yargs');
+import yargs from 'yargs';
 
-const deploy = require('./deploy');
-const publish = require('./publish');
+import deploy from './deploy';
+import publish from './publish';
 
 module.exports = yargs
   .scriptName('tools')
