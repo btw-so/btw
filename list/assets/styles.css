@@ -30,7 +30,7 @@ body {
 }
 
 .tiptap-editor li {
-  margin-top: 0 !important;
+  margin-top: 0.1em !important;
   margin-bottom: 0 !important;
 }
 
@@ -199,7 +199,7 @@ hr.ProseMirror-selectednode {
   margin-bottom: 0 !important;
 }
 .tiptap-editor ul[data-type="taskList"] li > label {
-  margin-top: 0.5rem !important;
+  margin-top: 0.25rem !important;
 }
 .tiptap-editor ul[data-type="taskList"] li > div > ul[data-type="taskList"] {
   margin-top: 0rem !important;
