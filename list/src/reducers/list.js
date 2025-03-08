@@ -22,6 +22,9 @@ import {
   newListNode,
   upsertListNode,
   changeSelectedNode,
+  getPinnedNodes,
+  getPinnedNodesSuccess,
+  getPinnedNodesFailure,
 } from "actions";
 
 export const listState = {
@@ -33,6 +36,7 @@ export const listState = {
       checked: false,
       pos: 1,
       note_id: "00000000-0000-0000-0000-000000000000",
+      pinned_pos: 0,
     },
     init: {
       id: "init",
@@ -49,6 +53,17 @@ export const listState = {
     home: {
       children: ["init"],
     },
+  },
+  pinnedNodes: {
+    status: STATUS.IDLE,
+    data: [
+      {
+        id: "home",
+        pinned_pos: 0,
+        text: "Home",
+      },
+    ],
+    error: null,
   },
   selectedListId: "home",
 };
@@ -86,6 +101,64 @@ export default {
           };
         }
       }
+
+      if (payload.pinned_pos) {
+        // if it is not in pinnedNodes, then add it
+        if (!draft.pinnedNodes.data.find((x) => x.id === payload.id)) {
+          draft.pinnedNodes.data = [
+            ...draft.pinnedNodes.data,
+            {
+              id: payload.id,
+              pinned_pos: payload.pinned_pos,
+              text: draft.nodeDBMap[payload.id].text,
+            },
+          ];
+
+          // sort pinnedNodes by pinned_pos
+          draft.pinnedNodes.data = draft.pinnedNodes.data.sort(
+            (a, b) => a.pinned_pos - b.pinned_pos
+          );
+        }
+
+        // if it is in pinnedNodes, then update it
+        if (draft.pinnedNodes.data.find((x) => x.id === payload.id)) {
+          draft.pinnedNodes.data = draft.pinnedNodes.data.map((x) =>
+            x.id === payload.id ? { ...x, pinned_pos: payload.pinned_pos } : x
+          );
+        }
+
+        // sort pinnedNodes by pinned_pos
+        draft.pinnedNodes.data = draft.pinnedNodes.data.sort(
+          (a, b) => a.pinned_pos - b.pinned_pos
+        );
+      } else {
+        // if it is not pinned, then remove it from pinnedNodes
+        draft.pinnedNodes.data = draft.pinnedNodes.data.filter(
+          (x) => x.id !== payload.id
+        );
+      }
+    });
+
+    builder.addCase(getPinnedNodes, (draft, { payload }) => {
+      draft.pinnedNodes.status = STATUS.RUNNING;
+      draft.pinnedNodes.error = null;
+    });
+
+    builder.addCase(getPinnedNodesSuccess, (draft, { payload }) => {
+      draft.pinnedNodes.status = STATUS.SUCCESS;
+      draft.pinnedNodes.data = [
+        {
+          id: "home",
+          pinned_pos: 0,
+          text: "Home",
+        },
+        ...payload.pinnedNodes,
+      ];
+    });
+
+    builder.addCase(getPinnedNodesFailure, (draft, { payload }) => {
+      draft.pinnedNodes.status = STATUS.ERROR;
+      draft.pinnedNodes.error = payload.error;
     });
 
     builder.addCase(changeSelectedNode, (draft, { payload }) => {

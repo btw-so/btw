@@ -1103,10 +1103,30 @@ function FileWrapper({ fileLoading, fileSuccess, fileError, fileUrl }) {
     ) {
       return <img src={fileUrl} />;
     } else if (fileUrl.endsWith(".pdf")) {
-      return <iframe src={`https://docs.google.com/gview?url=${fileUrl}&embedded=true`} width="100%" height="100%" frameBorder="0" />;
-    } else if (fileUrl.endsWith(".mp4") || fileUrl.endsWith(".mov") || fileUrl.endsWith(".avi") || fileUrl.endsWith(".wmv") || fileUrl.endsWith(".flv") || fileUrl.endsWith(".webm")) {
+      return (
+        <iframe
+          src={`https://docs.google.com/gview?url=${fileUrl}&embedded=true`}
+          width="100%"
+          height="100%"
+          frameBorder="0"
+        />
+      );
+    } else if (
+      fileUrl.endsWith(".mp4") ||
+      fileUrl.endsWith(".mov") ||
+      fileUrl.endsWith(".avi") ||
+      fileUrl.endsWith(".wmv") ||
+      fileUrl.endsWith(".flv") ||
+      fileUrl.endsWith(".webm")
+    ) {
       return <video src={fileUrl} controls />;
-    } else if (fileUrl.endsWith(".mp3") || fileUrl.endsWith(".wav") || fileUrl.endsWith(".ogg") || fileUrl.endsWith(".flac") || fileUrl.endsWith(".aac")) {
+    } else if (
+      fileUrl.endsWith(".mp3") ||
+      fileUrl.endsWith(".wav") ||
+      fileUrl.endsWith(".ogg") ||
+      fileUrl.endsWith(".flac") ||
+      fileUrl.endsWith(".aac")
+    ) {
       return <audio src={fileUrl} controls />;
     } else {
       return <ErrorComponent />;
@@ -1135,11 +1155,14 @@ function ListContainer(props) {
   );
 
   const fileLoading =
-    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.RUNNING;
+    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status ===
+    STATUS.RUNNING;
   const fileError =
-    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.ERROR;
+    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status ===
+    STATUS.ERROR;
   const fileSuccess =
-    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status === STATUS.SUCCESS;
+    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status ===
+    STATUS.SUCCESS;
 
   const tiptapRef = useRef(null);
 
@@ -1219,6 +1242,7 @@ function ListContainer(props) {
     // Clean up the interval
     return () => clearInterval(interval);
   }, [selectedListId]); // Notice that lastSuccessfulCallTime is not in the dependency array here
+
 
   useEffect(() => {
     dispatch(
@@ -1407,48 +1431,69 @@ function ListContainer(props) {
             </ol>
           </nav>
 
-          <ContentEditable
-            id={selectedListId}
-            classes={"text-xl font-bold mb-2 px-6"}
-            val={nodeDBMap[selectedListId]?.text || ""}
-            setVal={(val) => {
-              upsertHelper({
-                id: selectedListId,
-                text: val,
-              });
-            }}
-            onEnter={() => {
-              const id = Date.now().toString(16);
-              upsertHelper({
-                id,
-                parent_id: selectedListId,
-                pos:
+          <div className="flex items-center">
+            <ContentEditable
+              id={selectedListId}
+              classes={"text-xl font-bold mb-2 pl-6 pr-2 w-fit"}
+              val={nodeDBMap[selectedListId]?.text || ""}
+              setVal={(val) => {
+                upsertHelper({
+                  id: selectedListId,
+                  text: val,
+                });
+              }}
+              onEnter={() => {
+                const id = Date.now().toString(16);
+                upsertHelper({
+                  id,
+                  parent_id: selectedListId,
+                  pos:
+                    nodeUIMap[selectedListId] &&
+                    nodeUIMap[selectedListId].children &&
+                    nodeUIMap[selectedListId].children.length > 0
+                      ? (nodeDBMap[selectedListId].pos + 0) / 2
+                      : 1,
+                  text: "",
+                  new: true,
+                  note_id: getUUID(),
+                });
+
+                setTimeout(() => {
+                  focusOnNode({ id });
+                }, 200);
+              }}
+              onDownArrow={() => {
+                if (
                   nodeUIMap[selectedListId] &&
                   nodeUIMap[selectedListId].children &&
                   nodeUIMap[selectedListId].children.length > 0
-                    ? (nodeDBMap[selectedListId].pos + 0) / 2
-                    : 1,
-                text: "",
-                new: true,
-                note_id: getUUID(),
-              });
-
-              setTimeout(() => {
-                focusOnNode({ id });
-              }, 200);
-            }}
-            onDownArrow={() => {
-              if (
-                nodeUIMap[selectedListId] &&
-                nodeUIMap[selectedListId].children &&
-                nodeUIMap[selectedListId].children.length > 0
-              ) {
-                focusOnNode({
-                  id: nodeUIMap[selectedListId].children[0],
+                ) {
+                  focusOnNode({
+                    id: nodeUIMap[selectedListId].children[0],
+                  });
+                }
+              }}
+            />
+            <div
+              className={`flex flex-col mb-1.5 cursor-pointer ${selectedListId === "home" ? "hidden" : ""}`}
+              onClick={() => {
+                upsertHelper({
+                  id: selectedListId,
+                  pinned_pos: nodeDBMap[selectedListId]?.pinned_pos ? null : Date.now(),
                 });
-              }
-            }}
-          />
+              }}
+            >
+              {nodeDBMap[selectedListId]?.pinned_pos ? (
+                <div className="flex items-center hover:text-gray-700">
+                  <i className="ri-star-fill text-gray-500"></i>
+                </div>
+              ) : (
+                <div className="flex items-center hover:text-gray-700">
+                  <i className="ri-star-line text-gray-500"></i>
+                </div>
+              )}
+            </div>
+          </div>
 
           <div className="flex flex-grow overflow-y-hidden flex-col md:flex-row border-t-2 border-gray-200">
             <div className="flex flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-2 border-gray-200 md:border-b-0 md:border-r-2 md:border-gray-200 ">
@@ -1579,7 +1624,8 @@ function ListContainer(props) {
                   fileSuccess={fileSuccess}
                   fileError={fileError}
                   fileUrl={
-                    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.file?.url
+                    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]
+                      ?.file?.url
                   }
                 />
               ) : (
