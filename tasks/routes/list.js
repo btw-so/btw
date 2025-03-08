@@ -2,7 +2,52 @@ var express = require("express");
 var router = express.Router();
 var cors = require("cors");
 var { getUserFromToken, doesLoginTokenExist } = require("../logic/user");
-var { getList, upsertNode } = require("../logic/list");
+var { getList, upsertNode, getPinnedNodes } = require("../logic/list");
+
+router.options(
+    "/pinned",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/pinned",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint } = req.body || {};
+
+        let user;
+
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+        } catch (e) {
+            res.json({
+                success: false,
+                error: e,
+            });
+            return ;
+        }
+
+        const pinnedNodes = await getPinnedNodes({
+            user_id: user.id,
+        });
+
+        res.json({
+            success: true,
+            data: { pinnedNodes },
+        });
+    }
+);
+
 
 router.options(
     "/get",

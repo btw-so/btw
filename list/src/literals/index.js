@@ -47,6 +47,9 @@ export const ActionTypes = keyMirror({
   GET_FILE: undefined,
   GET_FILE_SUCCESS: undefined,
   GET_FILE_FAILURE: undefined,
+  GET_PINNED_NODES: undefined,
+  GET_PINNED_NODES_SUCCESS: undefined,
+  GET_PINNED_NODES_FAILURE: undefined,
 });
 
 export const STATUS = {
@@ -55,4 +58,5 @@ export const STATUS = {
   READY: "ready",
   SUCCESS: "success",
   ERROR: "error",
+  PINNED: "pinned",
 };

@@ -28,6 +28,8 @@ import {
   getListSuccess,
   resetState,
   getFile,
+  getPinnedNodesSuccess,
+  getPinnedNodesFailure,
 } from "../actions";
 
 async function getServerTime({ attempts = 1 }) {
@@ -79,6 +81,29 @@ async function getFingerPrint() {
   // const { visitorId } = await fp.get();
 
   // return visitorId;
+}
+
+export function* getPinnedNodesSaga({ payload }) {
+  const { user_id } = payload;
+
+  const fingerprint = yield call(getFingerPrint);
+  
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/list/pinned`,
+        method: "POST",
+        data: {
+          fingerprint,
+          user_id,
+        },
+      })
+    );
+
+    yield put(getPinnedNodesSuccess({ pinnedNodes: res.data.pinnedNodes }));
+  } catch (e) {
+    yield put(getPinnedNodesFailure({ error: "Something went wrong" }));
+  }
 }
 
 export function* getListSaga({ payload }) {
@@ -234,5 +259,6 @@ export default function* root() {
   yield all([
     takeEvery(ActionTypes.GET_LIST, getListSaga),
     takeEvery(ActionTypes.BATCH_PUSH_NODES, batchPushNodesSaga),
+    takeEvery(ActionTypes.GET_PINNED_NODES, getPinnedNodesSaga),
   ]);
 }

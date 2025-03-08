@@ -112,6 +112,7 @@ CREATE TABLE "btw"."nodes" (
     "pos" float4,
     "updated_at" timestamptz,
     "checked_date" timestamptz,
+    "pinned_pos" float4,
     PRIMARY KEY ("id","user_id"),
     "note_id" uuid,
     "file_id" uuid

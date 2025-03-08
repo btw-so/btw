@@ -56,3 +56,24 @@ export const changeSelectedNode = createAction(
     payload: data,
   })
 );
+
+export const getPinnedNodes = createAction(
+  ActionTypes.GET_PINNED_NODES,
+  (data) => ({
+    payload: data,
+  })
+);
+
+export const getPinnedNodesSuccess = createAction(
+  ActionTypes.GET_PINNED_NODES_SUCCESS,
+  (data) => ({
+    payload: data,
+  })
+);
+
+export const getPinnedNodesFailure = createAction(
+  ActionTypes.GET_PINNED_NODES_FAILURE,
+  (data) => ({
+    payload: data,
+  })
+);

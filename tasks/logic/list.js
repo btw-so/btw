@@ -7,6 +7,13 @@ const { JSDOM } = require("jsdom");
 const turndown = require("turndown")();
 const axios = require("axios");
 
+async function getPinnedNodes({ user_id }) {
+    const pool = await db.getTasksDB();
+    const query = `SELECT * FROM btw.nodes WHERE user_id = $1 AND pinned_pos IS NOT NULL AND parent_id <> 'limbo' ORDER BY pinned_pos ASC LIMIT 100`;
+    const rows = await pool.query(query, [user_id]);
+    return rows.rows;
+}
+
 async function getList({
     user_id,
     page = 1,
@@ -27,14 +34,14 @@ async function getList({
     const query = `
     WITH RECURSIVE node_cte AS (
     SELECT 
-        id, user_id, text, checked, collapsed, checked_date, parent_id, pos, updated_at, note_id, file_id, 1 AS depth
+        id, user_id, text, checked, collapsed, checked_date, parent_id, pos, updated_at, note_id, file_id, pinned_pos, 1 AS depth
     FROM 
         btw.nodes
     WHERE 
         user_id = $2 AND id = $1 AND updated_at >= $3
     UNION ALL
     SELECT 
-        n.id, n.user_id, n.text, n.checked, n.collapsed, n.checked_date, n.parent_id, n.pos, n.updated_at, n.note_id, n.file_id, c.depth + 1
+        n.id, n.user_id, n.text, n.checked, n.collapsed, n.checked_date, n.parent_id, n.pos, n.updated_at, n.note_id, n.file_id, n.pinned_pos, c.depth + 1
     FROM 
         (SELECT * FROM btw.nodes WHERE user_id = $2) AS n
     JOIN 
@@ -99,14 +106,15 @@ async function upsertNode({
     collapsed,
     parent_id,
     pos,
+    pinned_pos,
     note_id,
     file_id,
 }) {
     const pool = await db.getTasksDB();
 
     const query = `
-    INSERT INTO btw.nodes (id, user_id, text, checked, checked_date, collapsed, parent_id, pos, updated_at, note_id, file_id)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    INSERT INTO btw.nodes (id, user_id, text, checked, checked_date, collapsed, parent_id, pos, updated_at, note_id, file_id, pinned_pos)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     ON CONFLICT (user_id, id) DO UPDATE SET
         user_id = EXCLUDED.user_id,
         text = EXCLUDED.text,
@@ -117,7 +125,8 @@ async function upsertNode({
         updated_at = $9,
         pos = EXCLUDED.pos,
         note_id = EXCLUDED.note_id,
-        file_id = EXCLUDED.file_id
+        file_id = EXCLUDED.file_id,
+        pinned_pos = EXCLUDED.pinned_pos
 `;
     try {
         const res = await pool.query(query, [
@@ -132,6 +141,7 @@ async function upsertNode({
             new Date(),
             note_id,
             file_id,
+            pinned_pos,
         ]);
         console.log("Upsert successful:", res);
     } catch (err) {
@@ -142,4 +152,5 @@ async function upsertNode({
 module.exports = {
     getList,
     upsertNode,
+    getPinnedNodes,
 };

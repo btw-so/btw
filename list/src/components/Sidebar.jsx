@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { STATUS } from "../literals";
 import useLocalStorage from "../hooks/useLocalStorage";
-import { changeSelectedNode } from "../actions";
+import { changeSelectedNode, getPinnedNodes, upsertListNode, batchPushNodes } from "../actions";
 
 function Sidebar(props) {
   const [token, setToken] = useCookie(
@@ -17,207 +17,135 @@ function Sidebar(props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const pinnedNodes = useAppSelector((state) => state.list.pinnedNodes);
+  const selectedListId = useAppSelector((state) => state.list.selectedListId);
+  const nodeDBMap = useAppSelector((state) => state.list.nodeDBMap);
+  const [updatedNodeIds, setUpdatedNodeIds] = useState({});
 
   const [sidebarIsOpen, setSidebarIsOpen] = useLocalStorage(
     "sidebarIsOpen",
     false
   );
 
-  // useInterval(() => {
-  //   if (token && notesState.notesList.status !== STATUS.RUNNING) {
-  //     dispatch(
-  //       getNotes({
-  //         after: notesState.notesList.lastSuccessAt || 0,
-  //       })
-  //     );
-  //   }
-  // }, 15000);
+  const [draggedNode, setDraggedNode] = useState(null);
+  const [dragOverNodeId, setDragOverNodeId] = useState(null);
 
-  // if there is a connection failure earlier, which can be seen from connectionStatusToastId variable, then we can increase the interval.
-  // useInterval(() => {
-  //   if (
-  //     token &&
-  //     notesState.notesList.status !== STATUS.RUNNING &&
-  //     window.connectionStatusToastId
-  //   ) {
-  //     dispatch(
-  //       getNotes({
-  //         after: notesState.notesList.lastSuccessAt || 0,
-  //       })
-  //     );
-  //   }
-  // }, 4000);
 
-  // useEffect(() => {
-  //   if (token) {
-  //     dispatch(
-  //       getNotes({
-  //         after: notesState.notesList.lastSuccessAt || 0,
-  //       })
-  //     );
-  //   }
-  // }, [token]);
+  const handleDragStart = (e, node) => {
+    // Check if this is the first node in the sorted list
+    const sortedNodes = [...pinnedNodes.data].sort((a, b) => a.pinned_pos - b.pinned_pos);
+    if (sortedNodes.length > 0 && sortedNodes[0].id === node.id) {
+      // Prevent dragging the first node
+      e.preventDefault();
+      return;
+    }
+    
+    setDraggedNode(node);
+    e.dataTransfer.setData("text/plain", node.id);
+    // Add a ghost image effect
+    e.dataTransfer.effectAllowed = "move";
+  };
 
-  const [contextMenu, showContextMenu] = React.useState(false);
-  const [pointX, setPointX] = React.useState(0);
-  const [pointY, setPointY] = React.useState(0);
-  const [contextNoteId, setContextNoteId] = React.useState(null);
+  const handleDragOver = (e, nodeId) => {
+    e.preventDefault();
+    setDragOverNodeId(nodeId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedNode(null);
+    setDragOverNodeId(null);
+  };
+
+  const upsertHelper = (d) => {
+    setUpdatedNodeIds({
+      ...updatedNodeIds,
+      [d.id]: true,
+    });
+
+    dispatch(upsertListNode(d));
+  };
+
+  const handleDrop = (e, targetNode) => {
+    e.preventDefault();
+    if (!draggedNode || draggedNode.id === targetNode.id) return;
+
+    const sortedNodes = [...pinnedNodes.data].sort((a, b) => a.pinned_pos - b.pinned_pos);
+    const sourceIndex = sortedNodes.findIndex(node => node.id === draggedNode.id);
+    const targetIndex = sortedNodes.findIndex(node => node.id === targetNode.id);
+    
+    // Calculate new position
+    let newPosition;
+    
+    if (targetIndex === sortedNodes.length - 1) {
+      // If dropped on the last item
+      newPosition = sortedNodes[targetIndex].pinned_pos + 1;
+    } else {
+      // If dropped between two items
+      const nextNode = sortedNodes[targetIndex + 1];
+      newPosition = (sortedNodes[targetIndex].pinned_pos + nextNode.pinned_pos) / 2;
+    }
+    
+    // Update the dragged node with new position
+    const updatedNode = {
+      ...draggedNode,
+      pinned_pos: newPosition
+    };
+    
+    // Update in Redux store
+    const updatedNodes = pinnedNodes.data.map(node => 
+      node.id === draggedNode.id ? updatedNode : node
+    );
+    
+    // If the node exists in nodeDBMap, update it in the database
+    if (nodeDBMap && nodeDBMap[draggedNode.id]) {
+      const nodeToUpdate = {
+        ...nodeDBMap[draggedNode.id],
+        pinned_pos: newPosition
+      };
+      upsertHelper(nodeToUpdate);
+    }
+    
+    // Reset drag state
+    setDraggedNode(null);
+    setDragOverNodeId(null);
+  };
 
   useEffect(() => {
-    const handleClick = () => showContextMenu(false);
-    document.addEventListener("click", handleClick);
-    return () => {
-      document.removeEventListener("click", handleClick);
-    };
+    const interval = setInterval(() => {
+      if (Object.keys(updatedNodeIds || {}).length > 0) {
+        const keys = { ...updatedNodeIds };
+
+        dispatch(
+          batchPushNodes({
+            nodes: [
+              ...[...Object.keys(keys), selectedListId].map(
+                (key) => nodeDBMap[key]
+              ),
+            ].filter((x) => x),
+          })
+        );
+        setUpdatedNodeIds({});
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [updatedNodeIds, nodeDBMap, selectedListId]);
+
+
+  // every 1 minute, get the pinned nodes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch(getPinnedNodes({ user_id: props.userId }));
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [props.userId]);
+
+  useEffect(() => {
+    dispatch(getPinnedNodes({ user_id: props.userId }));
   }, []);
 
   if (token) {
     return (
       <>
-        {/* {contextMenu && notesState.notesMap[contextNoteId].ydoc ? (
-          <div
-            className={`${
-              sidebarIsOpen ? "hidden" : "absolute"
-            } w-32 text-blue-500 z-10 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            style={{
-              top: pointY,
-              left: pointX,
-            }}
-          >
-            <div className="cursor-pointer" role="none">
-              {notesState.notesMap[contextNoteId].publish ? (
-                <div
-                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
-                  onClick={() => {
-                    dispatch(
-                      publishNote({
-                        id: contextNoteId,
-                        publish: false,
-                        user_id: props.userId,
-                      })
-                    );
-                    showContextMenu(false);
-                  }}
-                >
-                  Unpublish
-                </div>
-              ) : null}
-              {!notesState.notesMap[contextNoteId].publish &&
-              !notesState.notesMap[contextNoteId].delete &&
-              !notesState.notesMap[contextNoteId].archive ? (
-                <div
-                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
-                  onClick={() => {
-                    dispatch(
-                      publishNote({
-                        id: contextNoteId,
-                        publish: true,
-                        user_id: props.userId,
-                      })
-                    );
-                    showContextMenu(false);
-                  }}
-                >
-                  Publish
-                </div>
-              ) : null}
-              {!notesState.notesMap[contextNoteId].publish &&
-              !notesState.notesMap[contextNoteId].delete &&
-              !notesState.notesMap[contextNoteId].archive ? (
-                <div
-                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
-                  onClick={() => {
-                    dispatch(
-                      archiveNote({
-                        id: contextNoteId,
-                        archive: true,
-                        user_id: props.userId,
-                      })
-                    );
-                    showContextMenu(false);
-                  }}
-                >
-                  Archive
-                </div>
-              ) : null}
-              {notesState.notesMap[contextNoteId].archive ? (
-                <div
-                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
-                  onClick={() => {
-                    dispatch(
-                      archiveNote({
-                        id: contextNoteId,
-                        archive: false,
-                        user_id: props.userId,
-                      })
-                    );
-                    showContextMenu(false);
-                  }}
-                >
-                  Unarchive
-                </div>
-              ) : null}
-              {!notesState.notesMap[contextNoteId].publish &&
-              !notesState.notesMap[contextNoteId].delete ? (
-                <div
-                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
-                  onClick={() => {
-                    dispatch(
-                      deleteNote({
-                        id: contextNoteId,
-                        delete: true,
-                        user_id: props.userId,
-                      })
-                    );
-                    showContextMenu(false);
-                  }}
-                >
-                  Move to trash
-                </div>
-              ) : null}
-              {notesState.notesMap[contextNoteId].delete ? (
-                <div
-                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
-                  onClick={() => {
-                    dispatch(
-                      deleteNote({
-                        id: contextNoteId,
-                        delete: false,
-                        user_id: props.userId,
-                      })
-                    );
-                    showContextMenu(false);
-                  }}
-                >
-                  Recover
-                </div>
-              ) : null}
-              {notesState.notesMap[contextNoteId].delete ? (
-                <div
-                  className="block px-4 py-2 text-sm font-bold hover:bg-gray-100"
-                  onClick={() => {
-                    dispatch(
-                      deleteNote({
-                        id: contextNoteId,
-                        delete: false,
-                        user_id: props.userId,
-                        moveToArchive: true,
-                      })
-                    );
-                    showContextMenu(false);
-                  }}
-                >
-                  Move to archive
-                </div>
-              ) : null}
-            </div>
-          </div>
-        ) : null} */}
-
         <div className="space-x-2 w-full mb-8 border-gray-200 sidebar-toolkit flex items-center">
           <div className="flex-grow">
             <div className="relative rounded-md shadow-sm">
@@ -248,38 +176,45 @@ function Sidebar(props) {
               />
             </div>
           </div>
-
-          {/* <button
-            className={`py-2 flex items-center hover:font-extrabold hover:text-blue-500`}
-            onClick={() => {
-              dispatch(
-                createNewNote({
-                  user_id: props.userId,
-                })
-              );
-              setSidebarIsOpen(false);
-              navigate("/dash");
-            }}
-          >
-            <i className={`remix ri-edit-box-line w-5 h-5 ml-2 ml-auto`}></i>
-          </button> */}
         </div>
         <div className="flex-grow overflow-y-auto">
-          <div
-            className="flex items-center cursor-pointer"
-            onClick={() => {
-              dispatch(
-                changeSelectedNode({
-                  id: "home",
-                })
-              );
-            }}
-          >
-            <span className="mr-1 pt-0.5">
-              <i className="ri-bookmark-line ri-1x"></i>
-            </span>
-            <span>Home</span>
-          </div>
+          {pinnedNodes.data.map((node) => {
+            // Check if this is the first node in the sorted list
+            const sortedNodes = [...pinnedNodes.data].sort((a, b) => a.pinned_pos - b.pinned_pos);
+            const isFirstNode = sortedNodes.length > 0 && sortedNodes[0].id === node.id;
+            
+            return (
+              <div
+                key={node.id}
+                className="flex items-center cursor-pointer"
+                onClick={() => {
+                  dispatch(
+                    changeSelectedNode({
+                      id: node.id,
+                    })
+                  );
+                }}
+                draggable={!isFirstNode}
+                onDragStart={(e) => handleDragStart(e, node)}
+                onDragOver={(e) => handleDragOver(e, node.id)}
+                onDragEnd={handleDragEnd}
+                onDrop={(e) => handleDrop(e, node)}
+              >
+                <span className="mr-2 pt-0.5 mb-1">
+                  <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
+                </span>
+                <span
+                  className={`overflow-hidden text-ellipsis truncate ${
+                    node.id === selectedListId
+                      ? "font-black text-blue-500"
+                      : "font-bold"
+                  }`}
+                >
+                  {node.text}
+                </span>
+              </div>
+            );
+          })}
         </div>
         <div className="w-full border-t-2 border-gray-200 sidebar-toolkit">
           <button
