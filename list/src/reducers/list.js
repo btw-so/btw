@@ -25,6 +25,9 @@ import {
   getPinnedNodes,
   getPinnedNodesSuccess,
   getPinnedNodesFailure,
+  getPublicNote,
+  getPublicNoteSuccess,
+  getPublicNoteFailure,
 } from "actions";
 
 export const listState = {
@@ -63,6 +66,11 @@ export const listState = {
         text: "Home",
       },
     ],
+    error: null,
+  },
+  publicNote: {
+    status: STATUS.IDLE,
+    data: {},
     error: null,
   },
   selectedListId: "home",
@@ -137,6 +145,21 @@ export default {
           (x) => x.id !== payload.id
         );
       }
+    });
+
+    builder.addCase(getPublicNote, (draft, { payload }) => {
+      draft.publicNote.status = STATUS.RUNNING;
+      draft.publicNote.error = null;
+    });
+
+    builder.addCase(getPublicNoteSuccess, (draft, { payload }) => {
+      draft.publicNote.status = STATUS.SUCCESS;
+      draft.publicNote.data = payload.note;
+    });
+
+    builder.addCase(getPublicNoteFailure, (draft, { payload }) => {
+      draft.publicNote.status = STATUS.ERROR;
+      draft.publicNote.error = payload.error;
     });
 
     builder.addCase(getPinnedNodes, (draft, { payload }) => {

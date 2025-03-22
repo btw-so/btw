@@ -30,6 +30,8 @@ import {
   getFile,
   getPinnedNodesSuccess,
   getPinnedNodesFailure,
+  getPublicNoteSuccess,
+  getPublicNoteFailure,
 } from "../actions";
 
 async function getServerTime({ attempts = 1 }) {
@@ -255,10 +257,32 @@ export function* batchPushNodesSaga({ payload }) {
   }
 }
 
+export function* getPublicNoteSaga({ payload }) {
+  const { id, hash } = payload;
+
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/list/public/note`,
+        method: "POST",
+        data: {
+          id,
+          hash,
+        },
+      })
+    );
+
+    yield put(getPublicNoteSuccess({ note: res.data.note }));
+  } catch (e) {
+    yield put(getPublicNoteFailure({ error: "Something went wrong" }));
+  }
+}
+
 export default function* root() {
   yield all([
     takeEvery(ActionTypes.GET_LIST, getListSaga),
     takeEvery(ActionTypes.BATCH_PUSH_NODES, batchPushNodesSaga),
     takeEvery(ActionTypes.GET_PINNED_NODES, getPinnedNodesSaga),
+    takeEvery(ActionTypes.GET_PUBLIC_NOTE, getPublicNoteSaga),
   ]);
 }

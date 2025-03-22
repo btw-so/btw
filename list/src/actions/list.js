@@ -77,3 +77,24 @@ export const getPinnedNodesFailure = createAction(
     payload: data,
   })
 );
+
+export const getPublicNote = createAction(
+  ActionTypes.GET_PUBLIC_NOTE,
+  (data) => ({
+    payload: data,
+  })
+);
+
+export const getPublicNoteSuccess = createAction(
+  ActionTypes.GET_PUBLIC_NOTE_SUCCESS,
+  (data) => ({
+    payload: data,
+  })
+);
+
+export const getPublicNoteFailure = createAction(
+  ActionTypes.GET_PUBLIC_NOTE_FAILURE,
+  (data) => ({
+    payload: data,
+  })
+);

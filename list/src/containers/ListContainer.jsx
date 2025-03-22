@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useAppSelector } from "modules/hooks";
+import CryptoJS from "crypto-js";
 import useInterval from "beautiful-react-hooks/useInterval";
 import { useDispatch } from "react-redux";
 import { STATUS } from "../literals";
@@ -38,6 +39,16 @@ function getUUID() {
   // create random uuid manually
   const random = crypto.randomUUID();
   return random;
+}
+
+function shortHash(x, key, length = 5) {
+  const hmac = CryptoJS.HmacSHA256(x, key);
+  const base64 = CryptoJS.enc.Base64.stringify(hmac);
+
+  // Make it URL-safe and trim padding
+  const safe = base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+  return safe.slice(0, length).toLowerCase();
 }
 
 function getCursorDetails() {
@@ -1243,7 +1254,6 @@ function ListContainer(props) {
     return () => clearInterval(interval);
   }, [selectedListId]); // Notice that lastSuccessfulCallTime is not in the dependency array here
 
-
   useEffect(() => {
     dispatch(
       getList({
@@ -1475,11 +1485,15 @@ function ListContainer(props) {
               }}
             />
             <div
-              className={`flex flex-col mb-1.5 cursor-pointer ${selectedListId === "home" ? "hidden" : ""}`}
+              className={`flex flex-col mb-1.5 cursor-pointer ${
+                selectedListId === "home" ? "hidden" : ""
+              }`}
               onClick={() => {
                 upsertHelper({
                   id: selectedListId,
-                  pinned_pos: nodeDBMap[selectedListId]?.pinned_pos ? null : Date.now(),
+                  pinned_pos: nodeDBMap[selectedListId]?.pinned_pos
+                    ? null
+                    : Date.now(),
                 });
               }}
             >
@@ -1631,6 +1645,16 @@ function ListContainer(props) {
               ) : (
                 <Tiptap
                   ref={tiptapRef}
+                  liveUrl={
+                    window.location.origin +
+                    "/public/note/" +
+                    nodeDBMap[selectedListId]?.note_id +
+                    "/" +
+                    shortHash(
+                      nodeDBMap[selectedListId]?.note_id,
+                      process.env.REACT_APP_ENCRYPTION_KEY
+                    )
+                  }
                   reviewerMode={false}
                   usecase="list"
                   className="h-full flex-grow p-6"

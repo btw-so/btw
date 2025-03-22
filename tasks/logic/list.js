@@ -149,8 +149,19 @@ async function upsertNode({
     }
 }
 
+async function getPublicNote({ id }) {
+    const pool = await db.getTasksDB();
+    const query = `SELECT id, md, html FROM btw.notes WHERE id = $1`;
+    const rows = await pool.query(query, [id]);
+    if (rows.rows.length === 0) {
+        return null;
+    }
+    return rows.rows[0];
+}
+
 module.exports = {
     getList,
     upsertNode,
     getPinnedNodes,
+    getPublicNote,
 };

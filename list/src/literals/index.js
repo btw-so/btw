@@ -50,6 +50,9 @@ export const ActionTypes = keyMirror({
   GET_PINNED_NODES: undefined,
   GET_PINNED_NODES_SUCCESS: undefined,
   GET_PINNED_NODES_FAILURE: undefined,
+  GET_PUBLIC_NOTE: undefined,
+  GET_PUBLIC_NOTE_SUCCESS: undefined,
+  GET_PUBLIC_NOTE_FAILURE: undefined,
 });
 
 export const STATUS = {
