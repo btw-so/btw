@@ -22,6 +22,7 @@ import PublicRoute from "./components/PublicRoute";
 import PrivateRoute from "./components/PrivateRoute";
 import Settings from "./routes/Settings";
 import List from "./routes/List";
+import PublicNote from "./routes/PublicNote";
 
 function Root() {
   const dispatch = useDispatch();
@@ -65,7 +66,8 @@ function Root() {
   // For some reason, hard refresh on the urls is giving 404 if we use BrowserRouter in production
 
   // const Router = process.env.REACT_APP_ELECTRON ? HashRouter : BrowserRouter;
-  const Router = HashRouter;
+  // const Router = HashRouter;
+  const Router = BrowserRouter;
 
   Helmet.defaultProps.encodeSpecialCharacters = false;
 
@@ -84,6 +86,7 @@ function Root() {
             rel="stylesheet"
           />
         </Helmet>
+
         {/* {isLoggedIn && <Login />} */}
         {/* <Main isAuthenticated={isAuthenticated}> */}
         <Routes className="flex flex-grow">
@@ -159,6 +162,10 @@ function Root() {
               </PublicRoute>
             }
             path="/"
+          />
+          <Route
+            path="/public/note/:id/:hash"
+            element={<PublicNote />}
           />
           <Route element={<NotFound />} path="*" />
         </Routes>

@@ -74,6 +74,7 @@
     "beautiful-react-hooks": "^3.12.2",
     "charenc": "^0.0.2",
     "crypt": "^0.0.2",
+    "crypto-js": "^4.2.0",
     "fuse.js": "^6.6.2",
     "immer": "^9.0.12",
     "is-buffer": "~1.1.6",

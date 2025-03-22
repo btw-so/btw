@@ -104,7 +104,9 @@ class Tiptap extends React.Component {
 
       this.provider = new HocuspocusProvider({
         url: process.env.REACT_APP_YJS_DOMAIN,
-        name: `note.${props.userId}.${props.docId}${props.usecase ? `.${props.usecase}` : ""}`,
+        name: `note.${props.userId}.${props.docId}${
+          props.usecase ? `.${props.usecase}` : ""
+        }`,
         document: ydoc,
         token: `${props.token}:::${genFingerprint()}`,
         onDisconnect: () => {
@@ -331,6 +333,11 @@ class Tiptap extends React.Component {
             {this.state.words || "0"} words
           </div>
         )}
+        {this.props.liveUrl ? (
+          <div className="character-count text-xs text-gray-400">
+            {this.props.liveUrl}
+          </div>
+        ) : null}
         <div
           className={`w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center ${
             this.state.showImageUpload ? "absolute" : "absolute hidden"
