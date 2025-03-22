@@ -1,5 +1,5 @@
 {
-  "homepage": "/",
+  "homepage": ".",
   "name": "react-redux-saga-boilerplate",
   "description": "Boilerplate with React and Redux with Redux Saga",
   "version": "2022.3.0",
