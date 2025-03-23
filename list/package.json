@@ -269,7 +269,7 @@
     "test:e2e:dev": "cypress open",
     "format": "prettier \"**/*.{ts,tsx}\" --write",
     "validate": "npm run typecheck && npm run lint && npm run lint:styles && npm run test:coverage && npm run build && size-limit",
-    "serve": "serve --listen 9300 build",
+    "serve": "serve --listen 9300 --single build",
     "deploy": "node tools deploy",
     "publish": "node tools publish",
     "size": "npm run build && size-limit",
