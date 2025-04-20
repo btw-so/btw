@@ -23,6 +23,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import Settings from "./routes/Settings";
 import List from "./routes/List";
 import PublicNote from "./routes/PublicNote";
+import FourThousandWeeks from "./routes/FourThousandWeeks";
 
 function Root() {
   const dispatch = useDispatch();
@@ -67,7 +68,7 @@ function Root() {
 
   // const Router = process.env.REACT_APP_ELECTRON ? HashRouter : BrowserRouter;
   // const Router = HashRouter;
-  const Router = BrowserRouter;
+  const Router = process.env.NODE_ENV === "development" ? HashRouter : BrowserRouter;
 
   Helmet.defaultProps.encodeSpecialCharacters = false;
 
@@ -166,6 +167,20 @@ function Root() {
           <Route
             path="/public/note/:id/:hash"
             element={<PublicNote />}
+          />
+          <Route
+            className="flex flex-grow"
+            element={
+              <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
+                <FourThousandWeeks
+                  userId={user && user.data ? user.data.id : null}
+                  name={user && user.data ? user.data.name : null}
+                  email={user && user.data ? user.data.email : null}
+                  settings={user && user.data ? user.data.settings : null}
+                />
+              </PrivateRoute>
+            }
+            path="/4000"
           />
           <Route element={<NotFound />} path="*" />
         </Routes>

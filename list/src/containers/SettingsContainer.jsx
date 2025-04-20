@@ -58,8 +58,10 @@ function SettingsContainer(props) {
     ...currentSettings,
     ...{
       links: [...(currentSettings.links || []), { name: "", url: "" }],
+      birthday: currentSettings.birthday || "",
     },
   });
+
 
   useEffect(() => {
     if (changed("user.data.name")) {
@@ -119,7 +121,8 @@ function SettingsContainer(props) {
     JSON.stringify((settings.links || []).filter((x) => x.name || x.url)) !==
       JSON.stringify(
         (currentSettings.links || []).filter((x) => x.name || x.url)
-      );
+      ) ||
+    settings.birthday !== currentSettings.birthday;
 
   return (
     <AppWrapper {...props} settingsPage={true}>
@@ -127,267 +130,28 @@ function SettingsContainer(props) {
         <div className={`flex-grow p-4 flex flex-col overflow-y-scroll`}>
           <div className={`h-4 sm:hidden`}></div>
           <div className="mb-4 max-w-lg">
-            <h2 className="font-extrabold text-lg mb-2">Profile</h2>
-            <label className="block font-bold mb-2" htmlFor="name">
-              Name
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="name"
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-              }}
-            />
-          </div>
-          <div className="mb-4 max-w-lg">
-            <label className="block font-bold -mb-1" htmlFor="slug">
-              Slug
-            </label>
-            <label className="text-xs text-gray-500">
-              Your site will go live on {`${slug || "<slug>"}.btw.so`}
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="slug"
-              type="text"
-              placeholder="Slug"
-              value={slug}
-              onChange={(e) => {
-                setSlug(e.target.value);
-              }}
-            />
-          </div>
-          <div className="mb-4 max-w-lg">
-            <label className="block font-bold mb-2" htmlFor="slug">
-              LinkedIn
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="LinkedIn"
-              type="text"
-              placeholder="LinkedIn"
-              value={linkedin}
-              onChange={(e) => {
-                setLinkedin(e.target.value);
-              }}
-            />
-          </div>
-          <div className="mb-4 max-w-lg">
-            <label className="block font-bold mb-2" htmlFor="slug">
-              Twitter
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="twitter"
-              type="text"
-              placeholder="Twitter"
-              value={twitter}
-              onChange={(e) => {
-                setTwitter(e.target.value);
-              }}
-            />
-          </div>
-          <div className="mb-4 max-w-lg">
-            <label className="block font-bold mb-2" htmlFor="slug">
-              Instagram
-            </label>
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              id="instagram"
-              type="text"
-              placeholder="Instagram"
-              value={instagram}
-              onChange={(e) => {
-                setInstagram(e.target.value);
-              }}
-            />
-          </div>
-          <div className="mb-4 max-w-lg">
-            <label className="block font-bold mb-2" htmlFor="slug">
-              Bio
-            </label>
-            <div
-              type="text"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            >
-              <Tiptap
-                ref={bioRef}
-                content={bio}
-                onChange={(html) => {
-                  setBio(html);
-                }}
-                customMenu={{
-                  items: ["Link"],
-                }}
-                hideCharacterCount={true}
-              />
-            </div>
-          </div>
-          <div className="mb-4 max-w-lg">
-            <label className="block font-bold mb-2" htmlFor="pic">
-              Picture
-            </label>
-            <div className="">
-              <img
-                src={pic || "https://dummyimage.com/300"}
-                onClick={() => {
-                  setShowPicUploader(true);
-                }}
-              />
-              <div className="mt-2">
-                <div
-                  className={`w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center ${
-                    showPicUploader ? "absolute" : "absolute hidden"
-                  }`}
-                  onClick={() => {
-                    setShowPicUploader(false);
-                  }}
-                >
-                  <div
-                    className=""
-                    onClick={(e) => {
-                      e.stopPropagation();
+            <div className="mb-4 max-w-lg">
+              <div className="">
+                <div className="mt-4">
+                  <label className="block font-bold mb-2" htmlFor="birthday">
+                    Birthday
+                  </label>
+                  <input
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    id="birthday"
+                    type="date"
+                    value={settings.birthday || ""}
+                    onChange={(e) => {
+                      setSettings({
+                        ...settings,
+                        birthday: e.target.value,
+                      });
                     }}
-                  >
-                    <UppyComponent
-                      maxNumberOfFiles={1}
-                      allowedFileTypes={["image/*"]}
-                      allowMultipleUploads={false}
-                      folder={`list/${props.userId}/profile`}
-                      onResults={(res) => {
-                        let url =
-                          res.urls && res.urls.length > 0 ? res.urls[0] : "";
-
-                        if (url) {
-                          if (process.env.REACT_APP_S3_ENDPOINT) {
-                            url = url
-                              .split(
-                                `${process.env.REACT_APP_S3_ENDPOINT}/${process.env.REACT_APP_S3_ENDPOINT}`
-                              )
-                              .join(process.env.REACT_APP_S3_ENDPOINT);
-                          }
-
-                          setPic(url);
-                        }
-
-                        setShowPicUploader(false);
-                      }}
-                    />
-                  </div>
+                  />
                 </div>
               </div>
             </div>
-            {isUserPro ? (
-              <div className="mb-4 max-w-lg">
-                <label className="block font-bold mb-2" htmlFor="pic">
-                  Site settings
-                </label>
-                <div className="">
-                  <Switch.Group as="div" className="flex items-center">
-                    <Switch
-                      checked={settings.removeImagesInMainPage}
-                      onChange={() => {
-                        setSettings({
-                          ...settings,
-                          removeImagesInMainPage:
-                            !settings.removeImagesInMainPage,
-                        });
-                      }}
-                      className={`${
-                        settings.removeImagesInMainPage
-                          ? "bg-blue-600"
-                          : "bg-gray-200"
-                      } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2`}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className={`${
-                          settings.removeImagesInMainPage
-                            ? "translate-x-5"
-                            : "translate-x-0"
-                        } mt-0.5 ml-0.5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-                      />
-                    </Switch>
-                    <Switch.Label as="span" className="ml-1.5 text-sm">
-                      <span className="font-medium text-gray-900">
-                        Remove images from main page
-                      </span>
-                    </Switch.Label>
-                  </Switch.Group>
-                </div>
-              </div>
-            ) : null}
-            {isAdmin ? (
-              <div className="mb-4 max-w-lg">
-                <label className="block font-bold mb-2" htmlFor="slug">
-                  Links
-                </label>
-                <div className="flex flex-col space-y-2">
-                  {(settings.links || []).map(({ name, url }, i) => {
-                    return (
-                      <div key={i} className="flex items-center space-x-2">
-                        <input
-                          className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                          type="text"
-                          placeholder="Name"
-                          value={name}
-                          onChange={(e) => {
-                            setSettings({
-                              ...settings,
-                              links: [
-                                ...settings.links.map((link, j) => {
-                                  if (j === i) {
-                                    return {
-                                      ...link,
-                                      name: e.target.value,
-                                    };
-                                  }
 
-                                  return link;
-                                }),
-                                ...(i === settings.links.length - 1
-                                  ? [
-                                      {
-                                        name: "",
-                                        url: "",
-                                      },
-                                    ]
-                                  : []),
-                              ],
-                            });
-                          }}
-                        />
-                        <span>⇢</span>
-                        <input
-                          className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                          type="text"
-                          placeholder="URL"
-                          value={url}
-                          onChange={(e) => {
-                            setSettings({
-                              ...settings,
-                              links: settings.links.map((link, j) => {
-                                if (j === i) {
-                                  return {
-                                    ...link,
-                                    url: e.target.value,
-                                  };
-                                }
-
-                                return link;
-                              }),
-                            });
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
             <div className="flex mt-2 items-center justify-between">
               <button
                 className={`flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm ${
@@ -418,6 +182,7 @@ function SettingsContainer(props) {
                         links: settings.links.filter(
                           (link) => link.name && link.url
                         ),
+                        birthday: settings.birthday,
                       },
                     })
                   );
@@ -448,8 +213,6 @@ function SettingsContainer(props) {
                 Save
               </button>
             </div>
-
-
 
             {/* <UppyComponent
             onResults={(res) => {
