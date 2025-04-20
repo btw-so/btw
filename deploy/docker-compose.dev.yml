@@ -73,6 +73,7 @@ services:
             - ../list/build:/list/build
             - ../list/package.json:/list/package.json
             - ../list/tsconfig.json:/list/tsconfig.json
+            - ../list/tailwind.config.js:/list/tailwind.config.js
         working_dir: /list
         ports:
             - "9300:9300"

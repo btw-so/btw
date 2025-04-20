@@ -4,12 +4,14 @@ import useCookie from "../hooks/useCookie";
 import { useAppSelector } from "modules/hooks";
 import useInterval from "beautiful-react-hooks/useInterval";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { STATUS } from "../literals";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { changeSelectedNode, getPinnedNodes, upsertListNode, batchPushNodes } from "../actions";
 
 function Sidebar(props) {
+  const location = useLocation();
+  const is4000Page = location.pathname === '/4000';
   const [token, setToken] = useCookie(
     process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
     ""
@@ -167,19 +169,33 @@ function Sidebar(props) {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-                  // dispatch(
-                  //   searchNotes({
-                  //     query: e.target.value,
-                  //   })
-                  // );
                 }}
               />
             </div>
           </div>
         </div>
         <div className="flex-grow overflow-y-auto">
+          {/* Fixed 4000 Weeks node */}
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => {
+              navigate('/4000');
+            }}
+          >
+            <span className="mr-2 pt-0.5 mb-1">
+              <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
+            </span>
+            <span
+              className={`overflow-hidden text-ellipsis truncate ${
+                is4000Page ? "font-black text-blue-500" : "font-bold"
+              }`}
+            >
+              4000 Weeks
+            </span>
+          </div>
+
+          {/* Existing pinned nodes */}
           {pinnedNodes.data.map((node) => {
-            // Check if this is the first node in the sorted list
             const sortedNodes = [...pinnedNodes.data].sort((a, b) => a.pinned_pos - b.pinned_pos);
             const isFirstNode = sortedNodes.length > 0 && sortedNodes[0].id === node.id;
             
@@ -205,7 +221,7 @@ function Sidebar(props) {
                 </span>
                 <span
                   className={`overflow-hidden text-ellipsis truncate ${
-                    node.id === selectedListId
+                    node.id === selectedListId && !is4000Page
                       ? "font-black text-blue-500"
                       : "font-bold"
                   }`}
