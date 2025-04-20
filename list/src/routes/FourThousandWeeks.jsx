@@ -39,11 +39,29 @@ function FourThousandWeeks({ userId, settings, name, email }) {
   // Calculate weeks lived if birthday is set
   const getWeeksLived = () => {
     if (!birthday) return 0;
+  
     const birthDate = new Date(birthday);
     const today = new Date();
-    const diffTime = Math.abs(today - birthDate);
-    const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-    return Math.min(diffWeeks, WEEKS_IN_LIFE);
+    
+    // Calculate total weeks lived
+    const msInWeek = 1000 * 60 * 60 * 24 * 7;
+    const totalWeeksLived = Math.floor((today - birthDate) / msInWeek);
+    
+    // Get the birthday for this year
+    const thisYearBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+    
+    // If birthday hasn't occurred this year yet, use last year's birthday as reference
+    if (today < thisYearBirthday) {
+      thisYearBirthday.setFullYear(thisYearBirthday.getFullYear() - 1);
+    }
+    
+    // Calculate weeks since last birthday
+    const weeksSinceLastBirthday = Math.floor((today - thisYearBirthday) / msInWeek);
+    
+    return {
+      totalWeeks: Math.min(totalWeeksLived, WEEKS_IN_LIFE),
+      currentWeek: weeksSinceLastBirthday
+    };
   };
 
   useEffect(() => {
@@ -61,9 +79,10 @@ function FourThousandWeeks({ userId, settings, name, email }) {
     }
   }, [birthday, settings, dispatch]);
 
-  const weeksLived = getWeeksLived();
+  const weeksLivedData = getWeeksLived();
+  const weeksLived = weeksLivedData.totalWeeks;
   const currentYear = Math.floor(weeksLived / WEEKS_PER_YEAR);
-  const currentWeek = weeksLived % WEEKS_PER_YEAR;
+  const currentWeek = weeksLivedData.currentWeek;
   const totalYears = 77;
   const maxTotalWeeks = 4000;
 
@@ -177,7 +196,8 @@ function FourThousandWeeks({ userId, settings, name, email }) {
                         }
 
                         const weekNumber = year * WEEKS_PER_YEAR + week;
-                        const isLived = weekNumber < weeksLived;
+                        // Check if this square is in a past year or in current year but within weeks lived
+                        const isLived = year < currentYear || (year === currentYear && week <= currentWeek);
                         if (weekNumber > maxTotalWeeks) return null;
                         return (
                           <div
