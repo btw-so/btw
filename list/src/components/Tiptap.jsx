@@ -316,7 +316,7 @@ class Tiptap extends React.Component {
               .run(); // add a new embed element
           }}
         />
-        <div className="tiptap-editor flex flex-col flex-grow overflow-y-auto overflow-x-auto">
+        <div className="tiptap-editor flex flex-col flex-grow overflow-y-auto overflow-x-auto mt-4">
           <EditorContent
             editor={this.editor}
             className="flex-grow max-w-4xl overflow-x-hidden small-scrollbar"
