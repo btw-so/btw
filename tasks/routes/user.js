@@ -192,6 +192,10 @@ router.post(
                 fingerprint,
             });
 
+            if (!user) {
+                throw new Error("User not found");
+            }
+
             res.json(
                 await setUserDetails({
                     user_id: user.id,
@@ -240,6 +244,10 @@ router.post(
                 token,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             res.send(
                 await addUserDomain({

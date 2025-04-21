@@ -56,6 +56,10 @@ router.post(
                 fingerprint,
             });
 
+            if (!user) {
+                throw new Error("User not found");
+            }
+
             (urls || []).map((url) => {
                 importNote({
                     user_id: user.id,
@@ -110,6 +114,11 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
             const note = await getNote({
                 user_id: user.id,
                 id,
@@ -155,6 +164,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             if (!Number(process.env.TURN_OFF_SINGLE_USER_MODE)) {
                 // single user mode.
@@ -235,6 +248,10 @@ router.post(
                 fingerprint,
             });
 
+            if (!user) {
+                throw new Error("User not found");
+            }
+
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators
             if (user.id !== user_id) {
@@ -292,6 +309,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators
@@ -354,6 +375,10 @@ router.post(
                 fingerprint,
             });
 
+            if (!user) {
+                throw new Error("User not found");
+            }
+
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators
             if (user.id !== user_id) {
@@ -413,6 +438,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators
@@ -474,6 +503,10 @@ router.post(
                 fingerprint,
             });
 
+            if (!user) {
+                throw new Error("User not found");
+            }
+
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators
             if (user.id !== user_id) {
@@ -533,6 +566,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators
