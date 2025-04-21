@@ -56,7 +56,7 @@ function FourThousandWeeks({ userId, settings, name, email }) {
     }
     
     // Calculate weeks since last birthday
-    const weeksSinceLastBirthday = Math.floor((today - thisYearBirthday) / msInWeek);
+    const weeksSinceLastBirthday = Math.ceil((today - thisYearBirthday) / msInWeek);
     
     return {
       totalWeeks: Math.min(totalWeeksLived, WEEKS_IN_LIFE),
@@ -110,7 +110,7 @@ function FourThousandWeeks({ userId, settings, name, email }) {
               <div className="absolute -left-6 top-4">
                 <div className="relative">
                   <span className="text-sm inline-block origin-top-right -rotate-90 translate-x-[-100%] whitespace-nowrap">Year</span>
-                  <span className="text-sm block mt-1 ml-[5px]">↓</span>
+                  <span className="text-sm block mt-1 ml-[8px]">↓</span>
                 </div>
               </div>
 
