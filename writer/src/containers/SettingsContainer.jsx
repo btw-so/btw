@@ -58,6 +58,7 @@ function SettingsContainer(props) {
     ...currentSettings,
     ...{
       links: [...(currentSettings.links || []), { name: "", url: "" }],
+      birthday: currentSettings.birthday || "",
     },
   });
 
