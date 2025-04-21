@@ -32,6 +32,8 @@ import {
   getPinnedNodesFailure,
   getPublicNoteSuccess,
   getPublicNoteFailure,
+  searchNodesSuccess,
+  searchNodesFailure,
 } from "../actions";
 
 async function getServerTime({ attempts = 1 }) {
@@ -89,7 +91,7 @@ export function* getPinnedNodesSaga({ payload }) {
   const { user_id } = payload;
 
   const fingerprint = yield call(getFingerPrint);
-  
+
   try {
     const { data: res } = yield call(() =>
       axiosInstance.request({
@@ -278,11 +280,38 @@ export function* getPublicNoteSaga({ payload }) {
   }
 }
 
+export function* searchNodesSaga({ payload }) {
+  const { user_id, query, limit = 50, page = 1 } = payload;
+  const fingerprint = yield call(getFingerPrint);
+
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/list/search`,
+        method: "POST",
+        data: {
+          user_id,
+          query,
+          limit,
+          page,
+          fingerprint,
+        },
+      })
+    );
+
+    yield put(searchNodesSuccess({ data: res.data }));
+  } catch (e) {
+    console.log(e);
+    yield put(searchNodesFailure({ error: "Something went wrong" }));
+  }
+}
+
 export default function* root() {
   yield all([
     takeEvery(ActionTypes.GET_LIST, getListSaga),
     takeEvery(ActionTypes.BATCH_PUSH_NODES, batchPushNodesSaga),
     takeEvery(ActionTypes.GET_PINNED_NODES, getPinnedNodesSaga),
     takeEvery(ActionTypes.GET_PUBLIC_NOTE, getPublicNoteSaga),
+    takeEvery(ActionTypes.SEARCH_NODES, searchNodesSaga),
   ]);
 }

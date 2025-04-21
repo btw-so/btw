@@ -87,7 +87,7 @@ function FourThousandWeeks({ userId, settings, name, email }) {
   const maxTotalWeeks = 4000;
 
   return (
-    <AppWrapper userId={userId} name={name} email={email}>
+    <AppWrapper userId={userId} name={name} email={email} isListPage={false} is4000Page={true}>
       <div className="flex-grow flex flex-col md:flex-row border-t-2 border-gray-200 max-w-screen-2xl overflow-y-auto">
         <div className="flex flex-col h-full md:w-full max-w-screen-md">
           <div className="px-8 py-6 overflow-x-visible">
@@ -99,7 +99,7 @@ function FourThousandWeeks({ userId, settings, name, email }) {
               </p>
             </div>
 
-            <div className="bg-white gap-0 md:gap-0.5 flex flex-col mt-4 overflow-x-visible relative mt-10 ml-0">
+            <div className="bg-white gap-0 md:gap-0.5 flex flex-col mt-10 overflow-x-visible relative ml-0">
               {/* Week label and arrow */}
               <div className="absolute -top-5 left-8 flex items-center -ml-5">
                 <span className="text-sm mr-1">Week</span>

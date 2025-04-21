@@ -28,6 +28,9 @@ import {
   getPublicNote,
   getPublicNoteSuccess,
   getPublicNoteFailure,
+  searchNodes,
+  searchNodesSuccess,
+  searchNodesFailure,
 } from "actions";
 
 export const listState = {
@@ -69,6 +72,11 @@ export const listState = {
     error: null,
   },
   publicNote: {
+    status: STATUS.IDLE,
+    data: {},
+    error: null,
+  },
+  searchNodes: {
     status: STATUS.IDLE,
     data: {},
     error: null,
@@ -145,6 +153,22 @@ export default {
           (x) => x.id !== payload.id
         );
       }
+    });
+
+    builder.addCase(searchNodes, (draft, { payload }) => {
+      draft.searchNodes.status = STATUS.RUNNING;
+      draft.searchNodes.error = null;
+      draft.searchNodes.data = {};
+    });
+
+    builder.addCase(searchNodesSuccess, (draft, { payload }) => {
+      draft.searchNodes.status = STATUS.SUCCESS;
+      draft.searchNodes.data = payload.data;
+    });
+
+    builder.addCase(searchNodesFailure, (draft, { payload }) => {
+      draft.searchNodes.status = STATUS.ERROR;
+      draft.searchNodes.error = payload.error;
     });
 
     builder.addCase(getPublicNote, (draft, { payload }) => {

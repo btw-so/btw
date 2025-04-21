@@ -98,3 +98,24 @@ export const getPublicNoteFailure = createAction(
     payload: data,
   })
 );
+
+export const searchNodes = createAction(
+  ActionTypes.SEARCH_NODES,
+  (data) => ({
+    payload: data,
+  })
+);
+
+export const searchNodesSuccess = createAction(
+  ActionTypes.SEARCH_NODES_SUCCESS,
+  (data) => ({
+    payload: data,
+  })
+);
+
+export const searchNodesFailure = createAction(
+  ActionTypes.SEARCH_NODES_FAILURE,
+  (data) => ({
+    payload: data,
+  })
+);

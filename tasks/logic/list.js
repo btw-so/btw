@@ -7,6 +7,18 @@ const { JSDOM } = require("jsdom");
 const turndown = require("turndown")();
 const axios = require("axios");
 
+async function searchNodes({ user_id, query, limit = 50, page = 1 }) {
+    const pool = await db.getTasksDB();
+    const pquery = `SELECT * FROM btw.nodes WHERE user_id = $1 AND text ILIKE $2 LIMIT $3 OFFSET $4`;
+    const rows = await pool.query(pquery, [
+        user_id,
+        `%${query}%`,
+        limit,
+        (page - 1) * limit,
+    ]);
+    return rows.rows;
+}
+
 async function getPinnedNodes({ user_id }) {
     const pool = await db.getTasksDB();
     const query = `SELECT * FROM btw.nodes WHERE user_id = $1 AND pinned_pos IS NOT NULL AND parent_id <> 'limbo' ORDER BY pinned_pos ASC LIMIT 100`;
@@ -156,7 +168,17 @@ async function getPublicNote({ id }) {
     if (rows.rows.length === 0) {
         return null;
     }
-    return rows.rows[0];
+
+    const note = rows.rows[0];
+
+    // get the correspnding node with note_id = id
+    // we want to send the text of the node
+    // and the html of the note
+    const nodeQuery = `SELECT text FROM btw.nodes WHERE note_id = $1`;
+    const nodeRows = await pool.query(nodeQuery, [id]);
+    const node = nodeRows.rows[0];
+
+    return { ...note, heading: node.text };
 }
 
 module.exports = {
@@ -164,4 +186,5 @@ module.exports = {
     upsertNode,
     getPinnedNodes,
     getPublicNote,
+    searchNodes,
 };

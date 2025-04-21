@@ -21,8 +21,6 @@ function PublicNoteContainer() {
     dispatch(getPublicNote({ id, hash }));
   }, [id, hash]);
 
-  console.log(list);
-
   return (
     <div key="PublicNote" data-testid="PublicNote">
       <>
@@ -32,15 +30,17 @@ function PublicNoteContainer() {
           </div>
         </header>
         <div className="container mx-auto my-12 max-w-2xl tiptap-editor">
-            <div className="text-2xl font-bold"></div>
-            <div className="text-sm text-gray-500">
-              <div
-                className="prose"
-                dangerouslySetInnerHTML={{
-                  __html: list.publicNote?.data?.html,
-                }}
-              />
-            </div>
+          <div className="text-xl font-bold">
+            {list.publicNote?.data?.heading}
+          </div>
+          <div className="text-sm text-gray-500">
+            <div
+              className="prose"
+              dangerouslySetInnerHTML={{
+                __html: list.publicNote?.data?.html,
+              }}
+            />
+          </div>
         </div>
       </>
     </div>

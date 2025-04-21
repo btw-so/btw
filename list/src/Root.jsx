@@ -68,7 +68,7 @@ function Root() {
 
   // const Router = process.env.REACT_APP_ELECTRON ? HashRouter : BrowserRouter;
   // const Router = HashRouter;
-  const Router = process.env.NODE_ENV === "development" ? HashRouter : BrowserRouter;
+  const Router = BrowserRouter;
 
   Helmet.defaultProps.encodeSpecialCharacters = false;
 
@@ -91,6 +91,23 @@ function Root() {
         {/* {isLoggedIn && <Login />} */}
         {/* <Main isAuthenticated={isAuthenticated}> */}
         <Routes className="flex flex-grow">
+          <Route path="/public/note/:id/:hash" element={<PublicNote />} />
+          <Route
+            element={
+              <PublicRoute isLoggedIn={isLoggedIn} to="/4000">
+                <Login />
+              </PublicRoute>
+            }
+            path="/login"
+          />
+          <Route
+            element={
+              <PublicRoute isLoggedIn={isLoggedIn} to="/4000">
+                <Login />
+              </PublicRoute>
+            }
+            path="/"
+          />
           <Route
             className="flex flex-grow"
             element={
@@ -109,6 +126,7 @@ function Root() {
                       "deepti.vchopra@gmail.com",
                     ].includes(user.data.email)
                   }
+                  isListPage={true}
                 />
               </PrivateRoute>
             }
@@ -149,26 +167,6 @@ function Root() {
             path="/settings"
           />
           <Route
-            element={
-              <PublicRoute isLoggedIn={isLoggedIn} to="/list">
-                <Login />
-              </PublicRoute>
-            }
-            path="/login"
-          />
-          <Route
-            element={
-              <PublicRoute isLoggedIn={isLoggedIn} to="/list">
-                <Login />
-              </PublicRoute>
-            }
-            path="/"
-          />
-          <Route
-            path="/public/note/:id/:hash"
-            element={<PublicNote />}
-          />
-          <Route
             className="flex flex-grow"
             element={
               <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
@@ -177,6 +175,7 @@ function Root() {
                   name={user && user.data ? user.data.name : null}
                   email={user && user.data ? user.data.email : null}
                   settings={user && user.data ? user.data.settings : null}
+                  is4000Page={true}
                 />
               </PrivateRoute>
             }
