@@ -24,13 +24,8 @@ function PublicNoteContainer() {
   return (
     <div key="PublicNote" data-testid="PublicNote">
       <>
-        <header className="container mx-auto py-6 px-4">
-          <div className="flex items-center">
-            <img src="/media/images/btw-logo.png" alt="Logo" className="h-4" />
-          </div>
-        </header>
-        <div className="container mx-auto my-12 max-w-2xl tiptap-editor">
-          <div className="text-xl font-bold">
+        <div className="container mx-auto px-6 py-6 max-w-2xl tiptap-editor">
+          <div className="text-xl font-bold mb-1">
             {list.publicNote?.data?.heading}
           </div>
           <div className="text-sm text-gray-500">
