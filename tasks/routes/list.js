@@ -2,7 +2,7 @@ var express = require("express");
 var router = express.Router();
 var cors = require("cors");
 var { getUserFromToken, doesLoginTokenExist } = require("../logic/user");
-var { getList, getPublicNote, upsertNode, getPinnedNodes } = require("../logic/list");
+var { getList, getPublicNote, upsertNode, getPinnedNodes, searchNodes } = require("../logic/list");
 var crypto = require("crypto");
 
 router.options(
@@ -257,4 +257,79 @@ router.post(
         });
     }
 );
+
+router.options(
+    "/search",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/search",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, query, limit = 50, page = 1 } = req.body || {};
+
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        let user;
+
+        try {
+            user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!Number(process.env.TURN_OFF_SINGLE_USER_MODE)) {
+                // single user mode.
+                if (!loginToken || !user) {
+                    res.json({
+                        success: false,
+                        isLoggedIn: false,
+                    });
+                    return;
+                } else {
+                    const exists = await doesLoginTokenExist({
+                        token: loginToken,
+                        fingerprint,
+                    });
+
+                    if (!exists) {
+                        res.json({
+                            success: false,
+                            isLoggedIn: false,
+                        });
+                        return;
+                    }
+                }
+            }
+
+            const nodes = await searchNodes({
+                user_id: user.id,
+                query,
+                limit,
+                page,
+            });
+
+            res.json({
+                success: true,
+                data: { nodes },
+                isLoggedIn: !!user,
+            });
+        } catch (e) {
+            console.log("error", e);
+            res.json({
+                success: false,
+                error: e,
+                isLoggedIn: !!user,
+            });
+            return;
+        }
+    }
+);
+
 module.exports = router;

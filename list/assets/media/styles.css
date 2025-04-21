@@ -1551,8 +1551,16 @@ input[type="number"]::-webkit-inner-spin-button,
   left: -1rem;
 }
 
+.-left-6 {
+  left: -1.5rem;
+}
+
 .-top-0 {
   top: -0px;
+}
+
+.-top-5 {
+  top: -1.25rem;
 }
 
 .bottom-0 {
@@ -1567,6 +1575,10 @@ input[type="number"]::-webkit-inner-spin-button,
   left: 1rem;
 }
 
+.left-8 {
+  left: 2rem;
+}
+
 .right-0 {
   right: 0px;
 }
@@ -1577,46 +1589,6 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .top-2 {
   top: 0.5rem;
-}
-
-.-left-6 {
-  left: -1.5rem;
-}
-
-.-left-\[2px\] {
-  left: -2px;
-}
-
-.-top-6 {
-  top: -1.5rem;
-}
-
-.-top-\[2px\] {
-  top: -2px;
-}
-
-.left-8 {
-  left: 2rem;
-}
-
-.left-\[2px\] {
-  left: 2px;
-}
-
-.top-8 {
-  top: 2rem;
-}
-
-.top-\[2px\] {
-  top: 2px;
-}
-
-.-left-8 {
-  left: -2rem;
-}
-
-.-top-5 {
-  top: -1.25rem;
 }
 
 .top-4 {
@@ -1635,10 +1607,6 @@ input[type="number"]::-webkit-inner-spin-button,
   margin: 0.5rem;
 }
 
-.m-1 {
-  margin: 0.25rem;
-}
-
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -1649,8 +1617,20 @@ input[type="number"]::-webkit-inner-spin-button,
   margin-bottom: 3rem;
 }
 
+.-mb-1 {
+  margin-bottom: -0.25rem;
+}
+
 .-ml-1 {
   margin-left: -0.25rem;
+}
+
+.-ml-5 {
+  margin-left: -1.25rem;
+}
+
+.-mt-0\.5 {
+  margin-top: -0.125rem;
 }
 
 .mb-1 {
@@ -1673,12 +1653,20 @@ input[type="number"]::-webkit-inner-spin-button,
   margin-bottom: 2rem;
 }
 
+.ml-0 {
+  margin-left: 0px;
+}
+
 .ml-1 {
   margin-left: 0.25rem;
 }
 
 .ml-3 {
   margin-left: 0.75rem;
+}
+
+.ml-\[5px\] {
+  margin-left: 5px;
 }
 
 .mr-1 {
@@ -1693,6 +1681,10 @@ input[type="number"]::-webkit-inner-spin-button,
   margin-right: 0.75rem;
 }
 
+.mt-0 {
+  margin-top: 0px;
+}
+
 .mt-0\.5 {
   margin-top: 0.125rem;
 }
@@ -1701,76 +1693,16 @@ input[type="number"]::-webkit-inner-spin-button,
   margin-top: 0.25rem;
 }
 
+.mt-10 {
+  margin-top: 2.5rem;
+}
+
 .mt-2 {
   margin-top: 0.5rem;
 }
 
 .mt-4 {
   margin-top: 1rem;
-}
-
-.-mb-1 {
-  margin-bottom: -0.25rem;
-}
-
-.-mb-2 {
-  margin-bottom: -0.5rem;
-}
-
-.-mt-1 {
-  margin-top: -0.25rem;
-}
-
-.-mt-0\.5 {
-  margin-top: -0.125rem;
-}
-
-.mt-10 {
-  margin-top: 2.5rem;
-}
-
-.ml-10 {
-  margin-left: 2.5rem;
-}
-
-.ml-\[3px\] {
-  margin-left: 3px;
-}
-
-.-ml-2 {
-  margin-left: -0.5rem;
-}
-
-.-ml-4 {
-  margin-left: -1rem;
-}
-
-.-ml-6 {
-  margin-left: -1.5rem;
-}
-
-.-ml-5 {
-  margin-left: -1.25rem;
-}
-
-.ml-\[0px\] {
-  margin-left: 0px;
-}
-
-.ml-\[5px\] {
-  margin-left: 5px;
-}
-
-.ml-5 {
-  margin-left: 1.25rem;
-}
-
-.ml-0 {
-  margin-left: 0px;
-}
-
-.mt-0 {
-  margin-top: 0px;
 }
 
 .block {
@@ -1837,10 +1769,6 @@ input[type="number"]::-webkit-inner-spin-button,
   height: 100%;
 }
 
-.h-\[1px\] {
-  height: 1px;
-}
-
 .max-h-16 {
   max-height: 4rem;
 }
@@ -1885,14 +1813,6 @@ input[type="number"]::-webkit-inner-spin-button,
   width: 100%;
 }
 
-.w-2 {
-  width: 0.5rem;
-}
-
-.w-\[1px\] {
-  width: 1px;
-}
-
 .max-w-2xl {
   max-width: 42rem;
 }
@@ -1913,12 +1833,12 @@ input[type="number"]::-webkit-inner-spin-button,
   max-width: 32rem;
 }
 
-.max-w-screen-md {
-  max-width: 768px;
-}
-
 .max-w-screen-2xl {
   max-width: 1536px;
+}
+
+.max-w-screen-md {
+  max-width: 768px;
 }
 
 .flex-1 {
@@ -1937,34 +1857,12 @@ input[type="number"]::-webkit-inner-spin-button,
   flex-grow: 1;
 }
 
-.origin-bottom {
-  transform-origin: bottom;
-}
-
-.origin-right {
-  transform-origin: right;
-}
-
-.origin-top-left {
-  transform-origin: top left;
-}
-
 .origin-top-right {
   transform-origin: top right;
 }
 
 .translate-x-\[-100\%\] {
   --tw-translate-x: -100%;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.-rotate-45 {
-  --tw-rotate: -45deg;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.rotate-45 {
-  --tw-rotate: 45deg;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
@@ -2033,10 +1931,6 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .justify-between {
   justify-content: space-between;
-}
-
-.gap-0\.5 {
-  gap: 0.125rem;
 }
 
 .gap-0 {
@@ -2133,10 +2027,6 @@ input[type="number"]::-webkit-inner-spin-button,
   border-width: 2px;
 }
 
-.border-b {
-  border-bottom-width: 1px;
-}
-
 .border-b-2 {
   border-bottom-width: 2px;
 }
@@ -2173,9 +2063,8 @@ input[type="number"]::-webkit-inner-spin-button,
   background-color: rgb(255 255 255 / 0.3);
 }
 
-.bg-gray-900 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(17 24 39 / var(--tw-bg-opacity, 1));
+.p-1 {
+  padding: 0.25rem;
 }
 
 .p-2 {
@@ -2192,18 +2081,6 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .p-8 {
   padding: 2rem;
-}
-
-.p-1 {
-  padding: 0.25rem;
-}
-
-.p-0 {
-  padding: 0px;
-}
-
-.p-0\.5 {
-  padding: 0.125rem;
 }
 
 .px-3 {
@@ -2239,10 +2116,6 @@ input[type="number"]::-webkit-inner-spin-button,
 .py-6 {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
-}
-
-.pb-1 {
-  padding-bottom: 0.25rem;
 }
 
 .pb-2 {
@@ -2549,7 +2422,7 @@ div:focus-visible {
 
 html,
 body {
-  font-family:  "Satoshi", sans-serif;
+  font-family: "Circular", "Satoshi", sans-serif;
 }
 
 .tiptap-editor li p {
@@ -2956,6 +2829,109 @@ hr.ProseMirror-selectednode {
 .uppy-parent .uppy-Dashboard-inner {
   height: 100% !important;
   min-height: unset !important;
+  font-family: "Circular", "Satoshi", sans-serif;
+}
+
+/* Circular fonts */
+
+@font-face {
+  font-family: 'Circular';
+
+  src: url('/media/fonts/Circular/CircularStd-Book.otf') format('opentype');
+
+  font-weight: 400;
+
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+
+  src: url('/media/fonts/Circular/CircularStd-BookItalic.otf') format('opentype');
+
+  font-weight: 400;
+
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+
+  src: url('/media/fonts/Circular/CircularStd-Light.otf') format('opentype');
+
+  font-weight: 300;
+
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+
+  src: url('/media/fonts/Circular/CircularStd-Light Italic.otf') format('opentype');
+
+  font-weight: 300;
+
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+
+  src: url('/media/fonts/Circular/CircularStd-Medium.otf') format('opentype');
+
+  font-weight: 500;
+
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+
+  src: url('/media/fonts/Circular/CircularStd-MediumItalic.otf') format('opentype');
+
+  font-weight: 500;
+
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+
+  src: url('/media/fonts/Circular/CircularStd-Bold.otf') format('opentype');
+
+  font-weight: 700;
+
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+
+  src: url('/media/fonts/Circular/CircularStd-BoldItalic.otf') format('opentype');
+
+  font-weight: 700;
+
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+
+  src: url('/media/fonts/Circular/CircularStd-Black.otf') format('opentype');
+
+  font-weight: 900;
+
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+
+  src: url('/media/fonts/Circular/CircularStd-BlackItalic.otf') format('opentype');
+
+  font-weight: 900;
+
+  font-style: italic;
 }
 
 @media (min-width: 1024px) {
@@ -3378,3 +3354,15 @@ hr.ProseMirror-selectednode {
     padding-right: 1.5rem;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+

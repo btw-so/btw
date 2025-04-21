@@ -739,7 +739,7 @@ const Node = ({
         }}
       >
         <ContentEditable
-          classes={`leading-6 max-w-2xl font-medium ${
+          classes={`leading-6 max-w-2xl ${
             node.checked ? "text-gray-500 " : ""
           }`}
           id={node.id}
@@ -1386,7 +1386,7 @@ function ListContainer(props) {
                           })
                         );
                       }}
-                      className="text-sm font-medium text-gray-500 hover:text-gray-700 cursor-pointer"
+                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
                     >
                       {nodeDBMap[thirdParentOfCurrentSelection].text}
                     </a>
@@ -1407,7 +1407,7 @@ function ListContainer(props) {
                           })
                         );
                       }}
-                      className="text-sm font-medium text-gray-500 hover:text-gray-700 cursor-pointer"
+                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
                     >
                       {nodeDBMap[secondParentOfCurrentSelection].text}
                     </a>
@@ -1428,7 +1428,7 @@ function ListContainer(props) {
                           })
                         );
                       }}
-                      className="text-sm font-medium text-gray-500 hover:text-gray-700 cursor-pointer"
+                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
                     >
                       {nodeDBMap[firstParentOfCurrentSelection].text}
                     </a>
@@ -1565,7 +1565,7 @@ function ListContainer(props) {
               <div
                 className="h-16 overflow-y-hidden max-h-16 opacity-50 uppy-parent"
                 style={{
-                  fontFamily: "Satoshi !important",
+                  fontFamily: "Circular, Satoshi !important",
                 }}
               >
                 <UppyComponent
@@ -1631,7 +1631,7 @@ function ListContainer(props) {
                 />
               </div>
             </div>
-            <div className="flex flex-col h-full overflow-y-auto md:flex-grow text-black font-medium md:p-4">
+            <div className="flex flex-col h-full overflow-y-auto md:flex-grow text-black md:p-4">
               {nodeDBMap[selectedListId]?.file_id ? (
                 <FileWrapper
                   fileLoading={fileLoading}

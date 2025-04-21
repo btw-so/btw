@@ -7,11 +7,18 @@ import { useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { STATUS } from "../literals";
 import useLocalStorage from "../hooks/useLocalStorage";
-import { changeSelectedNode, getPinnedNodes, upsertListNode, batchPushNodes } from "../actions";
+import {
+  changeSelectedNode,
+  getPinnedNodes,
+  upsertListNode,
+  batchPushNodes,
+  searchNodes,
+} from "../actions";
 
 function Sidebar(props) {
   const location = useLocation();
-  const is4000Page = location.pathname === '/4000';
+  const is4000Page = !!props.is4000Page;
+  const isListPage = !!props.isListPage;
   const [token, setToken] = useCookie(
     process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
     ""
@@ -23,6 +30,7 @@ function Sidebar(props) {
   const selectedListId = useAppSelector((state) => state.list.selectedListId);
   const nodeDBMap = useAppSelector((state) => state.list.nodeDBMap);
   const [updatedNodeIds, setUpdatedNodeIds] = useState({});
+  const searchResults = useAppSelector((state) => state.list.searchNodes);
 
   const [sidebarIsOpen, setSidebarIsOpen] = useLocalStorage(
     "sidebarIsOpen",
@@ -32,16 +40,17 @@ function Sidebar(props) {
   const [draggedNode, setDraggedNode] = useState(null);
   const [dragOverNodeId, setDragOverNodeId] = useState(null);
 
-
   const handleDragStart = (e, node) => {
     // Check if this is the first node in the sorted list
-    const sortedNodes = [...pinnedNodes.data].sort((a, b) => a.pinned_pos - b.pinned_pos);
+    const sortedNodes = [...pinnedNodes.data].sort(
+      (a, b) => a.pinned_pos - b.pinned_pos
+    );
     if (sortedNodes.length > 0 && sortedNodes[0].id === node.id) {
       // Prevent dragging the first node
       e.preventDefault();
       return;
     }
-    
+
     setDraggedNode(node);
     e.dataTransfer.setData("text/plain", node.id);
     // Add a ghost image effect
@@ -71,42 +80,49 @@ function Sidebar(props) {
     e.preventDefault();
     if (!draggedNode || draggedNode.id === targetNode.id) return;
 
-    const sortedNodes = [...pinnedNodes.data].sort((a, b) => a.pinned_pos - b.pinned_pos);
-    const sourceIndex = sortedNodes.findIndex(node => node.id === draggedNode.id);
-    const targetIndex = sortedNodes.findIndex(node => node.id === targetNode.id);
-    
+    const sortedNodes = [...pinnedNodes.data].sort(
+      (a, b) => a.pinned_pos - b.pinned_pos
+    );
+    const sourceIndex = sortedNodes.findIndex(
+      (node) => node.id === draggedNode.id
+    );
+    const targetIndex = sortedNodes.findIndex(
+      (node) => node.id === targetNode.id
+    );
+
     // Calculate new position
     let newPosition;
-    
+
     if (targetIndex === sortedNodes.length - 1) {
       // If dropped on the last item
       newPosition = sortedNodes[targetIndex].pinned_pos + 1;
     } else {
       // If dropped between two items
       const nextNode = sortedNodes[targetIndex + 1];
-      newPosition = (sortedNodes[targetIndex].pinned_pos + nextNode.pinned_pos) / 2;
+      newPosition =
+        (sortedNodes[targetIndex].pinned_pos + nextNode.pinned_pos) / 2;
     }
-    
+
     // Update the dragged node with new position
     const updatedNode = {
       ...draggedNode,
-      pinned_pos: newPosition
+      pinned_pos: newPosition,
     };
-    
+
     // Update in Redux store
-    const updatedNodes = pinnedNodes.data.map(node => 
+    const updatedNodes = pinnedNodes.data.map((node) =>
       node.id === draggedNode.id ? updatedNode : node
     );
-    
+
     // If the node exists in nodeDBMap, update it in the database
     if (nodeDBMap && nodeDBMap[draggedNode.id]) {
       const nodeToUpdate = {
         ...nodeDBMap[draggedNode.id],
-        pinned_pos: newPosition
+        pinned_pos: newPosition,
       };
       upsertHelper(nodeToUpdate);
     }
-    
+
     // Reset drag state
     setDraggedNode(null);
     setDragOverNodeId(null);
@@ -132,7 +148,6 @@ function Sidebar(props) {
     return () => clearInterval(interval);
   }, [updatedNodeIds, nodeDBMap, selectedListId]);
 
-
   // every 1 minute, get the pinned nodes
   useEffect(() => {
     const interval = setInterval(() => {
@@ -144,6 +159,11 @@ function Sidebar(props) {
   useEffect(() => {
     dispatch(getPinnedNodes({ user_id: props.userId }));
   }, []);
+
+  useEffect(() => {}, [searchTerm, props.userId]);
+
+  const searchResultsNodes =
+    searchResults.status === STATUS.SUCCESS ? searchResults.data?.nodes : [];
 
   if (token) {
     return (
@@ -167,6 +187,18 @@ function Sidebar(props) {
                 className="block w-full rounded-md border-0 py-1 pl-8 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 placeholder="Search"
                 value={searchTerm}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    if (searchTerm.length >= 3) {
+                      dispatch(
+                        searchNodes({
+                          user_id: props.userId,
+                          query: searchTerm,
+                        })
+                      );
+                    }
+                  }
+                }}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
                 }}
@@ -176,61 +208,107 @@ function Sidebar(props) {
         </div>
         <div className="flex-grow overflow-y-auto">
           {/* Fixed 4000 Weeks node */}
-          <div
-            className="flex items-center cursor-pointer"
-            onClick={() => {
-              navigate('/4000');
-            }}
-          >
-            <span className="mr-2 pt-0.5 mb-1">
-              <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
-            </span>
-            <span
-              className={`overflow-hidden text-ellipsis truncate ${
-                is4000Page ? "font-black text-blue-500" : "font-bold"
-              }`}
+          {searchTerm.length < 3 && (
+            <div
+              className="flex items-center cursor-pointer"
+              onClick={() => {
+                navigate("/4000");
+              }}
             >
-              4000 Weeks
-            </span>
-          </div>
-
-          {/* Existing pinned nodes */}
-          {pinnedNodes.data.map((node) => {
-            const sortedNodes = [...pinnedNodes.data].sort((a, b) => a.pinned_pos - b.pinned_pos);
-            const isFirstNode = sortedNodes.length > 0 && sortedNodes[0].id === node.id;
-            
-            return (
-              <div
-                key={node.id}
-                className="flex items-center cursor-pointer"
-                onClick={() => {
-                  dispatch(
-                    changeSelectedNode({
-                      id: node.id,
-                    })
-                  );
-                }}
-                draggable={!isFirstNode}
-                onDragStart={(e) => handleDragStart(e, node)}
-                onDragOver={(e) => handleDragOver(e, node.id)}
-                onDragEnd={handleDragEnd}
-                onDrop={(e) => handleDrop(e, node)}
+              <span className="mr-2 pt-0.5 mb-1">
+                <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
+              </span>
+              <span
+                className={`overflow-hidden text-ellipsis truncate ${
+                  is4000Page ? "font-black text-blue-500" : "font-bold"
+                }`}
               >
-                <span className="mr-2 pt-0.5 mb-1">
-                  <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
-                </span>
-                <span
-                  className={`overflow-hidden text-ellipsis truncate ${
-                    node.id === selectedListId && !is4000Page
-                      ? "font-black text-blue-500"
-                      : "font-bold"
-                  }`}
+                4000 Weeks
+              </span>
+            </div>
+          )}
+
+          {(searchResultsNodes || []).map((node) => {
+            return (
+              <div key={node.id}>
+                <div
+                  className="flex items-center cursor-pointer"
+                  onClick={() => {
+                    // make sure we are on /list page
+                    if (!isListPage) {
+                      navigate("/list");
+                    }
+
+                    dispatch(
+                      changeSelectedNode({
+                        id: node.id,
+                      })
+                    );
+                  }}
                 >
-                  {node.text}
-                </span>
+                  <span className="mr-2 pt-0.5 mb-1">
+                    <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
+                  </span>
+                  <span
+                    className={`overflow-hidden text-ellipsis truncate ${
+                      node.id === selectedListId && !is4000Page
+                        ? "font-medium text-blue-500"
+                        : "font-medium"
+                    }`}
+                  >
+                    {node.text}
+                  </span>
+                </div>
               </div>
             );
           })}
+
+          {/* Existing pinned nodes */}
+          {searchTerm.length < 3 &&
+            pinnedNodes.data.map((node) => {
+              const sortedNodes = [...pinnedNodes.data].sort(
+                (a, b) => a.pinned_pos - b.pinned_pos
+              );
+              const isFirstNode =
+                sortedNodes.length > 0 && sortedNodes[0].id === node.id;
+
+              return (
+                <div
+                  key={node.id}
+                  className="flex items-center cursor-pointer"
+                  onClick={() => {
+                    // make sure we are on /list page
+                    if (!isListPage) {
+                      navigate("/list");
+                    }
+
+                    dispatch(
+                      changeSelectedNode({
+                        id: node.id,
+                      })
+                    );
+                  }}
+                  draggable={!isFirstNode && searchTerm.length < 3}
+                  onDragStart={(e) => handleDragStart(e, node)}
+                  onDragOver={(e) => handleDragOver(e, node.id)}
+                  onDragEnd={handleDragEnd}
+                  onDrop={(e) => handleDrop(e, node)}
+                >
+                  <span className="mr-2 pt-0.5 mb-1">
+                    <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
+                  </span>
+                  <span
+                    className={`overflow-hidden text-ellipsis truncate ${
+                      node.id === selectedListId && !is4000Page
+                        ? "font-medium text-blue-500"
+                        : "font-medium"
+                    }`}
+                  >
+                    {node.text}
+                  </span>
+                </div>
+              );
+            })}
         </div>
         <div className="w-full border-t-2 border-gray-200 sidebar-toolkit">
           <button
