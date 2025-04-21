@@ -169,15 +169,16 @@ function SettingsContainer(props) {
 
                   dispatch(
                     updateUser({
+                      ...user.data,
                       name,
                       slug,
                       bio,
                       pic,
-                      twitter,
                       linkedin,
                       twitter,
                       instagram,
                       settings: {
+                        ...user.data.settings,
                         ...settings,
                         links: settings.links.filter(
                           (link) => link.name && link.url
