@@ -30,6 +30,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
         } catch (e) {
             res.json({
                 success: false,
@@ -82,6 +86,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             if (!Number(process.env.TURN_OFF_SINGLE_USER_MODE)) {
                 // single user mode.
@@ -164,6 +172,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             if (!Number(process.env.TURN_OFF_SINGLE_USER_MODE)) {
                 // single user mode.
@@ -283,6 +295,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             if (!Number(process.env.TURN_OFF_SINGLE_USER_MODE)) {
                 // single user mode.

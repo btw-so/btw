@@ -387,14 +387,11 @@ async function getUserFromToken({ token, fingerprint }) {
         !Number(process.env.TURN_OFF_SINGLE_USER_MODE) &&
         !process.env.ADMIN_OTP
     ) {
-        const client = await tasksDB.connect();
         // Single user mode and admin otp is not set. so we return admin user always
-        const { rows } = await client.query(
+        const { rows } = await tasksDB.query(
             `SELECT * FROM btw.users WHERE email = $1`,
             [process.env.ADMIN_EMAIL.split(",")[0]]
         );
-
-        client.release();
 
         if (rows.length > 0) {
             return rows[0];
@@ -406,8 +403,7 @@ async function getUserFromToken({ token, fingerprint }) {
     if (!token) return null;
     if (!fingerprint) return null;
 
-    const client = await tasksDB.connect();
-    const { rows } = await client.query(
+    const { rows } = await tasksDB.query(
         `SELECT * FROM btw.login_token WHERE uuid = $1`,
         [token]
     );
@@ -417,35 +413,31 @@ async function getUserFromToken({ token, fingerprint }) {
 
         if (fingerprint && fingerprint == loginTokens.fingerprint) {
             // get the user of this login token
-            const { rows: users } = await client.query(
+            const { rows: users } = await tasksDB.query(
                 `SELECT * FROM btw.users WHERE id = $1`,
                 [loginTokens.user_id]
             );
 
             if (users.length > 0) {
-                client.release();
                 return users[0];
             } else {
                 // delete the token from DB
-                await client.query(
+                await tasksDB.query(
                     `DELETE FROM btw.login_token WHERE uuid = $1`,
                     [token]
                 );
 
-                client.release();
                 return null;
             }
         } else {
             // delete the token from DB
-            await client.query(`DELETE FROM btw.login_token WHERE uuid = $1`, [
+            await tasksDB.query(`DELETE FROM btw.login_token WHERE uuid = $1`, [
                 token,
             ]);
 
-            client.release();
             return null;
         }
     } else {
-        client.release();
         return null;
     }
 }

@@ -28,6 +28,11 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
             const file = await getFile({
                 user_id: user.id,
                 file_id,
@@ -72,6 +77,9 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+            if (!user || !user.id || (user.id !== user_id)) {
+                throw new Error("User not found");
+            }
             const file_id = await addFile({
                 url,
                 user_id,
