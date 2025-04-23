@@ -9,6 +9,7 @@ div:focus-visible {
 html,
 body {
   font-family: "Circular", "Satoshi", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .tiptap-editor li p {
