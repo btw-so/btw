@@ -198,7 +198,7 @@ class Tiptap extends React.Component {
       editorProps: {
         attributes: {
           class:
-            "prose prose-sm lg:prose-base prose-p:leading-normal focus:outline-none flex-grow p-2 mt-2 max-w-full",
+            "prose lg:prose-base prose-p:leading-normal focus:outline-none flex-grow p-2 mt-2 max-w-full",
         },
       },
       content: props.content || "",
@@ -335,7 +335,12 @@ class Tiptap extends React.Component {
           </div>
         )}
         {this.props.liveUrl ? (
-          <div className="character-count text-xs text-gray-400">
+          <div
+            className="character-count text-xs text-gray-400"
+            onClick={() => {
+              window.open(this.props.liveUrl, "_blank");
+            }}
+          >
             {this.props.liveUrl}
           </div>
         ) : null}

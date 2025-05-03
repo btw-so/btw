@@ -230,6 +230,7 @@ function Sidebar(props) {
                     key={node.id}
                     className="flex items-center cursor-pointer px-2 py-0"
                     onClick={() => {
+                      props.closeSidebar();
                       // make sure we are on /list page
                       if (!isListPage) {
                         navigate("/list");
@@ -272,6 +273,7 @@ function Sidebar(props) {
               <div
                 className="flex items-center cursor-pointer px-2 py-1"
                 onClick={() => {
+                  props.closeSidebar();
                   navigate("/4000");
                 }}
               >
@@ -298,6 +300,7 @@ function Sidebar(props) {
                       onClick={() => {
                         // make sure we are on /list page
                         if (!isListPage) {
+                          props.closeSidebar();
                           navigate("/list");
                         }
 
@@ -333,7 +336,7 @@ function Sidebar(props) {
               props.settingsPage ? "text-blue-500" : ""
             }`}
             onClick={() => {
-              setSidebarIsOpen(false);
+              props.closeSidebar();
               navigate("/settings");
             }}
           >
