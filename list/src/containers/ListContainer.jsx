@@ -46,7 +46,10 @@ function shortHash(x, key, length = 5) {
   const base64 = CryptoJS.enc.Base64.stringify(hmac);
 
   // Make it URL-safe and trim padding
-  const safe = base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const safe = base64
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 
   return safe.slice(0, length).toLowerCase();
 }
@@ -802,6 +805,75 @@ const Parent = ({
   onDragOver,
   onDrop,
 }) => {
+  const allChildren =
+    (!nodeDBMap[id].collapsed || id === selectedListId) &&
+    nodeUIMap[id] &&
+    nodeUIMap[id].children &&
+    nodeUIMap[id].children.length > 0 &&
+    (level < 2 ||
+      (level < MAX_LEVEL &&
+        level >= 2 &&
+        nodeUIMap[id].children.length < MAX_ITEMS_IN_LEVEL2)) ? (
+      <div className={onlyRenderChildren ? "pl-0" : "pl-4"}>
+        {nodeUIMap[id].children.map((childId) => {
+          return (
+            <Parent
+              key={childId}
+              nodeDBMap={nodeDBMap}
+              nodeUIMap={nodeUIMap}
+              id={childId}
+              onTextChange={(d) => onTextChange(d)}
+              onNewNode={(d) => onNewNode(d)}
+              changeParentToElderSibling={(d) => onNewParentToElderSibling(d)}
+              selectedListId={selectedListId}
+              focusOnNode={(d) => focusOnNode(d)}
+              level={level + 1}
+              toggleChecked={(d) => toggleChecked(d)}
+              toggleCollapsed={(d) => toggleCollapsed(d)}
+              deleteNode={(d) => deleteNode(d)}
+              zoomIntoNode={(d) => zoomIntoNode(d)}
+              onDragStart={onDragStart}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+            />
+          );
+        })}
+      </div>
+    ) : null;
+
+  const clickToAdd =
+    id === selectedListId &&
+    ((nodeUIMap[id] || {}).children || []).length === 0 &&
+    (level < 2 ||
+      (level < MAX_LEVEL &&
+        level >= 2 &&
+        ((nodeUIMap[id] || {}).children || []).length <
+          MAX_ITEMS_IN_LEVEL2)) ? (
+      <div className={onlyRenderChildren ? "pl-0" : "pl-4"}>
+        <div
+          onClick={() => {
+            const newId = Date.now().toString(16);
+            onNewNode({
+              id: newId,
+              parent_id: id,
+              pos: 1,
+              text: "",
+              note_id: getUUID(),
+              new: true,
+            });
+
+            setTimeout(() => {
+              focusOnNode({ id: newId, moveToStart: true });
+            }, 200);
+          }}
+          className="cursor-pointer text-gray-500 hover:text-gray-900 text-sm flex items-center space-x-1"
+        >
+          <span className="ri-add-line ri-xss"></span>
+          <span>Click/Enter to add</span>
+        </div>
+      </div>
+    ) : null;
+
   return (
     <div key={id}>
       {!onlyRenderChildren ? (
@@ -1034,40 +1106,7 @@ const Parent = ({
           onDrop={onDrop}
         />
       ) : null}
-      {(!nodeDBMap[id].collapsed || id === selectedListId) &&
-      nodeUIMap[id] &&
-      nodeUIMap[id].children &&
-      nodeUIMap[id].children.length > 0 &&
-      (level < 2 ||
-        (level < MAX_LEVEL &&
-          level >= 2 &&
-          nodeUIMap[id].children.length < MAX_ITEMS_IN_LEVEL2)) ? (
-        <div className={onlyRenderChildren ? "pl-0" : "pl-4"}>
-          {nodeUIMap[id].children.map((childId) => {
-            return (
-              <Parent
-                key={childId}
-                nodeDBMap={nodeDBMap}
-                nodeUIMap={nodeUIMap}
-                id={childId}
-                onTextChange={(d) => onTextChange(d)}
-                onNewNode={(d) => onNewNode(d)}
-                changeParentToElderSibling={(d) => onNewParentToElderSibling(d)}
-                selectedListId={selectedListId}
-                focusOnNode={(d) => focusOnNode(d)}
-                level={level + 1}
-                toggleChecked={(d) => toggleChecked(d)}
-                toggleCollapsed={(d) => toggleCollapsed(d)}
-                deleteNode={(d) => deleteNode(d)}
-                zoomIntoNode={(d) => zoomIntoNode(d)}
-                onDragStart={onDragStart}
-                onDragOver={onDragOver}
-                onDrop={onDrop}
-              />
-            );
-          })}
-        </div>
-      ) : null}
+      {clickToAdd ? clickToAdd : allChildren}
     </div>
   );
 };

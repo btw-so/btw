@@ -94,7 +94,7 @@ function Root() {
           <Route path="/public/note/:id/:hash" element={<PublicNote />} />
           <Route
             element={
-              <PublicRoute isLoggedIn={isLoggedIn} to="/4000">
+              <PublicRoute isLoggedIn={isLoggedIn} to="/list">
                 <Login />
               </PublicRoute>
             }
@@ -102,7 +102,7 @@ function Root() {
           />
           <Route
             element={
-              <PublicRoute isLoggedIn={isLoggedIn} to="/4000">
+              <PublicRoute isLoggedIn={isLoggedIn} to="/list">
                 <Login />
               </PublicRoute>
             }
