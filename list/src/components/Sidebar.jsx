@@ -182,7 +182,7 @@ function Sidebar(props) {
   if (token) {
     return (
       <>
-        <div className="space-x-2 w-full mb-8 border-gray-200 sidebar-toolkit flex items-center">
+        <div className="space-x-2 w-full mb-2 border-gray-200 sidebar-toolkit flex items-center">
           <div className="flex-grow">
             <div className="relative rounded-md shadow-sm">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">
@@ -214,7 +214,7 @@ function Sidebar(props) {
             <>
               {/* Pinned Section */}
               <div className="mt-4 mb-1 px-2">
-                <span className="text-xs uppercase text-gray-400 tracking-wider font-semibold">
+                <span className="text-xs text-gray-400 font-bold">
                   Pinned
                 </span>
               </div>
@@ -265,7 +265,7 @@ function Sidebar(props) {
 
               {/* Pages Section */}
               <div className="mt-2 mb-1 px-2">
-                <span className="text-xs uppercase text-gray-400 tracking-wider font-semibold">
+                <span className="text-xs text-gray-400 font-bold">
                   Artifacts
                 </span>
               </div>
@@ -327,7 +327,7 @@ function Sidebar(props) {
             </>
           )}
         </div>
-        <div className="w-full border-t-2 border-gray-200 sidebar-toolkit">
+        <div className="w-full sidebar-toolkit">
           <button
             className={`w-full pb-2 pt-4 flex items-center hover:font-extrabold hover:text-blue-500 ${
               props.settingsPage ? "text-blue-500" : ""
@@ -337,7 +337,7 @@ function Sidebar(props) {
               navigate("/settings");
             }}
           >
-            <i className={`ri-1x ri-settings-4-line mr-1`}></i>
+            <i className={`ri-xxs ri-checkbox-blank-circle-fill mr-1`}></i>
             <span className="font-extrabold">Settings</span>
           </button>
         </div>
