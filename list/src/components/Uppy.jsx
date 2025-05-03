@@ -38,29 +38,33 @@ class UppyComponent extends React.Component {
       allowedMetaFields: ["folder", "name", "relativePath", "fileName", "url"],
     });
 
-    this.uppy.on("file-added", (file) => {
-      // Get the last dot index to correctly separate the name and extension
-      let lastDotIndex = file.name.lastIndexOf(".");
-      let name =
-        lastDotIndex !== -1 ? file.name.substring(0, lastDotIndex) : file.name;
-      let extension =
-        lastDotIndex !== -1 ? file.name.substring(lastDotIndex + 1) : "";
+    this.uppy.on("files-added", (files) => {
+      files.forEach((file) => {
+        // Get the last dot index to correctly separate the name and extension
+        let lastDotIndex = file.name.lastIndexOf(".");
+        let name =
+          lastDotIndex !== -1
+            ? file.name.substring(0, lastDotIndex)
+            : file.name;
+        let extension =
+          lastDotIndex !== -1 ? file.name.substring(lastDotIndex + 1) : "";
 
-      // Sanitize the name
-      name = name.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+        // Sanitize the name
+        name = name.toLowerCase().replace(/[^a-z0-9_-]/g, "");
 
-      // Generate a random nonce
-      const nonce = Math.random().toString(36).substring(2, 8);
+        // Generate a random nonce
+        const nonce = Math.random().toString(36).substring(2, 8);
 
-      // Set file metadata
-      this.uppy.setFileMeta(file.id, {
-        folder: this.props.folder || "default",
-        fileName: `${this.props.folder || "default"}/${name}_${nonce}${
-          extension ? `.${extension}` : ""
-        }`,
-        relativePath: `${this.props.folder || "default"}/${name}_${nonce}${
-          extension ? `.${extension}` : ""
-        }`,
+        // Set file metadata
+        this.uppy.setFileMeta(file.id, {
+          folder: this.props.folder || "default",
+          fileName: `${this.props.folder || "default"}/${name}_${nonce}${
+            extension ? `.${extension}` : ""
+          }`,
+          relativePath: `${this.props.folder || "default"}/${name}_${nonce}${
+            extension ? `.${extension}` : ""
+          }`,
+        });
       });
 
       // Auto-proceed with upload if enabled
