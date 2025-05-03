@@ -866,7 +866,7 @@ const Parent = ({
               focusOnNode({ id: newId, moveToStart: true });
             }, 200);
           }}
-          className="cursor-pointer text-gray-500 hover:text-gray-900 text-sm flex items-center space-x-1"
+          className="cursor-pointer text-gray-900 opacity-50 hover:opacity-100 transition-opacity duration-300 text-sm flex items-center space-x-1"
         >
           <span className="ri-add-line ri-xss"></span>
           <span>Click/Enter to add</span>
