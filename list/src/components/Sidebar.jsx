@@ -160,7 +160,21 @@ function Sidebar(props) {
     dispatch(getPinnedNodes({ user_id: props.userId }));
   }, []);
 
-  useEffect(() => {}, [searchTerm, props.userId]);
+  useEffect(() => {
+    if (searchTerm.length >= 3) {
+      const handler = setTimeout(() => {
+        dispatch(
+          searchNodes({
+            user_id: props.userId,
+            query: searchTerm,
+          })
+        );
+      }, 400); // 400ms debounce
+      return () => clearTimeout(handler);
+    }
+    // Optionally, you can clear search results if searchTerm is less than 3
+    // else do nothing
+  }, [searchTerm, props.userId, dispatch]);
 
   const searchResultsNodes =
     searchResults.status === STATUS.SUCCESS ? searchResults.data?.nodes : [];
@@ -187,18 +201,6 @@ function Sidebar(props) {
                 className="block w-full rounded-md border-0 py-1 pl-8 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 placeholder="Search"
                 value={searchTerm}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    if (searchTerm.length >= 3) {
-                      dispatch(
-                        searchNodes({
-                          user_id: props.userId,
-                          query: searchTerm,
-                        })
-                      );
-                    }
-                  }
-                }}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
                 }}
@@ -207,108 +209,123 @@ function Sidebar(props) {
           </div>
         </div>
         <div className="flex-grow overflow-y-auto">
-          {/* Fixed 4000 Weeks node */}
-          {searchTerm.length < 3 && (
-            <div
-              className="flex items-center cursor-pointer"
-              onClick={() => {
-                navigate("/4000");
-              }}
-            >
-              <span className="mr-2 pt-0.5 mb-1">
-                <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
-              </span>
-              <span
-                className={`overflow-hidden text-ellipsis truncate ${
-                  is4000Page ? "font-black text-blue-500" : "font-bold"
-                }`}
-              >
-                4000 Weeks
-              </span>
-            </div>
-          )}
-
-          {(searchResultsNodes || []).map((node) => {
-            return (
-              <div key={node.id}>
-                <div
-                  className="flex items-center cursor-pointer"
-                  onClick={() => {
-                    // make sure we are on /list page
-                    if (!isListPage) {
-                      navigate("/list");
-                    }
-
-                    dispatch(
-                      changeSelectedNode({
-                        id: node.id,
-                      })
-                    );
-                  }}
-                >
-                  <span className="mr-2 pt-0.5 mb-1">
-                    <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
-                  </span>
-                  <span
-                    className={`overflow-hidden text-ellipsis truncate ${
-                      node.id === selectedListId && !is4000Page
-                        ? "font-medium text-blue-500"
-                        : "font-medium"
-                    }`}
-                  >
-                    {node.text}
-                  </span>
-                </div>
+          {/* Only show Pinned and Pages sections if not searching */}
+          {searchTerm.length < 3 ? (
+            <>
+              {/* Pinned Section */}
+              <div className="mt-4 mb-1 px-2">
+                <span className="text-xs uppercase text-gray-400 tracking-wider font-semibold">
+                  Pinned
+                </span>
               </div>
-            );
-          })}
+              {pinnedNodes.data.map((node) => {
+                const sortedNodes = [...pinnedNodes.data].sort(
+                  (a, b) => a.pinned_pos - b.pinned_pos
+                );
+                const isFirstNode =
+                  sortedNodes.length > 0 && sortedNodes[0].id === node.id;
 
-          {/* Existing pinned nodes */}
-          {searchTerm.length < 3 &&
-            pinnedNodes.data.map((node) => {
-              const sortedNodes = [...pinnedNodes.data].sort(
-                (a, b) => a.pinned_pos - b.pinned_pos
-              );
-              const isFirstNode =
-                sortedNodes.length > 0 && sortedNodes[0].id === node.id;
+                return (
+                  <div
+                    key={node.id}
+                    className="flex items-center cursor-pointer px-2 py-0"
+                    onClick={() => {
+                      // make sure we are on /list page
+                      if (!isListPage) {
+                        navigate("/list");
+                      }
 
-              return (
-                <div
-                  key={node.id}
-                  className="flex items-center cursor-pointer"
-                  onClick={() => {
-                    // make sure we are on /list page
-                    if (!isListPage) {
-                      navigate("/list");
-                    }
-
-                    dispatch(
-                      changeSelectedNode({
-                        id: node.id,
-                      })
-                    );
-                  }}
-                  draggable={!isFirstNode && searchTerm.length < 3}
-                  onDragStart={(e) => handleDragStart(e, node)}
-                  onDragOver={(e) => handleDragOver(e, node.id)}
-                  onDragEnd={handleDragEnd}
-                  onDrop={(e) => handleDrop(e, node)}
-                >
-                  <span className="mr-2 pt-0.5 mb-1">
-                    <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
-                  </span>
-                  <span
-                    className={`overflow-hidden text-ellipsis truncate ${
-                      node.id === selectedListId && !is4000Page
-                        ? "font-medium text-blue-500"
-                        : "font-medium"
-                    }`}
+                      dispatch(
+                        changeSelectedNode({
+                          id: node.id,
+                        })
+                      );
+                    }}
+                    draggable={!isFirstNode && searchTerm.length < 3}
+                    onDragStart={(e) => handleDragStart(e, node)}
+                    onDragOver={(e) => handleDragOver(e, node.id)}
+                    onDragEnd={handleDragEnd}
+                    onDrop={(e) => handleDrop(e, node)}
                   >
-                    {node.text}
-                  </span>
-                </div>
-              );
-            })}
+                    <span className="mr-2 pt-0.5 mb-1">
+                      <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
+                    </span>
+                    <span
+                      className={`overflow-hidden text-ellipsis truncate ${
+                        node.id === selectedListId && !is4000Page
+                          ? "font-medium text-blue-500"
+                          : "font-medium"
+                      }`}
+                    >
+                      {node.text}
+                    </span>
+                  </div>
+                );
+              })}
+
+              {/* Pages Section */}
+              <div className="mt-2 mb-1 px-2">
+                <span className="text-xs uppercase text-gray-400 tracking-wider font-semibold">
+                  Artifacts
+                </span>
+              </div>
+              <div
+                className="flex items-center cursor-pointer px-2 py-1"
+                onClick={() => {
+                  navigate("/4000");
+                }}
+              >
+                <span className="mr-2 pt-0.5 mb-1">
+                  <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
+                </span>
+                <span
+                  className={`overflow-hidden text-ellipsis truncate ${
+                    is4000Page ? "font-black text-blue-500" : "font-bold"
+                  }`}
+                >
+                  4000 Weeks
+                </span>
+              </div>
+            </>
+          ) : (
+            // Show search results only when searching
+            <>
+              {(searchResultsNodes || []).map((node) => {
+                return (
+                  <div key={node.id}>
+                    <div
+                      className="flex items-center cursor-pointer px-2 py-0"
+                      onClick={() => {
+                        // make sure we are on /list page
+                        if (!isListPage) {
+                          navigate("/list");
+                        }
+
+                        dispatch(
+                          changeSelectedNode({
+                            id: node.id,
+                          })
+                        );
+                      }}
+                    >
+                      <span className="mr-2 pt-0.5 mb-1">
+                        <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
+                      </span>
+                      <span
+                        className={`overflow-hidden text-ellipsis truncate ${
+                          node.id === selectedListId && !is4000Page
+                            ? "font-medium text-blue-500"
+                            : "font-medium"
+                        }`}
+                      >
+                        {node.text}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
         </div>
         <div className="w-full border-t-2 border-gray-200 sidebar-toolkit">
           <button
