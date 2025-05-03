@@ -363,12 +363,9 @@ class Tiptap extends React.Component {
                 "image/svg+xml",
               ]}
               onResults={(res) => {
-                // dispatch an action to backend for this now
                 if (this.editor) {
-                  res.urls.map((url) => {
-                    // HACK. for some reason DO us adding S3 endpoint twice in its urls
-                    // so we need to remove the first one
-                    // If the URL has process.env.S3_ENDPOINT + "/" +  process.env.S3_ENDPOINT, remove the first one
+                  const images = res.urls.map((originalUrl) => {
+                    let url = originalUrl;
                     if (process.env.REACT_APP_S3_ENDPOINT) {
                       url = url
                         .split(
@@ -376,12 +373,10 @@ class Tiptap extends React.Component {
                         )
                         .join(process.env.REACT_APP_S3_ENDPOINT);
                     }
-
-                    // this.editor.commands.setImage({ src: url });
-                    this.editor.chain().focus().setImage({ src: url }).run();
+                    return { type: "image", attrs: { src: url } };
                   });
+                  this.editor.chain().focus().insertContent(images).run();
                 }
-
                 this.setState({ showImageUpload: false });
               }}
             />
