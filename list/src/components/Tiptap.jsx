@@ -297,6 +297,7 @@ class Tiptap extends React.Component {
         style={{ minHeight: 0 }}
       >
         <MenuBar
+          classes={this.props.menuBarClasses || ""}
           disallowH1={this.props.disallowH1}
           customMenu={this.props.customMenu}
           editor={this.editor}

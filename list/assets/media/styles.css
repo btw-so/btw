@@ -1777,6 +1777,10 @@ input[type="number"]::-webkit-inner-spin-button,
   max-height: 100vh;
 }
 
+.max-h-20 {
+  max-height: 5rem;
+}
+
 .min-h-full {
   min-height: 100%;
 }
@@ -2083,6 +2087,11 @@ input[type="number"]::-webkit-inner-spin-button,
   padding: 2rem;
 }
 
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
 .px-3 {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
@@ -2101,6 +2110,11 @@ input[type="number"]::-webkit-inner-spin-button,
 .px-8 {
   padding-left: 2rem;
   padding-right: 2rem;
+}
+
+.py-0 {
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
 
 .py-1 {
@@ -2218,6 +2232,14 @@ input[type="number"]::-webkit-inner-spin-button,
   font-weight: 500;
 }
 
+.font-semibold {
+  font-weight: 600;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
 .italic {
   font-style: italic;
 }
@@ -2228,6 +2250,10 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .leading-tight {
   line-height: 1.25;
+}
+
+.tracking-wider {
+  letter-spacing: 0.05em;
 }
 
 .text-blue-500 {
@@ -2293,6 +2319,10 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .opacity-75 {
   opacity: 0.75;
+}
+
+.opacity-30 {
+  opacity: 0.3;
 }
 
 .shadow {
@@ -3210,6 +3240,10 @@ hr.ProseMirror-selectednode {
 .hover\:text-gray-900:hover {
   --tw-text-opacity: 1;
   color: rgb(17 24 39 / var(--tw-text-opacity, 1));
+}
+
+.hover\:opacity-100:hover {
+  opacity: 1;
 }
 
 .focus\:outline-none:focus {

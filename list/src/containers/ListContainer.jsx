@@ -1602,7 +1602,7 @@ function ListContainer(props) {
                 />
               </div>
               <div
-                className="h-16 overflow-y-hidden max-h-16 opacity-50 uppy-parent"
+                className="h-18 overflow-y-hidden max-h-18 opacity-30 hover:opacity-100 transition-opacity duration-300 uppy-parent"
                 style={{
                   fontFamily: "Circular, Satoshi !important",
                 }}
@@ -1684,6 +1684,7 @@ function ListContainer(props) {
               ) : (
                 <Tiptap
                   ref={tiptapRef}
+                  menuBarClasses="opacity-50 hover:opacity-100 transition-opacity duration-300"
                   liveUrl={
                     window.location.origin +
                     "/public/note/" +

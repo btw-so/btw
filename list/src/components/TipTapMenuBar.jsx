@@ -16,6 +16,7 @@ export default ({
   showEmbedUploader,
   customMenu,
   disallowH1,
+  classes
 }) => {
   const setLink = useCallback(() => {
     const previousUrl = editor.getAttributes("link").href;
@@ -188,7 +189,7 @@ export default ({
   }
 
   return (
-    <div className="flex">
+    <div className={`flex ${classes || ""}`}>
       <div className="editor__header flex flex-wrap">
         {items.map((item, index) => (
           <Fragment key={index}>
