@@ -393,219 +393,6 @@ const ContentEditable = ({
   );
 };
 
-// const ContentEditable = ({
-//   id,
-//   val,
-//   setVal,
-//   classes,
-//   styles,
-//   onEnter,
-//   onTab,
-//   onShiftTab,
-//   onUpArrow,
-//   onDownArrow,
-//   onDeleteNode,
-// }) => {
-//   const contentEditableRef = useRef(null);
-//   const lastCursorPosition = useRef(null);
-
-//   // useEffect(() => {
-//   //   if (contentEditableRef.current.textContent !== val) {
-//   //     contentEditableRef.current.textContent = val;
-//   //   }
-//   // });
-
-//   useEffect(() => {
-//     const currentText = contentEditableRef.current.textContent;
-//     if (currentText !== val) {
-//       contentEditableRef.current.innerHTML = '';
-//       const formattedContent = formatDisplayText(val);
-//       contentEditableRef.current.appendChild(formattedContent);
-//     }
-//   }, [val]);
-
-//   const handleKeyDown = (event) => {
-//     if (event.key === "Enter") {
-//       event.preventDefault();
-//       if (onEnter) {
-//         onEnter();
-//       }
-//     } else if (event.key === "Tab") {
-//       event.preventDefault();
-//       if (event.shiftKey) {
-//         if (onShiftTab) {
-//           onShiftTab();
-//         }
-//       } else {
-//         if (onTab) {
-//           onTab();
-//         }
-//       }
-//     } else if (event.key === "ArrowUp") {
-//       event.preventDefault();
-//       if (onUpArrow) {
-//         onUpArrow();
-//       }
-//     } else if (event.key === "ArrowDown") {
-//       event.preventDefault();
-//       if (onDownArrow) {
-//         onDownArrow();
-//       }
-//     } else if (event.key === "ArrowLeft") {
-//       const deets = getCursorDetails();
-
-//       if (deets && deets.cursorStart === 0) {
-//         event.preventDefault();
-
-//         if (onUpArrow) {
-//           onUpArrow({
-//             moveToEnd: true,
-//           });
-//         }
-//       }
-//     } else if (event.key === "ArrowRight") {
-//       const deets = getCursorDetails();
-
-//       if (deets && deets.cursorStart === deets.totalRange) {
-//         event.preventDefault();
-
-//         if (onDownArrow) {
-//           onDownArrow({
-//             moveToStart: true,
-//           });
-//         }
-//       }
-//     } else if (event.key === "Backspace" || event.key === "Delete") {
-//       if (val === "" || !val) {
-//         event.preventDefault();
-//         if (onDeleteNode) {
-//           onDeleteNode();
-//         }
-//       }
-//     }
-//   };
-
-//   // Format the display text while keeping original value intact
-//   const formatDisplayText = (text) => {
-//     const container = document.createDocumentFragment();
-//     // Updated regex to capture the ** markers as well
-//     const parts = text.split(/(\*\*.*?\*\*)/g);
-
-//     parts.forEach((part) => {
-//       if (part.startsWith('**') && part.endsWith('**')) {
-//         // Keep the ** markers in text but make middle part bold
-//         const textNode1 = document.createTextNode('**');
-//         const strongElement = document.createElement('strong');
-//         strongElement.textContent = part.slice(2, -2);
-//         const textNode2 = document.createTextNode('**');
-
-//         container.appendChild(textNode1);
-//         container.appendChild(strongElement);
-//         container.appendChild(textNode2);
-//       } else {
-//         container.appendChild(document.createTextNode(part));
-//       }
-//     });
-
-//     return container;
-//   };
-
-//   // Function to get current cursor position
-//   const getCursorPosition = () => {
-//     const selection = window.getSelection();
-//     if (selection.rangeCount === 0) return 0;
-
-//     const range = selection.getRangeAt(0);
-//     const preCaretRange = range.cloneRange();
-//     preCaretRange.selectNodeContents(contentEditableRef.current);
-//     preCaretRange.setEnd(range.endContainer, range.endOffset);
-//     return preCaretRange.toString().length;
-//   };
-
-//    // Function to set cursor position
-//    const setCursorPosition = (position) => {
-//     const sel = window.getSelection();
-//     const range = document.createRange();
-
-//     let currentPos = 0;
-//     let targetNode = null;
-//     let targetOffset = 0;
-
-//     const findPosition = (node) => {
-//       if (targetNode) return;
-
-//       if (node.nodeType === Node.TEXT_NODE) {
-//         const nextPos = currentPos + node.length;
-//         if (nextPos >= position) {
-//           targetNode = node;
-//           targetOffset = position - currentPos;
-//         }
-//         currentPos = nextPos;
-//       } else {
-//         Array.from(node.childNodes).forEach(findPosition);
-//       }
-//     };
-
-//     findPosition(contentEditableRef.current);
-
-//     if (targetNode) {
-//       range.setStart(targetNode, targetOffset);
-//       range.setEnd(targetNode, targetOffset);
-//       sel.removeAllRanges();
-//       sel.addRange(range);
-//     }
-//   };
-
-//   return (
-//     <div
-//       id={`node-${id}`}
-//       className={`${classes}`}
-//       contentEditable="true"
-//       ref={contentEditableRef}
-//       onInput={(event) => {
-//          // Get the cursor position before modifying the content
-//   const cursorPosition = getCursorPosition();
-
-//   // Capture the text content
-//   const newText = event.target.textContent;
-
-//   // Update the value in the parent component
-//   setVal(newText);
-
-//   // Avoid using innerHTML or completely clearing the content
-//   // Instead, selectively format only the changed part
-//   while (contentEditableRef.current.firstChild) {
-//     contentEditableRef.current.removeChild(contentEditableRef.current.firstChild);
-//   }
-
-//   const formattedContent = formatDisplayText(newText);
-//   contentEditableRef.current.appendChild(formattedContent);
-
-//   // Restore the cursor position after content formatting
-//   setCursorPosition(cursorPosition);
-//       }}
-//       onKeyDown={handleKeyDown}
-//       style={{
-//         wordBreak: "break-all",
-//         userSelect: "text",
-//         WebkitUserModify: "read-write-plaintext-only",
-//       }}
-//       onBeforeInput={(event) => {
-//         if (event && event.inputType && event.inputType.startsWith('format')) {
-//           event.preventDefault();
-//         }
-//       }}
-//       onPaste={(event) => {
-//         // Prevent formatted paste
-//         event.preventDefault();
-//         const text = event.clipboardData.getData('text/plain');
-//         document.execCommand('insertText', false, text);
-//       }}
-//       tabIndex="-1"
-//     />
-//   );
-// };
-
 import AppWrapper from "./AppWraper";
 
 const Node = ({
@@ -1215,6 +1002,7 @@ function ListContainer(props) {
     STATUS.SUCCESS;
 
   const tiptapRef = useRef(null);
+  const [mobileTab, setMobileTab] = useState("main"); // 'main' or 'playground'
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -1411,8 +1199,9 @@ function ListContainer(props) {
   return (
     <AppWrapper {...props} listPage={true}>
       {token && props.userId ? (
-        <div className="pt-6 pb-6 md:pb-0 h-full flex flex-col list-canvas">
-          <nav className="flex px-6" aria-label="Breadcrumb">
+        <div className="pt-4 pb-6 md:pt-6 md:pb-0 h-full flex flex-col list-canvas relative">
+          {/* Breadcrumb and Heading - always visible */}
+          <nav className="flex pl-6 pr-16 md:pr-6" aria-label="Breadcrumb">
             <ol role="list" className="flex items-center space-x-1">
               {thirdParentOfCurrentSelection ? (
                 <li>
@@ -1480,7 +1269,7 @@ function ListContainer(props) {
             </ol>
           </nav>
 
-          <div className="flex items-center">
+          <div className="flex items-center pt-1 md:pt-0">
             <ContentEditable
               id={selectedListId}
               classes={"text-xl font-bold mb-2 pl-6 pr-2 w-fit"}
@@ -1524,7 +1313,7 @@ function ListContainer(props) {
               }}
             />
             <div
-              className={`flex flex-col mb-1.5 cursor-pointer ${
+              className={`hidden md:flex flex-col items-center justify-center pb-1 w-6 h-6 cursor-pointer ${
                 selectedListId === "home" ? "hidden" : ""
               }`}
               onClick={() => {
@@ -1548,8 +1337,14 @@ function ListContainer(props) {
             </div>
           </div>
 
-          <div className="flex flex-grow overflow-y-hidden flex-col md:flex-row border-t-2 border-gray-200">
-            <div className="flex flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-2 border-gray-200 md:border-b-0 md:border-r-2 md:border-gray-200 ">
+          {/* Main Content Area */}
+          <div className="flex flex-grow overflow-y-hidden flex-col md:flex-row border-t-2 border-gray-200 pb-3 md:pb-0">
+            {/* Main tab content: nodes + Uppy */}
+            <div
+              className={`flex flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-2 border-gray-200 md:border-b-0 md:border-r-2 md:border-gray-200 ${
+                mobileTab !== "main" ? "hidden" : ""
+              } md:flex`}
+            >
               <div
                 className="pl-6 list-parent pt-6 md:pr-6 overflow-y-auto pb-6"
                 style={{ height: "calc(100% - 64px)" }}
@@ -1602,7 +1397,7 @@ function ListContainer(props) {
                 />
               </div>
               <div
-                className="h-18 overflow-y-hidden max-h-18 opacity-30 hover:opacity-100 transition-opacity duration-300 uppy-parent"
+                className="h-18 hidden md:block overflow-y-hidden max-h-18 opacity-30 hover:opacity-100 transition-opacity duration-300 uppy-parent"
                 style={{
                   fontFamily: "Circular, Satoshi !important",
                 }}
@@ -1670,7 +1465,13 @@ function ListContainer(props) {
                 />
               </div>
             </div>
-            <div className="flex flex-col h-full overflow-y-auto md:flex-grow text-black md:p-4">
+
+            {/* Playground tab content: file view or Tiptap */}
+            <div
+              className={`flex flex-col h-full overflow-y-auto md:flex-grow text-black md:p-4 ${
+                mobileTab !== "playground" ? "hidden" : ""
+              } md:flex`}
+            >
               {nodeDBMap[selectedListId]?.file_id ? (
                 <FileWrapper
                   fileLoading={fileLoading}
@@ -1737,6 +1538,36 @@ function ListContainer(props) {
                 />
               )}
             </div>
+          </div>
+
+          {/* Mobile Tab Bar - fixed at bottom */}
+          <div className="md:hidden z-10 fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-10">
+            <button
+              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors duration-200 focus:outline-none ${
+                mobileTab === "main"
+                  ? "text-black font-semibold"
+                  : "text-gray-400"
+              }`}
+              onClick={() => setMobileTab("main")}
+            >
+              <i className={`ri-list-check`}></i>
+            </button>
+            <button
+              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors duration-200 focus:outline-none ${
+                mobileTab === "playground"
+                  ? "text-black font-semibold"
+                  : "text-gray-400"
+              }`}
+              onClick={() => setMobileTab("playground")}
+            >
+              {nodeDBMap[selectedListId]?.file_id ? (
+                <i className={`ri-attachment-line`}></i>
+              ) : mobileTab === "playground" ? (
+                <i className={`ri-quill-pen-fill`}></i>
+              ) : (
+                <i className={`ri-quill-pen-line`}></i>
+              )}
+            </button>
           </div>
         </div>
       ) : null}
