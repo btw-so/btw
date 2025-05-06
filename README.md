@@ -27,7 +27,7 @@ You can [sign up](https://btw.so) and use btw without installing anything. You c
 
 ## Getting started
 
-These instructions will help you to get a copy of the project up and running on your local machine
+These instructions will help you get a copy of the project up and running on your local machine
 
 ### Pre-requisites
 
