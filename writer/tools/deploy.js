@@ -1,6 +1,6 @@
-const { exec } = require('child_process');
-const chalk = require('react-dev-utils/chalk');
-const publish = require('./publish');
+import { exec } from 'child_process';
+import chalk from 'react-dev-utils/chalk';
+import publish from './publish';
 
 function deploy() {
   const start = Date.now();
