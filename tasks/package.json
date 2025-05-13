@@ -13,6 +13,7 @@
     "@hocuspocus/extension-database": "^1.1.1",
     "@hocuspocus/server": "1.1.1",
     "@hocuspocus/transformer": "1.1.1",
+    "@postlight/parser": "^2.2.3",
     "@supabase/supabase-js": "^2.8.0",
     "@tiptap/core": "^2.0.0-beta.220",
     "@tiptap/extension-blockquote": "^2.0.0-beta.220",

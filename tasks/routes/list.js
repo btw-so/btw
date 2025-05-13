@@ -366,15 +366,12 @@ router.post(
     }),
     async (req, res) => {
         const { url } = req.body || {};
-        console.log("A", url);
         if (!url) {
             res.json({ success: false, error: "Missing URL" });
             return;
         }
-        console.log("B");
         try {
             const result = await parse(url);
-            console.log("C", result);
             const turndownService = new TurndownService();
             const markdown = turndownService.turndown(result.content || "");
             res.json({ success: true, content: markdown });
