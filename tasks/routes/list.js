@@ -4,6 +4,8 @@ var cors = require("cors");
 var { getUserFromToken, doesLoginTokenExist } = require("../logic/user");
 var { getList, getPublicNote, upsertNode, getPinnedNodes, searchNodes } = require("../logic/list");
 var crypto = require("crypto");
+const { parse } = require('@postlight/parser');
+const TurndownService = require('turndown');
 
 router.options(
     "/pinned",
@@ -16,7 +18,7 @@ router.post(
     "/pinned",
     cors({
         credentials: true,
-        origin: process.env.CORS_DOMAINS.split(","),
+    origin: process.env.CORS_DOMAINS.split(","),
     }),
     async (req, res) => {
         const { fingerprint } = req.body || {};
@@ -344,6 +346,40 @@ router.post(
                 isLoggedIn: !!user,
             });
             return;
+        }
+    }
+);
+
+// Readable content extraction endpoint
+router.options(
+    "/utils/readable",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/utils/readable",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { url } = req.body || {};
+        console.log("A", url);
+        if (!url) {
+            res.json({ success: false, error: "Missing URL" });
+            return;
+        }
+        console.log("B");
+        try {
+            const result = await parse(url);
+            console.log("C", result);
+            const turndownService = new TurndownService();
+            const markdown = turndownService.turndown(result.content || "");
+            res.json({ success: true, content: markdown });
+        } catch (e) {
+            res.json({ success: false, error: e.message || e.toString() });
         }
     }
 );
