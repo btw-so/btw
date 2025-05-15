@@ -93,6 +93,7 @@
     "pg": "^8.0.3",
     "pg-format": "^1.0.4",
     "redis": "^3.0.2",
+    "showdown": "^2.1.0",
     "socket.io": "^4.0.0",
     "socket.io-redis": "~6.1.0",
     "tippy.js": "^6.3.7",

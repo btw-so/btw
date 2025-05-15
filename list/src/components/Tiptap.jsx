@@ -336,14 +336,30 @@ class Tiptap extends React.Component {
         )}
         {this.props.liveUrl ? (
           <div
-            className="character-count text-xs text-gray-400"
+            className="character-count text-xs text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
             onClick={() => {
               window.open(this.props.liveUrl, "_blank");
             }}
           >
-            {this.props.liveUrl}
+            {this.props.liveUrl} <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">VIEW</span>
           </div>
         ) : null}
+        {this.props.apiUrl ? (
+          <div
+            className="character-count text-xs text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(this.props.apiUrl);
+                toast.success('API link copied to clipboard!');
+              } catch (err) {
+                toast.error('Failed to copy API link');
+              }
+            }}
+          >
+            {this.props.apiUrl} <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">API</span>
+          </div>
+        ) : null}
+
         <div
           className={`w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center ${
             this.state.showImageUpload ? "absolute" : "absolute hidden"
@@ -378,7 +394,7 @@ class Tiptap extends React.Component {
                         )
                         .join(process.env.REACT_APP_S3_ENDPOINT);
                     }
-                    return { type: 'image', attrs: { src: url } };
+                    return { type: "image", attrs: { src: url } };
                   });
                   this.editor.chain().focus().insertContent(images).run();
                 }
