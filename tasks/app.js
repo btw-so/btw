@@ -38,97 +38,14 @@ const { TaskList } = require("@tiptap/extension-task-list");
 const { Typography } = require("@tiptap/extension-typography");
 const { Underline } = require("@tiptap/extension-underline");
 const { Node, mergeAttributes } = require("@tiptap/core");
-
-const Embed = Node.create({
-    name: "btw-embed",
-    group: "block",
-    selectable: true,
-    draggable: true,
-    atom: true,
-
-    parseHTML() {
-        return [
-            {
-                tag: "btw-embed",
-                contentElement: "textarea",
-            },
-        ];
-    },
-    addAttributes() {
-        return {
-            code: {
-                default: null,
-            },
-        };
-    },
-    renderHTML({ HTMLAttributes }) {
-        return ["btw-embed", mergeAttributes(HTMLAttributes)];
-    },
-    parseHTML() {
-        return [
-            {
-                tag: "btw-embed",
-            },
-        ];
-    },
-});
-
-const CustomDocument = Document.extend({
-    content: "heading block*",
-});
-var { Database } = require("@hocuspocus/extension-database");
-var { Server } = require("@hocuspocus/server");
+const { tiptapExtensions, Embed, CustomDocument } = require("./logic/tiptapExtensions");
 var { generateHTML, generateJSON } = require("@tiptap/html");
 var { TiptapTransformer } = require("@hocuspocus/transformer");
-var extensions = [
-    Embed,
-    CustomDocument,
-    Paragraph,
-    Text,
-    Bold,
-    Blockquote,
-    OrderedList,
-    BulletList,
-    ListItem,
-    Code,
-    Dropcursor,
-    Gapcursor,
-    HardBreak,
-    Heading,
-    Highlight,
-    HorizontalRule,
-    Italic,
-    Link,
-    Strike,
-    TaskList,
-    Typography,
-    Underline,
-    Image,
-    TaskItem.configure({
-        nested: true,
-    }),
-    Placeholder.configure({
-        placeholder: ({ node }) => {
-            if (node.type.name === "heading") {
-                return "What’s the title?";
-            }
-
-            return "Write something...";
-        },
-    }),
-    Youtube.configure({
-        controls: false,
-    }),
-    CodeBlockLowlight,
-    Mention.configure({
-        HTMLAttributes: {
-            class: "mention",
-        },
-    }),
-];
-var MyTipTapTransformer = TiptapTransformer.extensions(extensions);
-var MyTipTapTransformerHTML = (json) => generateHTML(json, extensions);
-var MyTipTapTransformerJSON = (html) => generateJSON(html, extensions);
+var MyTipTapTransformer = TiptapTransformer.extensions(tiptapExtensions);
+var MyTipTapTransformerHTML = (json) => generateHTML(json, tiptapExtensions);
+var MyTipTapTransformerJSON = (html) => generateJSON(html, tiptapExtensions);
+var { Database } = require("@hocuspocus/extension-database");
+var { Server } = require("@hocuspocus/server");
 
 var indexRouter = require("./routes/index");
 var otpRouter = require("./routes/otp");

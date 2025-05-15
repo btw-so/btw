@@ -1496,6 +1496,16 @@ function ListContainer(props) {
                       process.env.REACT_APP_ENCRYPTION_KEY
                     )
                   }
+                  apiUrl={
+                    window.location.origin +
+                    "/api/list/child/add/" +
+                    selectedListId +
+                    "/" +
+                    shortHash(
+                      selectedListId,
+                      process.env.REACT_APP_ENCRYPTION_KEY
+                    )
+                  }
                   reviewerMode={false}
                   usecase="list"
                   className="h-full flex-grow p-6"

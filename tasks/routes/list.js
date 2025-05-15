@@ -6,6 +6,14 @@ var { getList, getPublicNote, upsertNode, getPinnedNodes, searchNodes } = requir
 var crypto = require("crypto");
 const { parse } = require('@postlight/parser');
 const TurndownService = require('turndown');
+const showdown = require('showdown');
+const showdownConverter = new showdown.Converter()
+const { tiptapExtensions } = require("../logic/tiptapExtensions");
+const db = require("../services/db");
+const { v4: uuidv4 } = require("uuid");
+const { upsertNote } = require("../logic/notes");
+const { generateJSON } = require("@tiptap/html");
+const { TiptapTransformer } = require("@hocuspocus/transformer");
 
 router.options(
     "/pinned",
@@ -378,6 +386,85 @@ router.post(
         } catch (e) {
             res.json({ success: false, error: e.message || e.toString() });
         }
+    }
+);
+
+// Add-child endpoint
+router.options(
+    "/api/child/add/:id/:hash",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/api/child/add/:id/:hash",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { id, hash } = req.params || {};
+        const { title, md } = req.body || {};
+        if (!id || !hash) {
+            res.json({ success: false, error: "Missing required fields" });
+            return;
+        }
+        // Validate hash
+        const serverHash = shortHash(id, process.env.ENCRYPTION_KEY);
+        if (serverHash !== hash) {
+            res.json({ success: false, error: "Invalid hash" });
+            return;
+        }
+        // Markdown to HTML
+        let html = "";
+        if (md) {
+            html = showdownConverter.makeHtml(md);
+        }
+        // HTML to tiptap JSON
+        let tiptapJSON = null;
+        try {
+            tiptapJSON = generateJSON(html, tiptapExtensions);
+        } catch (e) {
+            tiptapJSON = null;
+        }
+        // After you have tiptapJSON
+        let ydoc = null;
+        try {
+            const transformer = TiptapTransformer.extensions(tiptapExtensions);
+            ydoc = transformer.toYdoc(tiptapJSON, "default");
+        } catch (e) {
+            ydoc = null;
+        }
+        // Generate new note and node IDs
+        const note_id = uuidv4();
+        const node_id = uuidv4();
+        // Find the user_id and parent node's user_id
+        let user_id = null;
+        try {
+            const pool = await db.getTasksDB();
+            const { rows } = await pool.query("SELECT user_id FROM btw.nodes WHERE id = $1", [id]);
+            if (rows.length > 0) user_id = rows[0].user_id;
+        } catch (e) {}
+        if (!user_id) {
+            res.json({ success: false, error: "Parent node not found" });
+            return;
+        }
+        // Find the max pos among children
+        let pos = 1;
+        try {
+            const pool = await db.getTasksDB();
+            const { rows } = await pool.query("SELECT MAX(pos) as max_pos FROM btw.nodes WHERE parent_id = $1 AND user_id = $2", [id, user_id]);
+            if (rows.length > 0 && rows[0].max_pos !== null) pos = rows[0].max_pos + 1;
+        } catch (e) {}
+        // Insert note
+        await upsertNote({ id: note_id, user_id, json: tiptapJSON, html, title, ydoc });
+        // Insert node
+        await upsertNode({ id: node_id, user_id, text: title || "", parent_id: id, pos, note_id });
+        // Return the public note URL
+        const publicHash = shortHash(note_id, process.env.ENCRYPTION_KEY);
+        const url = `${process.env.LIST_DOMAIN || ""}/public/note/${note_id}/${publicHash}`;
+        res.json({ success: true, url, node_id, note_id });
     }
 );
 

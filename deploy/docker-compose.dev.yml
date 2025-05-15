@@ -52,6 +52,8 @@ services:
             COMPANION_CLIENT_ORIGINS: "http://localhost:9000"
             COMPANION_AWS_ACL: "public-read"
             SECRET: CHANGE THIS AND SET YOUR SECRET
+            LIST_DOMAIN: localhost:9300
+            WRITER_DOMAIN: localhost:9000
             S3_ENDPOINT:
             S3_BUCKET:
             S3_KEY:

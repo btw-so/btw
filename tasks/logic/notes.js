@@ -6,6 +6,7 @@ const fetch = require("node-fetch");
 const { JSDOM } = require("jsdom");
 const turndown = require("turndown")();
 const axios = require("axios");
+const Y = require('yjs');
 
 // do a POST request to process.env.PUBLISHER_SERVER_URL with user_id of the note
 // to the url /internal/cache/refresh/notes
@@ -194,7 +195,7 @@ async function getNote({ id, user_id }) {
     }
 }
 
-async function upsertNote({ id, user_id, json, html, title: defaultTitle }) {
+async function upsertNote({ id, user_id, json, html, title: defaultTitle, ydoc }) {
     const created_at = new Date();
     const updated_at = new Date();
 
@@ -246,6 +247,23 @@ END`;
         ...(json ? [json] : []),
         ...(hasHTML ? [html.replaceAll("\u0000", "")] : []),
     ]);
+
+    if (ydoc) {
+        // If ydoc is a Y.Doc, serialize it
+        let ydocBuffer;
+        if (typeof ydoc.encodeStateAsUpdate === 'function' || (ydoc.constructor && ydoc.constructor.name === 'Doc')) {
+            // ydoc is a Y.Doc instance
+            const update = Y.encodeStateAsUpdate(ydoc);
+            ydocBuffer = Buffer.from(update);
+        } else if (Buffer.isBuffer(ydoc)) {
+            ydocBuffer = ydoc;
+        } else if (ydoc instanceof Uint8Array) {
+            ydocBuffer = Buffer.from(ydoc);
+        } else {
+            throw new Error("Invalid ydoc type");
+        }
+        await pool.query(`UPDATE btw.notes SET ydoc = $1 WHERE id = $2 AND user_id = $3`, [ydocBuffer, id, user_id]);
+    }
 }
 
 async function getNotes({ user_id, page, limit, after = 0 }) {
