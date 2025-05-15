@@ -25,8 +25,8 @@ module.exports = {
             '--tw-prose-quotes': '#363636',
             '--tw-prose-quote-borders': '#363636',
             '--tw-prose-captions': '#363636',
-            '--tw-prose-code': '#363636',
-            '--tw-prose-pre-code': '#363636',
+            '--tw-prose-code': '#F7F7F7',
+            '--tw-prose-pre-code': '#F7F7F7',
             '--tw-prose-pre-bg': '#363636',
             '--tw-prose-th-borders': '#363636',
             '--tw-prose-td-borders': '#363636',
@@ -34,9 +34,6 @@ module.exports = {
               color: '#363636',
             },
             strong: {
-              color: '#363636',
-            },
-            span: {
               color: '#363636',
             },
             p: {
