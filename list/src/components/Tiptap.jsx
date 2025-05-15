@@ -169,6 +169,9 @@ class Tiptap extends React.Component {
         }),
         CodeBlockLowlight.configure({
           lowlight,
+          HTMLAttributes: {
+            class: "not-prose",
+          },
         }),
         Mention.configure({
           HTMLAttributes: {
