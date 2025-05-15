@@ -1497,8 +1497,8 @@ function ListContainer(props) {
                     )
                   }
                   apiUrl={
-                    window.location.origin +
-                    "/api/list/child/add/" +
+                    process.env.REACT_APP_TASKS_PUBLIC_URL +
+                    "/list/api/child/add/" +
                     selectedListId +
                     "/" +
                     shortHash(
