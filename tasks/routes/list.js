@@ -458,7 +458,7 @@ router.post(
             if (rows.length > 0 && rows[0].max_pos !== null) pos = rows[0].max_pos + 1;
         } catch (e) {}
         // Insert note
-        await upsertNote({ id: note_id, user_id, json: tiptapJSON, html, title, ydoc });
+        await upsertNote({ id: note_id, user_id, json: tiptapJSON, html, title, ydoc, tags: "list,auto" });
         // Insert node
         await upsertNode({ id: node_id, user_id, text: title || "", parent_id: id, pos, note_id });
         // Return the public note URL
