@@ -174,7 +174,7 @@ class Tiptap extends React.Component {
           HTMLAttributes: {
             class: "mention",
           },
-          suggestion: Suggestion([props.userName]),
+          suggestion: Suggestion([props.userName || "You"]),
         }),
         CharacterCount.configure({
           limit,
@@ -337,8 +337,13 @@ class Tiptap extends React.Component {
         {this.props.liveUrl ? (
           <div
             className="character-count text-xs text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
-            onClick={() => {
-              window.open(this.props.liveUrl, "_blank");
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(this.props.liveUrl);
+                toast.success('Live URL copied to clipboard!');
+              } catch (err) {
+                toast.error('Failed to copy live URL');
+              }
             }}
           >
             {this.props.liveUrl} <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">VIEW</span>

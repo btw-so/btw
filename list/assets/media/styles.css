@@ -602,8 +602,7 @@ select {
   background-repeat: no-repeat;
   background-size: 1.5em 1.5em;
   padding-right: 2.5rem;
-  -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 [multiple],[size]:where(select:not([size="1"])) {
@@ -612,15 +611,13 @@ select {
   background-repeat: unset;
   background-size: initial;
   padding-right: 0.75rem;
-  -webkit-print-color-adjust: unset;
-          print-color-adjust: unset;
+  print-color-adjust: unset;
 }
 
 [type='checkbox'],[type='radio'] {
   appearance: none;
   padding: 0;
-  -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
+  print-color-adjust: exact;
   display: inline-block;
   vertical-align: middle;
   background-origin: border-box;
@@ -1137,8 +1134,8 @@ input[type="number"]::-webkit-inner-spin-button,
   --tw-prose-captions: #363636;
   --tw-prose-kbd: #111827;
   --tw-prose-kbd-shadows: 17 24 39;
-  --tw-prose-code: #F7F7F7;
-  --tw-prose-pre-code: #F7F7F7;
+  --tw-prose-code: #FF7F7F;
+  --tw-prose-pre-code: #FF7F7F;
   --tw-prose-pre-bg: #363636;
   --tw-prose-th-borders: #363636;
   --tw-prose-td-borders: #363636;
@@ -2058,11 +2055,6 @@ input[type="number"]::-webkit-inner-spin-button,
 .text-gray-500 {
   --tw-text-opacity: 1;
   color: rgb(107 114 128 / var(--tw-text-opacity, 1));
-}
-
-.text-gray-600 {
-  --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
 }
 
 .text-gray-700 {
