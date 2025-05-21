@@ -24,6 +24,7 @@
     "@gilbarbara/helpers": "^0.5.1",
     "@headlessui/react": "^1.7.13",
     "@hocuspocus/provider": "^1.1.1",
+    "@monokai/monoco-react": "^0.2.3",
     "@reduxjs/toolkit": "^1.8.0",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",

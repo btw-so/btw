@@ -184,12 +184,14 @@ function Sidebar(props) {
       <>
         <div className="space-x-2 w-full mb-2 border-gray-100 sidebar-toolkit flex items-center">
           <div className="flex-grow">
-            <div className="relative rounded-md shadow-sm">
+            <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">
                 <div>
-                  <div className="mr-1">
-                    <div className={`flex justify-center items-center`}>
-                      <i className={`remix ri-search-line`}></i>
+                  <div className="">
+                    <div
+                      className={`flex justify-center items-center text-gray-400`}
+                    >
+                      <i className={`remix ri-search-line`} style={{ fontSize: '0.75em' }}></i>
                     </div>
                   </div>
                 </div>
@@ -198,11 +200,16 @@ function Sidebar(props) {
                 type="text"
                 name="search"
                 id="search"
-                className="block w-full rounded-md border-0 py-1 pl-8 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full bg-transparent border-0 py-1 pl-6 text-gray-900 shadow-none placeholder:text-gray-400 ring-0 outline-none focus:ring-0"
                 placeholder="Search"
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
+                }}
+                style={{
+                  boxShadow: "none",
+                  ringShadow: "none",
+                  border: "none",
                 }}
               />
             </div>
@@ -214,55 +221,55 @@ function Sidebar(props) {
             <>
               {/* Pinned Section */}
               <div className="mt-4 mb-1 px-2">
-                <span className="text-xs text-gray-400 font-bold">
-                  Pinned
-                </span>
+                <span className="text-xs text-gray-400 font-bold">Pinned</span>
               </div>
-              {pinnedNodes.data.map((node) => {
-                const sortedNodes = [...pinnedNodes.data].sort(
-                  (a, b) => a.pinned_pos - b.pinned_pos
-                );
-                const isFirstNode =
-                  sortedNodes.length > 0 && sortedNodes[0].id === node.id;
+              <div className="space-y-0.5">
+                {pinnedNodes.data.map((node) => {
+                  const sortedNodes = [...pinnedNodes.data].sort(
+                    (a, b) => a.pinned_pos - b.pinned_pos
+                  );
+                  const isFirstNode =
+                    sortedNodes.length > 0 && sortedNodes[0].id === node.id;
 
-                return (
-                  <div
-                    key={node.id}
-                    className="flex items-center cursor-pointer px-2 py-0"
-                    onClick={() => {
-                      props.closeSidebar();
-                      // make sure we are on /list page
-                      if (!isListPage) {
-                        navigate("/list");
-                      }
-
-                      dispatch(
-                        changeSelectedNode({
-                          id: node.id,
-                        })
-                      );
-                    }}
-                    draggable={!isFirstNode && searchTerm.length < 3}
-                    onDragStart={(e) => handleDragStart(e, node)}
-                    onDragOver={(e) => handleDragOver(e, node.id)}
-                    onDragEnd={handleDragEnd}
-                    onDrop={(e) => handleDrop(e, node)}
-                  >
-                    <span className="mr-2 pt-0.5 mb-1">
-                      <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
-                    </span>
-                    <span
-                      className={`overflow-hidden text-ellipsis truncate ${
+                  return (
+                    <button
+                      key={node.id}
+                      className={`w-full py-1 px-2 transition-colors duration-200 rounded-md flex items-center hover:bg-gray-200 ${
                         node.id === selectedListId && !is4000Page
-                          ? "font-medium text-blue-500"
-                          : "font-medium"
+                          ? "text-gray-900 bg-gray-200"
+                          : "text-gray-900"
                       }`}
+                      onClick={() => {
+                        props.closeSidebar();
+                        // make sure we are on /list page
+                        if (!isListPage) {
+                          navigate("/list");
+                        }
+
+                        dispatch(
+                          changeSelectedNode({
+                            id: node.id,
+                          })
+                        );
+                      }}
+                      draggable={!isFirstNode && searchTerm.length < 3}
+                      onDragStart={(e) => handleDragStart(e, node)}
+                      onDragOver={(e) => handleDragOver(e, node.id)}
+                      onDragEnd={handleDragEnd}
+                      onDrop={(e) => handleDrop(e, node)}
                     >
-                      {node.text}
-                    </span>
-                  </div>
-                );
-              })}
+                      <span className="mr-2">
+                        <i className="ri-checkbox-blank-circle-fill ri-xxs text-gray-400"></i>
+                      </span>
+                      <span
+                        className={`overflow-hidden text-ellipsis truncate leading-[1.2]`}
+                      >
+                        {node.text}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
 
               {/* Pages Section */}
               <div className="mt-2 mb-1 px-2">
@@ -271,19 +278,19 @@ function Sidebar(props) {
                 </span>
               </div>
               <div
-                className="flex items-center cursor-pointer px-2 py-1"
+                className={`w-full py-1.5 px-2 transition-colors duration-200 rounded-md flex items-center hover:bg-gray-200 ${
+                  is4000Page ? "text-gray-900 bg-gray-200" : "text-gray-900"
+                }`}
                 onClick={() => {
                   props.closeSidebar();
                   navigate("/4000");
                 }}
               >
                 <span className="mr-2 pt-0.5 mb-1">
-                  <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
+                  <i className="ri-checkbox-blank-circle-fill ri-xxs text-gray-400"></i>
                 </span>
                 <span
-                  className={`overflow-hidden text-ellipsis truncate ${
-                    is4000Page ? "font-black text-blue-500" : "font-bold"
-                  }`}
+                  className={`overflow-hidden text-ellipsis truncate font-bold`}
                 >
                   4000 Weeks
                 </span>
@@ -291,12 +298,16 @@ function Sidebar(props) {
             </>
           ) : (
             // Show search results only when searching
-            <>
+            <div className="space-y-0.5">
               {(searchResultsNodes || []).map((node) => {
                 return (
                   <div key={node.id}>
-                    <div
-                      className="flex items-center cursor-pointer px-2 py-0"
+                    <button
+                      className={`flex w-full items-center cursor-pointer px-2 py-0.5 rounded-md transition-colors duration-200 hover:bg-gray-200 ${
+                        node.id === selectedListId && !is4000Page
+                          ? "text-gray-900 bg-gray-200"
+                          : "text-gray-900"
+                      }`}
                       onClick={() => {
                         // make sure we are on /list page
                         if (!isListPage) {
@@ -312,36 +323,34 @@ function Sidebar(props) {
                       }}
                     >
                       <span className="mr-2 pt-0.5 mb-1">
-                        <i className="ri-checkbox-blank-circle-fill ri-xxs"></i>
+                        <i className="ri-checkbox-blank-circle-fill ri-xxs text-gray-400"></i>
                       </span>
                       <span
-                        className={`overflow-hidden text-ellipsis truncate ${
-                          node.id === selectedListId && !is4000Page
-                            ? "font-medium text-blue-500"
-                            : "font-medium"
-                        }`}
+                        className={`overflow-hidden text-ellipsis truncate leading-[1.2]`}
                       >
                         {node.text}
                       </span>
-                    </div>
+                    </button>
                   </div>
                 );
               })}
-            </>
+            </div>
           )}
         </div>
         <div className="w-full sidebar-toolkit">
           <button
-            className={`w-full pb-2 pt-4 flex items-center hover:font-extrabold hover:text-blue-500 ${
-              props.settingsPage ? "text-blue-500" : ""
+            className={`w-full py-1.5 px-2 transition-colors duration-200 rounded-md flex items-center hover:bg-gray-200 ${
+              props.settingsPage ? "text-gray-900 bg-gray-200" : "text-gray-900"
             }`}
             onClick={() => {
               props.closeSidebar();
               navigate("/settings");
             }}
           >
-            <i className={`ri-xxs ri-checkbox-blank-circle-fill mr-1`}></i>
-            <span className="font-extrabold">Settings</span>
+            <i
+              className={`ri-xxs ri-checkbox-blank-circle-fill mr-2 text-gray-400`}
+            ></i>
+            <span className="">Settings</span>
           </button>
         </div>
       </>

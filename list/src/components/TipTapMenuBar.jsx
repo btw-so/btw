@@ -1,14 +1,40 @@
 import React, { Fragment, useCallback } from "react";
 
-const MenuItem = ({ icon, title, action, isActive = null }) => (
-  <button
-    className={` menu-item${isActive && isActive() ? " is-active" : ""}`}
-    onClick={action}
-    title={title}
-  >
-    <i className={`remix ri-${icon} w-6 h-6`}></i>
-  </button>
-);
+const MenuItem = ({ icon, title, action, isActive = null }) => {
+  // Dieter Rams-inspired: minimal base, pronounced dark neumorphic active
+  const baseStyle = {
+    background: 'transparent',
+    border: 'none',
+    borderRadius: '11px',
+    padding: '2px', // consistent padding
+    margin: '2px',
+    outline: 'none',
+    cursor: 'pointer',
+    transition: 'box-shadow 0.15s, background 0.15s, color 0.15s, border 0.15s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '24px',
+    minHeight: '24px',
+  };
+  const activeStyle = isActive && isActive()
+    ? {
+        background: '#363636',
+      }
+    : {};
+  const iconStyle = isActive && isActive()
+    ? { fontSize: 15, color: '#F7f7f7' }
+    : { fontSize: 15, color: '#363636' };
+  return (
+    <button
+      style={{ ...baseStyle, ...activeStyle }}
+      onClick={action}
+      title={title}
+    >
+      <i className={`remix ri-${icon} w-6 h-6`} style={iconStyle}></i>
+    </button>
+  );
+};
 
 export default ({
   editor,
