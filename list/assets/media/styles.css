@@ -1263,6 +1263,16 @@ input[type="number"]::-webkit-inner-spin-button,
   margin-bottom: 3rem;
 }
 
+.mx-4 {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+.mx-6 {
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+}
+
 .-mb-1 {
   margin-bottom: -0.25rem;
 }
@@ -1470,6 +1480,10 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .w-full {
   width: 100%;
+}
+
+.w-auto {
+  width: auto;
 }
 
 .min-w-full {
@@ -1825,6 +1839,11 @@ input[type="number"]::-webkit-inner-spin-button,
 .py-6 {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
+}
+
+.px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 .pb-1 {
@@ -3215,6 +3234,10 @@ hr.ProseMirror-selectednode {
     margin-right: 1rem;
   }
 
+  .sm\:mb-3 {
+    margin-bottom: 0.75rem;
+  }
+
   .sm\:flex {
     display: flex;
   }
@@ -3227,13 +3250,31 @@ hr.ProseMirror-selectednode {
     width: 16rem;
   }
 
+  .sm\:px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
   .sm\:pt-4 {
     padding-top: 1rem;
+  }
+
+  .sm\:pb-10 {
+    padding-bottom: 2.5rem;
+  }
+
+  .sm\:pt-6 {
+    padding-top: 1.5rem;
   }
 
   .sm\:text-sm {
     font-size: 0.875rem;
     line-height: 1.25rem;
+  }
+
+  .sm\:text-3xl {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
   }
 
   .sm\:leading-6 {
@@ -3242,6 +3283,11 @@ hr.ProseMirror-selectednode {
 }
 
 @media (min-width: 768px) {
+  .md\:mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .md\:block {
     display: block;
   }
@@ -3260,6 +3306,10 @@ hr.ProseMirror-selectednode {
 
   .md\:h-12 {
     height: 3rem;
+  }
+
+  .md\:h-3 {
+    height: 0.75rem;
   }
 
   .md\:w-1\/3 {
@@ -3326,6 +3376,14 @@ hr.ProseMirror-selectednode {
 
   .md\:pt-6 {
     padding-top: 1.5rem;
+  }
+
+  .md\:pb-12 {
+    padding-bottom: 3rem;
+  }
+
+  .md\:pt-8 {
+    padding-top: 2rem;
   }
 }
 
