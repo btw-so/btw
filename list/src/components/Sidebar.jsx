@@ -278,7 +278,7 @@ function Sidebar(props) {
                 </span>
               </div>
               <div
-                className={`w-full py-1.5 px-2 transition-colors duration-200 rounded-md flex items-center hover:bg-gray-200 ${
+                className={`w-full cursor-pointer py-0.5 px-2 transition-colors duration-200 rounded-md flex items-center hover:bg-gray-200 ${
                   is4000Page ? "text-gray-900 bg-gray-200" : "text-gray-900"
                 }`}
                 onClick={() => {
@@ -286,11 +286,11 @@ function Sidebar(props) {
                   navigate("/4000");
                 }}
               >
-                <span className="mr-2 pt-0.5 mb-1">
+                <span className="mr-2">
                   <i className="ri-checkbox-blank-circle-fill ri-xxs text-gray-400"></i>
                 </span>
                 <span
-                  className={`overflow-hidden text-ellipsis truncate font-bold`}
+                  className={`overflow-hidden text-ellipsis truncate`}
                 >
                   4000 Weeks
                 </span>

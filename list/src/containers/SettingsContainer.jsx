@@ -137,7 +137,7 @@ function SettingsContainer(props) {
                     Birthday
                   </label>
                   <input
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    className="shadow bg-transparent appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     id="birthday"
                     type="date"
                     value={settings.birthday || ""}
