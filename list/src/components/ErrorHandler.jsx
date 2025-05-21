@@ -3,12 +3,7 @@ import { Button, Container, Paragraph } from 'styled-minimal';
 
 import Icon from 'components/Icon';
 
-interface Props {
-  error: Error;
-  resetErrorBoundary: () => void;
-}
-
-export default function ErrorHandler({ error, resetErrorBoundary }: Props) {
+export default function ErrorHandler({ error, resetErrorBoundary }) {
   const handleClickReset = () => {
     resetErrorBoundary();
   };

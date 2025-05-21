@@ -9,25 +9,15 @@ import Icon from 'components/Icon';
 
 import { Icons } from 'types';
 
-interface Props {
-  children: React.ReactNode;
-  handleClickClose?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  icon?: Icons;
-  id?: string;
-  variant?: string;
-}
-
-AlertComponent.displayName = 'AlertComponent';
-
 const AlertIcon = styled.div`
   align-items: flex-start;
-  background-color: ${({ variant }: { variant: Variants }) => variants[variant]};
+  background-color: ${({ variant }) => variants[variant]};
   color: #fff;
   display: flex;
 `;
 
 const AlertButton = styled.button`
-  background-color: ${({ variant }: { variant: Variants }) => variants[variant]};
+  background-color: ${({ variant }) => variants[variant]};
   color: #fff;
   line-height: 0;
   pointer-events: all;
@@ -36,9 +26,10 @@ const AlertButton = styled.button`
   top: ${spacer(1)};
 `;
 
-function Alert({ children, handleClickClose, icon, id, variant = 'gray', ...rest }: Props) {
-  const output: Record<string, any> = {};
-  let name: Icons;
+AlertComponent.displayName = 'AlertComponent';
+
+function Alert({ children, handleClickClose, icon, id, variant = 'gray', ...rest }) {
+  let name;
 
   switch (variant) {
     case 'success': {
@@ -66,14 +57,6 @@ function Alert({ children, handleClickClose, icon, id, variant = 'gray', ...rest
     }
   }
 
-  if (handleClickClose) {
-    output.button = (
-      <AlertButton data-id={id} onClick={handleClickClose} type="button" variant={variant}>
-        <Icon name="times" width={10} />
-      </AlertButton>
-    );
-  }
-
   return (
     <AlertComponent
       {...rest}
@@ -87,7 +70,11 @@ function Alert({ children, handleClickClose, icon, id, variant = 'gray', ...rest
         <Icon name={name} width={24} />
       </AlertIcon>
       <Box pl={handleClickClose ? 3 : 2}>{children}</Box>
-      {output.button}
+      {handleClickClose && (
+        <AlertButton data-id={id} onClick={handleClickClose} type="button" variant={variant}>
+          <Icon name="times" width={10} />
+        </AlertButton>
+      )}
     </AlertComponent>
   );
 }

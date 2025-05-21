@@ -228,7 +228,7 @@ export function* batchPushNodesSaga({ payload }) {
       );
       if (res.success) {
         if (window.nodeConnectionStatusToastId) {
-          toast.success(`Connected`);
+          toast.success(`Connected to the internet.`);
           toast.dismiss(window.nodeConnectionStatusToastId);
           window.nodeConnectionStatusToastId = null;
         }

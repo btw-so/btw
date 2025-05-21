@@ -93,7 +93,7 @@ export function* addFile({ payload }) {
     if (success && !error && data.file_id) {
       yield put(addFileSuccess({ ...data }));
 
-      toast.success(`${name} added successfully`);
+      toast.success(`${name} added successfully.`);
     } else {
       yield put(
         addFileFailure({

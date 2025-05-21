@@ -397,11 +397,6 @@ hr.ProseMirror-selectednode {
 }
 
 
-/* apply pink-600 */
-.list-canvas strong {
-  @apply text-pink-600;
-}
-
 .uppy-parent .uppy-Dashboard-inner {
   height: 100% !important;
   min-height: unset !important;
