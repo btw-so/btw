@@ -182,7 +182,7 @@ function Sidebar(props) {
   if (token) {
     return (
       <>
-        <div className="space-x-2 w-full mb-2 border-gray-200 sidebar-toolkit flex items-center">
+        <div className="space-x-2 w-full mb-2 border-gray-100 sidebar-toolkit flex items-center">
           <div className="flex-grow">
             <div className="relative rounded-md shadow-sm">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2">

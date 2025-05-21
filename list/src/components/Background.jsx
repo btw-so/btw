@@ -20,4 +20,4 @@ const Background = styled.div`
   }
 `;
 
-export default Background;
+export default Background; 

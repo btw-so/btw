@@ -1272,7 +1272,7 @@ function ListContainer(props) {
           <div className="flex items-center pt-1 md:pt-0">
             <ContentEditable
               id={selectedListId}
-              classes={"text-xl font-bold mb-2 pl-6 pr-2 w-fit"}
+              classes={"text-2xl font-bold tracking-tight leading-tight mb-2 pl-6 pr-2 w-fit"}
               val={nodeDBMap[selectedListId]?.text || ""}
               setVal={(val) => {
                 upsertHelper({
@@ -1338,10 +1338,10 @@ function ListContainer(props) {
           </div>
 
           {/* Main Content Area */}
-          <div className="flex flex-grow overflow-y-hidden flex-col md:flex-row border-t-2 border-gray-200 pb-3 md:pb-0">
+          <div className="flex flex-grow overflow-y-hidden flex-col md:flex-row border-t-2 border-gray-100 pb-3 md:pb-0">
             {/* Main tab content: nodes + Uppy */}
             <div
-              className={`flex flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-2 border-gray-200 md:border-b-0 md:border-r-2 md:border-gray-200 ${
+              className={`flex flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-2 border-gray-100 md:border-b-0 md:border-r-2 md:border-gray-100 ${
                 mobileTab !== "main" ? "hidden" : ""
               } md:flex`}
             >
@@ -1551,7 +1551,7 @@ function ListContainer(props) {
           </div>
 
           {/* Mobile Tab Bar - fixed at bottom */}
-          <div className="md:hidden z-10 fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-10">
+          <div className="md:hidden z-10 fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around items-center h-10">
             <button
               className={`flex flex-col items-center justify-center flex-1 h-full transition-colors duration-200 focus:outline-none ${
                 mobileTab === "main"

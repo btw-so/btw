@@ -340,9 +340,9 @@ class Tiptap extends React.Component {
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(this.props.liveUrl);
-                toast.success('Live URL copied to clipboard!');
+                toast.success('Live URL copied to clipboard.');
               } catch (err) {
-                toast.error('Failed to copy live URL');
+                toast.error('Failed to copy live URL.');
               }
             }}
           >
@@ -355,9 +355,9 @@ class Tiptap extends React.Component {
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(this.props.apiUrl);
-                toast.success('API link copied to clipboard!');
+                toast.success('API link copied to clipboard.');
               } catch (err) {
-                toast.error('Failed to copy API link');
+                toast.error('Failed to copy API link.');
               }
             }}
           >

@@ -47,7 +47,7 @@ function Root() {
 
   useEffect(() => {
     if (changed("user.isLoggedIn", true) && isLoggedIn) {
-      toast.success("Logged In!");
+      toast.success("Logged In.");
     }
   }, [dispatch, changed]);
 
@@ -74,7 +74,7 @@ function Root() {
 
   return (
     <Router>
-      <div className="w-full h-full flex-grow flex flex-col">
+      <div className="w-full h-full flex-grow flex flex-col min-h-screen">
         <Helmet
           defaultTitle={"btw ∴"}
           defer={false}
