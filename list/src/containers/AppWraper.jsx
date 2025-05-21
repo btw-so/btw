@@ -24,6 +24,9 @@ function AppWrapper(props) {
                 ? "w-full sm:w-64 px-4 pb-4 pt-16 sm:pt-4 absolute sm:relative top-0 bottom-0 left-0 right-0 bg-white z-20"
                 : "w-64 p-4 hidden sm:visible sm:flex"
             } border-r-2 border-gray-100 flex flex-col max-h-screen shrink-0 bg-white`}
+            style={{
+              background: "#F7F7F7",
+            }}
           >
             <Sidebar {...props} closeSidebar={() => setSidebarIsOpen(false)} />
           </div>
@@ -44,7 +47,12 @@ function AppWrapper(props) {
               }`}
             ></i>
           </div>
-          <div className="flex-grow flex flex-col max-h-screen">
+          <div
+            className="flex-grow flex flex-col max-h-screen"
+            style={{
+              background: "#F7F7F7",
+            }}
+          >
             {/* children go here */}
             {props.children}
           </div>

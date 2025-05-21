@@ -327,6 +327,7 @@ class Tiptap extends React.Component {
             }}
           />
         </div>
+        <div className="h-12 block"></div>
         {this.props.hideCharacterCount ? null : (
           <div className="character-count text-xs text-gray-400">
             {/* {this.state.chars || "0"}/{limit} characters

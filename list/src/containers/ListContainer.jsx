@@ -21,6 +21,7 @@ import useTreeChanges from "tree-changes-hook";
 import Tiptap from "../components/Tiptap";
 import { Switch } from "@headlessui/react";
 import { debounce } from "lodash";
+import RamsNeumorphicToggle from "../components/DieterToggle";
 
 const MAX_POS = 10000;
 const MAX_LEVEL = 10;
@@ -1272,7 +1273,7 @@ function ListContainer(props) {
           <div className="flex items-center pt-1 md:pt-0">
             <ContentEditable
               id={selectedListId}
-              classes={"text-2xl font-bold tracking-tight leading-tight mb-2 pl-6 pr-2 w-fit"}
+              classes={"text-2xl font-bold tracking-tight leading-tight mb-2 pl-6 pr-1 w-fit"}
               val={nodeDBMap[selectedListId]?.text || ""}
               setVal={(val) => {
                 upsertHelper({
@@ -1313,7 +1314,7 @@ function ListContainer(props) {
               }}
             />
             <div
-              className={`hidden md:flex flex-col items-center justify-center pb-1 w-6 h-6 cursor-pointer ${
+              className={`hidden md:flex flex-col items-center justify-center pb-1 ml-1 cursor-pointer ${
                 selectedListId === "home" ? "hidden" : ""
               }`}
               onClick={() => {
@@ -1325,15 +1326,9 @@ function ListContainer(props) {
                 });
               }}
             >
-              {nodeDBMap[selectedListId]?.pinned_pos ? (
-                <div className="flex items-center hover:text-gray-700">
-                  <i className="ri-star-fill text-gray-500"></i>
-                </div>
-              ) : (
-                <div className="flex items-center hover:text-gray-700">
-                  <i className="ri-star-line text-gray-500"></i>
-                </div>
-              )}
+              <span className="flex items-center justify-center w-6 h-6">
+                <i className={`ri-pushpin-${nodeDBMap[selectedListId]?.pinned_pos ? "fill text-gray-500" : "line text-gray-400 hover:text-gray-500"} transition-colors duration-200`}></i>
+              </span>
             </div>
           </div>
 

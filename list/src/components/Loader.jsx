@@ -4,14 +4,7 @@ import { px } from 'styled-minimal';
 
 import { appColor } from 'modules/theme';
 
-interface Props {
-  block?: boolean;
-  color: string;
-  size: number;
-  type: 'grow' | 'pulse' | 'rotate';
-}
-
-const grow = ({ size }: Props) => keyframes`
+const grow = ({ size }) => keyframes`
   0% {
     height: 0;
     width: 0;
@@ -36,7 +29,7 @@ const rotate = keyframes`
   }
 `;
 
-const ripple = ({ size }: Props) => keyframes`
+const ripple = ({ size }) => keyframes`
   0% {
     height: 0;
     left: ${px(size / 2)};
@@ -114,7 +107,7 @@ const LoaderPulse = styled.div`
   }
 `;
 
-const LoaderRotate = styled.div<Props>`
+const LoaderRotate = styled.div`
   display: ${props => (props.block ? 'flex' : 'inline-flex')};
   margin: ${props => (props.block ? '2rem' : 0)} auto;
   text-align: center;
@@ -122,7 +115,7 @@ const LoaderRotate = styled.div<Props>`
 
 const LoaderRotateSVG = styled.svg.attrs({
   viewBox: '25 25 50 50',
-})<Props>`
+})`
   animation: ${rotate} 2s linear infinite;
   height: ${props => px(props.size)};
   margin: auto;
@@ -138,27 +131,33 @@ const LoaderRotateCircle = styled.circle`
   stroke-linecap: round;
 `;
 
-const Loader = (props: Props) => {
+const Loader = ({
+  color = appColor,
+  size = 32,
+  type = 'grow',
+  block,
+  ...props
+}) => {
   let output;
 
-  if (props.type === 'rotate') {
+  if (type === 'rotate') {
     output = (
-      <LoaderRotate {...props} data-testid="Loader">
-        <LoaderRotateSVG {...props}>
-          <LoaderRotateCircle {...props} cx="50" cy="50" fill="none" r="20" strokeWidth={2} />
+      <LoaderRotate color={color} size={size} block={block} {...props} data-testid="Loader">
+        <LoaderRotateSVG color={color} size={size} block={block} {...props}>
+          <LoaderRotateCircle color={color} size={size} block={block} {...props} cx="50" cy="50" fill="none" r="20" strokeWidth={2} />
         </LoaderRotateSVG>
       </LoaderRotate>
     );
-  } else if (props.type === 'pulse') {
+  } else if (type === 'pulse') {
     output = (
-      <LoaderPulse {...props} data-testid="Loader">
+      <LoaderPulse color={color} size={size} block={block} {...props} data-testid="Loader">
         <div />
         <div />
       </LoaderPulse>
     );
   } else {
     output = (
-      <LoaderGrow {...props} data-testid="Loader">
+      <LoaderGrow color={color} size={size} block={block} {...props} data-testid="Loader">
         <div />
       </LoaderGrow>
     );
@@ -167,11 +166,5 @@ const Loader = (props: Props) => {
   return output;
 };
 
-Loader.defaultProps = {
-  block: false,
-  color: appColor,
-  size: 32,
-  type: 'grow',
-};
-
 export default Loader;
+ 
