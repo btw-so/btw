@@ -27,7 +27,9 @@ body {
 .tiptap-editor li p {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
+  line-height: 1.5 !important;
 }
+
 
 .tiptap-editor li {
   margin-top: 0.1em !important;
@@ -222,13 +224,14 @@ hr.ProseMirror-selectednode {
   border-color: #9ca3af;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
 }
-
-.tiptap-editor ul[data-type="taskList"] li[data-checked="true"] {
+.tiptap-editor ul[data-type="taskList"] li[data-checked="true"],
+.tiptap-editor ul[data-type="taskList"] li[data-checked]:not([data-checked="false"]) {
   text-decoration: line-through !important;
   @apply text-gray-500;
 }
 
-.tiptap-editor ul[data-type="taskList"] li[data-checked="true"] p {
+.tiptap-editor ul[data-type="taskList"] li[data-checked="true"] p,
+.tiptap-editor ul[data-type="taskList"] li[data-checked]:not([data-checked="false"]) p {
   @apply text-gray-500;
 }
 
@@ -258,6 +261,22 @@ hr.ProseMirror-selectednode {
 :root {
   --tiptop: 0;
   --tipleft: 0;
+}
+
+@media (min-width: 768px) {
+  .tiptap-editor .md\:prose-lg li p {
+    line-height: 1.5;
+  }
+
+  .tiptap-editor .md\:prose-lg ul[data-type="taskList"] li > label > input[type="checkbox"] {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  .tiptap-editor .md\:prose-lg ul[data-type="taskList"] li > label {
+    margin-top: 0.35rem !important;
+  }
+
 }
 
 .problem.tooltip::before {
