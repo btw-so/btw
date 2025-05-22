@@ -505,7 +505,11 @@ const Node = ({
                 toggleChecked();
               }}
             >
-              <i className={`ri-checkbox-fill text-blue-500 ri-xss`}></i>
+              <input
+                type="checkbox"
+                className="tiptap-checkbox text-gray-400 w-3 h-3 shadow-none ring-none outline-none focus:ring-0 focus:ring-offset-0"
+                checked={node.checked}
+              />
             </a>
           </div>
         ) : (
@@ -516,7 +520,11 @@ const Node = ({
                 toggleChecked();
               }}
             >
-              <i className="ri-checkbox-blank-line text-gray-500 hover:text-gray-900 ri-xss"></i>
+              <input
+                type="checkbox"
+                className="tiptap-checkbox text-gray-400 w-3 h-3 shadow-none ring-none outline-none focus:ring-0 focus:ring-offset-0"
+                checked={node.checked}
+              />
             </a>
           </div>
         )}

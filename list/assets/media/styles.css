@@ -1412,6 +1412,10 @@ input[type="number"]::-webkit-inner-spin-button,
   height: 0.5rem;
 }
 
+.h-3 {
+  height: 0.75rem;
+}
+
 .h-4 {
   height: 1rem;
 }
@@ -1450,6 +1454,10 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .w-16 {
   width: 4rem;
+}
+
+.w-3 {
+  width: 0.75rem;
 }
 
 .w-4 {
@@ -1780,6 +1788,14 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .bg-white\/30 {
   background-color: rgb(255 255 255 / 0.3);
+}
+
+.p-0 {
+  padding: 0px;
+}
+
+.p-0\.5 {
+  padding: 0.125rem;
 }
 
 .p-1 {
@@ -2410,7 +2426,7 @@ hr.ProseMirror-selectednode {
   margin-bottom: 0rem !important;
 }
 
-.tiptap-editor ul[data-type="taskList"] li > label > input[type="checkbox"] {
+.tiptap-editor ul[data-type="taskList"] li > label > input[type="checkbox"], .tiptap-checkbox {
   border-radius: 0.25rem;
   background: transparent;
   width: 0.85rem;
