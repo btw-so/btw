@@ -385,7 +385,7 @@ class Tiptap extends React.Component {
             </div>
           ) : null}
         </div>
-        <div className="h-1 mt-4 block"></div>
+        <div className="h-1 mt-4 hidden md:block"></div>
 
         <div
           className={`w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center ${
