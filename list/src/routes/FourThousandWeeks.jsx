@@ -99,7 +99,7 @@ function FourThousandWeeks({ userId, settings, name, email }) {
               </p>
             </div>
 
-            <div className="bg-white gap-0 md:gap-0.5 flex flex-col mt-10 overflow-x-visible relative ml-0">
+            <div className="bg-transparent gap-0 md:gap-0.5 flex flex-col mt-10 overflow-x-visible relative ml-0">
               {/* Week label and arrow */}
               <div className="absolute -top-5 left-8 flex items-center -ml-5">
                 <span className="text-sm mr-1">Week</span>
