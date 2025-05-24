@@ -71,7 +71,7 @@ async function getServerTime({ attempts = 1 }) {
     await Promise.all(promises);
   } catch (err) {
     // major issue could happen. for now, let's silent fail
-    toast.error("Your device could be not in sync with the correct timezone");
+    toast.error("Looks like a wonky internet connection.");
     console.log(err);
   }
 }
@@ -111,8 +111,6 @@ export function* getPinnedNodesSaga({ payload }) {
 }
 
 export function* getListSaga({ payload }) {
-  // await on getServerTime
-  yield call(getServerTime, { attempts: 1 });
 
   const fingerprint = yield call(getFingerPrint);
 
@@ -120,6 +118,10 @@ export function* getListSaga({ payload }) {
 
   // check if this api is being called first in the app. use window variable so on reload it fetches fresh again
   const isInitialFetch = !window.notesInitialFetchDone;
+
+  if (isInitialFetch) {
+    yield call(getServerTime, { attempts: 1 });
+  }
 
   // save the time when call started
   const st = window.SERVER_TIME
@@ -202,6 +204,7 @@ export function* getListSaga({ payload }) {
 
     yield put(getListSuccess({ nodes, partial: false, st }));
   } catch (e) {
+    toast.error(`Make sure you have a good internet connection.`)
     yield put(getListFailure({ error: "Something went wrong" }));
     return;
   }

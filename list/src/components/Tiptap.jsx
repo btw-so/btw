@@ -1,6 +1,7 @@
 /* eslint-disable */
 import React from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
+import CodeBlockComponent from "./CodeBlockComponent";
 import { Editor } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 
@@ -41,15 +42,22 @@ let TipTapTeacher = null;
 import UppyComponent from "../components/Uppy";
 import Suggestion from "./TipTapSuggestion";
 
-import { lowlight } from "lowlight";
 import css from "highlight.js/lib/languages/css";
 import js from "highlight.js/lib/languages/javascript";
 import ts from "highlight.js/lib/languages/typescript";
 import html from "highlight.js/lib/languages/xml";
-lowlight.registerLanguage("html", html);
-lowlight.registerLanguage("css", css);
-lowlight.registerLanguage("js", js);
-lowlight.registerLanguage("ts", ts);
+
+import { all, createLowlight } from "lowlight";
+
+const lowlight = createLowlight(all);
+lowlight.register("html", html);
+lowlight.register("css", css);
+lowlight.register("js", js);
+lowlight.register("ts", ts);
+// lowlight.registerLanguage("html", html);
+// lowlight.registerLanguage("css", css);
+// lowlight.registerLanguage("js", js);
+// lowlight.registerLanguage("ts", ts);
 
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
@@ -110,15 +118,15 @@ class Tiptap extends React.Component {
         document: ydoc,
         token: `${props.token}:::${genFingerprint()}`,
         onDisconnect: () => {
-          if (!this.toastId) {
-            this.toastId = toast.loading(`Trying to reconnect`);
+          if (!window.toastId) {
+            window.toastId = toast.loading(`Trying to reconnect`);
           }
         },
         onConnect: () => {
-          if (this.toastId) {
-            toast.success(`Connected`);
-            toast.dismiss(this.toastId);
-            this.toastId = null;
+          if (window.toastId) {
+            toast.success(`Connected.`);
+            toast.dismiss(window.toastId);
+            window.toastId = null;
           }
         },
       });
@@ -167,7 +175,11 @@ class Tiptap extends React.Component {
         Youtube.configure({
           controls: false,
         }),
-        CodeBlockLowlight.configure({
+        CodeBlockLowlight.extend({
+          addNodeView() {
+            return ReactNodeViewRenderer(CodeBlockComponent);
+          },
+        }).configure({
           lowlight,
         }),
         Mention.configure({
@@ -327,7 +339,7 @@ class Tiptap extends React.Component {
             }}
           />
         </div>
-        <div className="h-12 block"></div>
+        <div className="h-1 mb-4 block"></div>
         {this.props.hideCharacterCount ? null : (
           <div className="character-count text-xs text-gray-400">
             {/* {this.state.chars || "0"}/{limit} characters
@@ -341,13 +353,16 @@ class Tiptap extends React.Component {
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(this.props.liveUrl);
-                toast.success('Live URL copied to clipboard.');
+                toast.success("Live URL copied to clipboard.");
               } catch (err) {
-                toast.error('Failed to copy live URL.');
+                toast.error("Failed to copy live URL.");
               }
             }}
           >
-            {this.props.liveUrl} <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">VIEW</span>
+            {this.props.liveUrl}{" "}
+            <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
+              VIEW
+            </span>
           </div>
         ) : null}
         {this.props.apiUrl ? (
@@ -356,13 +371,16 @@ class Tiptap extends React.Component {
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(this.props.apiUrl);
-                toast.success('API link copied to clipboard.');
+                toast.success("API link copied to clipboard.");
               } catch (err) {
-                toast.error('Failed to copy API link.');
+                toast.error("Failed to copy API link.");
               }
             }}
           >
-            {this.props.apiUrl} <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">API</span>
+            {this.props.apiUrl}{" "}
+            <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
+              API
+            </span>
           </div>
         ) : null}
 

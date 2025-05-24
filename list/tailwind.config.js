@@ -25,11 +25,12 @@ module.exports = {
             '--tw-prose-quotes': '#363636',
             '--tw-prose-quote-borders': '#363636',
             '--tw-prose-captions': '#363636',
-            '--tw-prose-code': '#FF7F7F',
+            '--tw-prose-code': '#ec5c5c',
             '--tw-prose-pre-code': '#FF7F7F',
             '--tw-prose-pre-bg': '#363636',
             '--tw-prose-th-borders': '#363636',
             '--tw-prose-td-borders': '#363636',
+            '--tw-prose-hr': '#E5E7EB',
             a: {
               color: '#363636',
             },
