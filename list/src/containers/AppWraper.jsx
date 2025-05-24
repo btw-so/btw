@@ -16,7 +16,7 @@ function AppWrapper(props) {
 
   if (token) {
     return (
-      <div className="w-full h-full flex flex-col flex-grow">
+      <div className="w-full h-full flex flex-col flex-grow pb-safe">
         <div className="w-full h-full flex flex-grow max-h-screen">
           <div
             className={`${
@@ -31,7 +31,7 @@ function AppWrapper(props) {
             <Sidebar {...props} closeSidebar={() => setSidebarIsOpen(false)} />
           </div>
           <div
-            className="absolute right-1 w-16 h-12 top-1 bg-white flex items-center justify-center z-20 sm:hidden"
+            className="absolute right-1 w-16 h-12 top-1 bg-transparent flex items-center justify-center z-20 sm:hidden"
             onClick={() => {
               setSidebarIsOpen(!sidebarIsOpen);
             }}

@@ -11,6 +11,7 @@ import { updateUser } from "../actions";
 import useTreeChanges from "tree-changes-hook";
 import Tiptap from "../components/Tiptap";
 import { Switch } from "@headlessui/react";
+import { logOut } from "../actions/user";
 
 import AppWrapper from "./AppWraper";
 
@@ -124,6 +125,8 @@ function SettingsContainer(props) {
       ) ||
     settings.birthday !== currentSettings.birthday;
 
+  
+
   return (
     <AppWrapper {...props} settingsPage={true}>
       {token && props.userId ? (
@@ -131,30 +134,52 @@ function SettingsContainer(props) {
           <div className={`h-4 sm:hidden`}></div>
           <div className="mb-4 max-w-lg">
             <div className="mb-4 max-w-lg">
-              <div className="">
-                <div className="mt-4">
-                  <label className="block font-bold mb-2" htmlFor="birthday">
-                    Birthday
-                  </label>
-                  <input
-                    className="shadow bg-transparent appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    id="birthday"
-                    type="date"
-                    value={settings.birthday || ""}
-                    onChange={(e) => {
-                      setSettings({
-                        ...settings,
-                        birthday: e.target.value,
-                      });
-                    }}
-                  />
-                </div>
+              <div className="mt-4">
+                <label className="block font-bold mb-2" htmlFor="email">
+                  Email
+                </label>
+                <input
+                  className="shadow bg-gray-100 appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline cursor-not-allowed"
+                  id="email"
+                  type="email"
+                  value={(user.data || {}).email || ""}
+                  disabled
+                  readOnly
+                />
+              </div>
+              <div className="mt-4 flex justify-start">
+                <button
+                  className="flex items-center bg-red-600 hover:bg-red-700 text-white font-bold py-1.5 px-4 rounded focus:outline-none focus:shadow-outline text-sm"
+                  type="button"
+                  onClick={() => {
+                    dispatch(logOut());
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+              <div className="mt-4">
+                <label className="block font-bold mb-2" htmlFor="birthday">
+                  Birthday
+                </label>
+                <input
+                  className="shadow bg-transparent appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  id="birthday"
+                  type="date"
+                  value={settings.birthday || ""}
+                  onChange={(e) => {
+                    setSettings({
+                      ...settings,
+                      birthday: e.target.value,
+                    });
+                  }}
+                />
               </div>
             </div>
 
             <div className="flex mt-2 items-center justify-between">
               <button
-                className={`flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm ${
+                className={`flex items-center bg-gray-900 hover:bg-gray-700 text-white font-bold py-1.5 px-4 rounded focus:outline-none focus:shadow-outline text-sm ${
                   activeUpdateButton ? "" : "opacity-50 cursor-not-allowed"
                 }`}
                 type="button"

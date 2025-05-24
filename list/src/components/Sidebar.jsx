@@ -262,7 +262,7 @@ function Sidebar(props) {
                         <i className="ri-checkbox-blank-circle-fill ri-xxs text-gray-400"></i>
                       </span>
                       <span
-                        className={`overflow-hidden text-ellipsis truncate leading-[1.2]`}
+                        className={`overflow-hidden text-ellipsis truncate leading-[1.2] text-black`}
                       >
                         {node.text}
                       </span>
@@ -290,7 +290,7 @@ function Sidebar(props) {
                   <i className="ri-checkbox-blank-circle-fill ri-xxs text-gray-400"></i>
                 </span>
                 <span
-                  className={`overflow-hidden text-ellipsis truncate`}
+                  className={`overflow-hidden text-ellipsis truncate text-black`}
                 >
                   4000 Weeks
                 </span>
@@ -340,7 +340,7 @@ function Sidebar(props) {
         <div className="w-full sidebar-toolkit">
           <button
             className={`w-full py-1.5 px-2 transition-colors duration-200 rounded-md flex items-center hover:bg-gray-200 ${
-              props.settingsPage ? "text-gray-900 bg-gray-200" : "text-gray-900"
+              props.settingsPage ? "text-gray-900 bg-gray-200" : "text-black"
             }`}
             onClick={() => {
               props.closeSidebar();

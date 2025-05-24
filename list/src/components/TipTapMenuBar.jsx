@@ -19,12 +19,12 @@ const MenuItem = ({ icon, title, action, isActive = null }) => {
   };
   const activeStyle = isActive && isActive()
     ? {
-        background: '#363636',
+        background: '#040402',
       }
     : {};
   const iconStyle = isActive && isActive()
     ? { fontSize: 15, color: '#F7f7f7' }
-    : { fontSize: 15, color: '#363636' };
+    : { fontSize: 15, color: '#040402' };
   return (
     <button
       style={{ ...baseStyle, ...activeStyle }}

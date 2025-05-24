@@ -210,7 +210,7 @@ class Tiptap extends React.Component {
       editorProps: {
         attributes: {
           class:
-            "prose lg:prose-base prose-p:leading-normal focus:outline-none flex-grow p-2 mt-2 max-w-full",
+            "prose lg:prose-base prose-p:leading-normal focus:outline-none flex-grow !p-4 md:!p-2 mt-2 max-w-full",
         },
       },
       content: props.content || "",
@@ -340,49 +340,52 @@ class Tiptap extends React.Component {
           />
         </div>
         <div className="h-1 mb-4 block"></div>
-        {this.props.hideCharacterCount ? null : (
-          <div className="character-count text-xs text-gray-400">
-            {/* {this.state.chars || "0"}/{limit} characters
+        <div className="pl-4 md:pl-0 flex flex-row md:flex-col">
+          {this.props.hideCharacterCount ? null : (
+            <div className="character-count text-xs text-gray-400">
+              {/* {this.state.chars || "0"}/{limit} characters
             <br /> */}
-            {this.state.words || "0"} words
-          </div>
-        )}
-        {this.props.liveUrl ? (
-          <div
-            className="character-count text-xs text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(this.props.liveUrl);
-                toast.success("Live URL copied to clipboard.");
-              } catch (err) {
-                toast.error("Failed to copy live URL.");
-              }
-            }}
-          >
-            {this.props.liveUrl}{" "}
-            <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
-              VIEW
-            </span>
-          </div>
-        ) : null}
-        {this.props.apiUrl ? (
-          <div
-            className="character-count text-xs text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(this.props.apiUrl);
-                toast.success("API link copied to clipboard.");
-              } catch (err) {
-                toast.error("Failed to copy API link.");
-              }
-            }}
-          >
-            {this.props.apiUrl}{" "}
-            <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
-              API
-            </span>
-          </div>
-        ) : null}
+              {this.state.words || "0"} words
+            </div>
+          )}
+          {this.props.liveUrl ? (
+            <div
+              className="character-count text-xs text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(this.props.liveUrl);
+                  toast.success("Live URL copied to clipboard.");
+                } catch (err) {
+                  toast.error("Failed to copy live URL.");
+                }
+              }}
+            >
+              <span className="hidden md:inline">{this.props.liveUrl}</span>
+              <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
+                VIEW
+              </span>
+            </div>
+          ) : null}
+          {this.props.apiUrl ? (
+            <div
+              className="character-count text-xs text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(this.props.apiUrl);
+                  toast.success("API link copied to clipboard.");
+                } catch (err) {
+                  toast.error("Failed to copy API link.");
+                }
+              }}
+            >
+              <span className="hidden md:inline">{this.props.apiUrl}</span>
+              <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
+                API
+              </span>
+            </div>
+          ) : null}
+        </div>
+        <div className="h-1 mt-4 block"></div>
 
         <div
           className={`w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center ${

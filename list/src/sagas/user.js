@@ -206,6 +206,25 @@ export function* updateUser({ payload }) {
   }
 }
 
+export function* logOutSaga() {
+  const fingerprint = yield call(getFingerPrint);
+  try {
+    yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/user/logout`,
+        method: "POST",
+        data: { fingerprint },
+      })
+    );
+    // Clear cookie
+    document.cookie = `${process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid"}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    // Reset user state
+    yield put(resetState());
+    toast.success("Logged out successfully");
+  } catch (e) {
+    toast.error("Logout failed");
+  }
+}
 
 export default function* root() {
   yield all([
@@ -213,5 +232,6 @@ export default function* root() {
     takeEvery(ActionTypes.GENERATE_OTP, generateOtp),
     takeEvery(ActionTypes.VERIFY_OTP, verifyOtp),
     takeEvery(ActionTypes.UPDATE_USER, updateUser),
+    takeEvery(ActionTypes.USER_LOGOUT_REQUEST, logOutSaga),
   ]);
 }

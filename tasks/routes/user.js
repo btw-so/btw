@@ -7,6 +7,7 @@ var {
     setUserDetails,
     addUserDomain,
     getDomains,
+    deleteLoginToken,
 } = require("../logic/user");
 var { createLoginToken } = require("../logic/user");
 
@@ -263,6 +264,43 @@ router.post(
 
             return;
         }
+    }
+);
+
+// API to logout user
+router.options(
+    "/logout",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/logout",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint } = req.body || {};
+        // get loginToken as btw_uuid cookie
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+        if (loginToken) {
+            await deleteLoginToken({ token: loginToken, fingerprint });
+        }
+        res.clearCookie(
+            process.env.BTW_UUID_KEY || "btw_uuid",
+            {
+                ...(process.env.NODE_ENV === "production"
+                    ? {
+                          domain: `.${process.env.ROOT_DOMAIN}`,
+                          secure: true,
+                          //   httpOnly: true,
+                      }
+                    : {}),
+            }
+        );
+        res.json({ success: true });
     }
 );
 

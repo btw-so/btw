@@ -670,6 +670,14 @@ async function addUserDomain({ domain, user_id }) {
     }
 }
 
+async function deleteLoginToken({ token, fingerprint }) {
+    const tasksDB = await db.getTasksDB();
+    await tasksDB.query(
+        `DELETE FROM btw.login_token WHERE uuid = $1 AND fingerprint = $2`,
+        [token, fingerprint]
+    );
+}
+
 module.exports = {
     getUserFromToken,
     createLoginToken,
@@ -678,4 +686,5 @@ module.exports = {
     setUserDetails,
     addUserDomain,
     getDomains,
+    deleteLoginToken,
 };
