@@ -538,7 +538,7 @@ const Node = ({
         }}
       >
         <ContentEditable
-          classes={`leading-6 max-w-2xl ${
+          classes={`leading-6 max-w-2xl text-black ${
             node.checked ? "text-gray-500 " : ""
           }`}
           id={node.id}
@@ -1208,7 +1208,7 @@ function ListContainer(props) {
   return (
     <AppWrapper {...props} listPage={true}>
       {token && props.userId ? (
-        <div className="pt-4 pb-6 md:pt-6 md:pb-0 h-full flex flex-col list-canvas relative">
+        <div className="pt-4 pb-8 md:pt-6 md:pb-0 h-full flex flex-col list-canvas relative">
           {/* Breadcrumb and Heading - always visible */}
           <nav className="flex pl-6 pr-16 md:pr-6" aria-label="Breadcrumb">
             <ol role="list" className="flex items-center space-x-1">
@@ -1281,7 +1281,9 @@ function ListContainer(props) {
           <div className="flex items-center pt-1 md:pt-0">
             <ContentEditable
               id={selectedListId}
-              classes={"text-2xl font-bold tracking-tight leading-tight mb-2 pl-6 pr-1 w-fit"}
+              classes={
+                "text-2xl font-bold tracking-tight leading-tight mb-2 pl-6 pr-1 w-fit text-black"
+              }
               val={nodeDBMap[selectedListId]?.text || ""}
               setVal={(val) => {
                 upsertHelper({
@@ -1335,7 +1337,13 @@ function ListContainer(props) {
               }}
             >
               <span className="flex items-center justify-center w-6 h-6">
-                <i className={`ri-pushpin-${nodeDBMap[selectedListId]?.pinned_pos ? "fill text-gray-500" : "line text-gray-400 hover:text-gray-500"} transition-colors duration-200`}></i>
+                <i
+                  className={`ri-pushpin-${
+                    nodeDBMap[selectedListId]?.pinned_pos
+                      ? "fill text-gray-500"
+                      : "line text-gray-400 hover:text-gray-500"
+                  } transition-colors duration-200`}
+                ></i>
               </span>
             </div>
           </div>
@@ -1344,7 +1352,7 @@ function ListContainer(props) {
           <div className="flex flex-grow overflow-y-hidden flex-col md:flex-row border-t-2 border-gray-100 pb-3 md:pb-0">
             {/* Main tab content: nodes + Uppy */}
             <div
-              className={`flex flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-2 border-gray-100 md:border-b-0 md:border-r-2 md:border-gray-100 ${
+              className={`flex mb-safe flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-2 border-gray-100 md:border-b-0 md:border-r-2 md:border-gray-100 ${
                 mobileTab !== "main" ? "hidden" : ""
               } md:flex`}
             >
@@ -1554,7 +1562,7 @@ function ListContainer(props) {
           </div>
 
           {/* Mobile Tab Bar - fixed at bottom */}
-          <div className="md:hidden z-10 fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around items-center h-10">
+          <div className="md:hidden z-10 fixed bottom-0 left-0 right-0 bg-transparent p-b-safe border-t border-gray-100 flex justify-around items-center h-12">
             <button
               className={`flex flex-col items-center justify-center flex-1 h-full transition-colors duration-200 focus:outline-none ${
                 mobileTab === "main"
@@ -1564,6 +1572,7 @@ function ListContainer(props) {
               onClick={() => setMobileTab("main")}
             >
               <i className={`ri-list-check`}></i>
+              <span className="text-xs">List</span>
             </button>
             <button
               className={`flex flex-col items-center justify-center flex-1 h-full transition-colors duration-200 focus:outline-none ${
@@ -1573,13 +1582,22 @@ function ListContainer(props) {
               }`}
               onClick={() => setMobileTab("playground")}
             >
-              {nodeDBMap[selectedListId]?.file_id ? (
-                <i className={`ri-attachment-line`}></i>
-              ) : mobileTab === "playground" ? (
-                <i className={`ri-quill-pen-fill`}></i>
-              ) : (
-                <i className={`ri-quill-pen-line`}></i>
-              )}
+              <span>
+                {nodeDBMap[selectedListId]?.file_id ? (
+                  <i className={`ri-attachment-line`}></i>
+                ) : mobileTab === "playground" ? (
+                  <i className={`ri-quill-pen-fill`}></i>
+                ) : (
+                  <i className={`ri-quill-pen-line`}></i>
+                )}
+              </span>
+              <span className="text-xs">
+                {nodeDBMap[selectedListId]?.file_id
+                  ? "File"
+                  : mobileTab === "playground"
+                  ? "Note"
+                  : "Note"}
+              </span>
             </button>
           </div>
         </div>

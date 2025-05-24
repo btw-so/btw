@@ -72,7 +72,7 @@ export default function RamsNeumorphicToggle({ isOn, onToggle }) {
           className="ri-pushpin-line"
           style={{
             fontSize: 10,
-            color: isOn ? "#736B1C" : "#363636",
+            color: isOn ? "#736B1C" : "#040402",
             transition: "color 0.3s",
           }}
         />

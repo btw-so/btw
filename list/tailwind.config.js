@@ -4,7 +4,8 @@ module.exports = {
     extend: {
       colors: {
         black: {
-          900: '#363636',
+          900: '#040402',
+          DEFAULT: '#040402',
         }
       },
       gridTemplateColumns: {
@@ -14,9 +15,9 @@ module.exports = {
       typography: {
         DEFAULT: {
           css: {
-            color: '#363636',
+            color: '#040402',
             '--tw-prose-body': '#363636',
-            '--tw-prose-headings': '#363636',
+            '--tw-prose-headings': '#040402',
             '--tw-prose-links': '#363636',
             '--tw-prose-bold': '#363636',
             '--tw-prose-counters': '#363636',
@@ -26,7 +27,7 @@ module.exports = {
             '--tw-prose-quote-borders': '#363636',
             '--tw-prose-captions': '#363636',
             '--tw-prose-code': '#ec5c5c',
-            '--tw-prose-pre-code': '#FF7F7F',
+            '--tw-prose-pre-code': '#ec5c5c',
             '--tw-prose-pre-bg': '#363636',
             '--tw-prose-th-borders': '#363636',
             '--tw-prose-td-borders': '#363636',
@@ -40,6 +41,9 @@ module.exports = {
             p: {
               color: '#363636',
             },
+            div: {
+              color: '#363636',
+            },
           },
         },
       },
@@ -48,5 +52,6 @@ module.exports = {
   plugins: [
     require("@tailwindcss/typography"),
     require("@tailwindcss/forms"),
+    require("tailwindcss-safe-area")
   ],
 };

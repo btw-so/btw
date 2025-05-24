@@ -103,6 +103,7 @@
     "styled-components": "^5.3.5",
     "styled-minimal": "^1.0.0-7",
     "tailwindcss": "^3.2.7",
+    "tailwindcss-safe-area": "^0.6.0",
     "tippy.js": "^6.3.7",
     "tree-changes-hook": "^0.9.0",
     "turndown": "^7.1.2",

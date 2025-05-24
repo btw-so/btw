@@ -269,11 +269,11 @@ function Login() {
                     />
                   </div>
                 </form>
-                <small className="text-md">
+                <span className="text-md text-gray-700">
                   {otp.verifyOtp.status === STATUS.RUNNING
                     ? "Verifying..."
                     : "Can't find the code? Please check your spam folder."}
-                </small>
+                </span>
                 {otp.verifyOtp.status === STATUS.ERROR ? (
                   <div>
                     <strong className="font-bold text-md mt-2 text-red-500">
