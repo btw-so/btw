@@ -76,11 +76,11 @@ function Root() {
     <Router>
       <div className="w-full h-full flex-grow flex flex-col min-h-screen">
         <Helmet
-          defaultTitle={"btw ∴"}
+          defaultTitle={"Writing Machine"}
           defer={false}
           encodeSpecialCharacters={false}
           titleAttributes={{ itemprop: "name", lang: "en-en" }}
-          titleTemplate={`%s | btw ∴`}
+          titleTemplate={`%s | Writing Machine`}
         >
           <link
             href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap"

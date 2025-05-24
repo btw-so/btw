@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { useUpdateEffect } from "react-use";
 import { selectUser, selectOtp } from "../selectors";
 import useTreeChanges from "tree-changes-hook";
+import toast, { Toaster } from "react-hot-toast";
 
 import { useAppSelector } from "modules/hooks";
 
@@ -91,35 +92,59 @@ function Login() {
       console.log(error);
     }
   };
-  // const { data = [], message = '', status = STATUS.IDLE } = gitHub.topics[query] || topic;
+
+  const validateEmail = (email) => {
+    // Simple email regex
+    return /^\S+@\S+\.\S+$/.test(email);
+  };
 
   return (
-    <div key="Login" data-testid="Login">
+    <div
+      key="Login"
+      data-testid="Login"
+      className="bg-grid min-h-screen"
+      style={{
+        backgroundImage:
+          "linear-gradient(to right, #EEE 1px, transparent 1px),linear-gradient(to bottom, #EEE 1px, transparent 1px)",
+        backgroundSize: "32px 32px",
+      }}
+    >
       <>
         <header className="container mx-auto py-6 px-4">
           <div className="flex items-center">
-            <img src="/media/images/btw-logo.png" alt="Logo" className="h-4" />
+            <img
+              src="/media/images/btw-app-icon.png"
+              alt="Logo"
+              className="h-4"
+            />
           </div>
         </header>
         <div className="container mx-auto my-12">
-          <div className="max-w-lg mx-auto p-2">
+          <div className="max-w-lg mx-auto px-8 py-6">
+            <h1 className="text-5xl font-black leading-none tracking-tight text-left mb-4">
+              Welcome to<br/> Writing Machine
+            </h1>
+            <p className="text-gray-700 mb-8 text-md">
+              You are one step away to write. One step to get clarity from
+              chaos. One step to make sure you are still thinking.
+            </p>
             {mode === "enter-otp" ? (
-              <div className="bg-white rounded-lg p-8 drop-shadow-2xl">
-                <h1 className="text-2xl font-extrabold mb-4">
+              <div className="">
+                <h1 className="text-2xl font-black leading-none tracking-tight mb-4">
                   Check your email for a magic code
                 </h1>
                 <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
+                  className="block text-gray-700 text-md mb-2"
                   htmlFor="email"
                 >
-                  We’ve sent a 6-digit code to {email}. The code will expire in
+                  We've sent a 6-digit code to {email}. The code will expire in
                   10 minutes.
                 </label>
                 <form>
                   <div className="flex items-center mb-4">
                     <input
                       type="number"
-                      className="w-12 h-12 text-2xl text-center bg-white rounded-lg shadow-md border border-gray-300 mr-2 sm:mr-4"
+                      className="w-12 h-12 text-2xl text-center bg-transparent focus:border-gray-300 focus:bg-transparent focus:outline-none focus:ring-0 rounded-lg border border-gray-300 mr-2 sm:mr-4"
                       maxLength={1}
                       value={otp1}
                       onChange={(e) => {
@@ -136,7 +161,7 @@ function Login() {
                     />
                     <input
                       type="number"
-                      className="w-12 h-12 text-2xl text-center bg-white rounded-lg shadow-md border border-gray-300 mr-2 sm:mr-4"
+                      className="w-12 h-12 text-2xl text-center bg-transparent focus:border-gray-300 focus:bg-transparent focus:outline-none focus:ring-0 rounded-lg border border-gray-300 mr-2 sm:mr-4"
                       maxLength={1}
                       value={otp2}
                       onChange={(e) => {
@@ -159,7 +184,7 @@ function Login() {
                     />
                     <input
                       type="number"
-                      className="w-12 h-12 text-2xl text-center bg-white rounded-lg shadow-md border border-gray-300 mr-2 sm:mr-4"
+                      className="w-12 h-12 text-2xl text-center bg-transparent focus:border-gray-300 focus:bg-transparent focus:outline-none focus:ring-0 rounded-lg border border-gray-300 mr-2 sm:mr-4"
                       maxLength={1}
                       value={otp3}
                       onChange={(e) => {
@@ -182,7 +207,7 @@ function Login() {
                     />
                     <input
                       type="number"
-                      className="w-12 h-12 text-2xl text-center bg-white rounded-lg shadow-md border border-gray-300 mr-2 sm:mr-4"
+                      className="w-12 h-12 text-2xl text-center bg-transparent focus:border-gray-300 focus:bg-transparent focus:outline-none focus:ring-0 rounded-lg border border-gray-300 mr-2 sm:mr-4"
                       maxLength={1}
                       value={otp4}
                       onChange={(e) => {
@@ -204,7 +229,7 @@ function Login() {
                     />
                     <input
                       type="number"
-                      className="w-12 h-12 text-2xl text-center bg-white rounded-lg shadow-md border border-gray-300 mr-2 sm:mr-4"
+                      className="w-12 h-12 text-2xl text-center bg-transparent focus:border-gray-300 focus:bg-transparent focus:outline-none focus:ring-0 rounded-lg border border-gray-300 mr-2 sm:mr-4"
                       maxLength={1}
                       value={otp5}
                       onChange={(e) => {
@@ -226,7 +251,7 @@ function Login() {
                     />
                     <input
                       type="number"
-                      className="w-12 h-12 text-2xl text-center bg-white rounded-lg shadow-md border border-gray-300"
+                      className="w-12 h-12 text-2xl text-center bg-transparent focus:border-gray-300 focus:bg-transparent focus:outline-none focus:ring-0 rounded-lg border border-gray-300"
                       maxLength={1}
                       value={otp6}
                       onChange={(e) => {
@@ -244,14 +269,14 @@ function Login() {
                     />
                   </div>
                 </form>
-                <small className="text-xs">
+                <small className="text-md">
                   {otp.verifyOtp.status === STATUS.RUNNING
                     ? "Verifying..."
-                    : "Can’t find the code? Please check your spam folder."}
+                    : "Can't find the code? Please check your spam folder."}
                 </small>
                 {otp.verifyOtp.status === STATUS.ERROR ? (
                   <div>
-                    <strong className="font-bold text-xs mt-2 text-red-500">
+                    <strong className="font-bold text-md mt-2 text-red-500">
                       {otp.verifyOtp.error}
                     </strong>
                   </div>
@@ -259,19 +284,16 @@ function Login() {
               </div>
             ) : null}
             {mode === "enter-email" ? (
-              <div className="bg-white rounded-lg px-8 pt-6 pb-8 mb-4 drop-shadow-2xl">
-                <h1 className="text-2xl font-extrabold text-left mb-4">
-                  Welcome to btw
-                </h1>
+              <div className="">
                 <div className="">
                   <label
-                    className="block text-gray-700 text-sm font-bold mb-2"
+                    className="block text-gray-700 text-md mb-2"
                     htmlFor="email"
                   >
                     Enter your email address
                   </label>
                   <input
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline input-text-sm"
+                    className="bg-transparent text-md appearance-none border-1 border-gray-500 rounded w-full py-2 px-3 text-gray-900 leading-tight focus:border-gray-500 ring-0 outline-none focus:outline-none focus:ring-0"
                     id="email"
                     type="email"
                     placeholder="Email"
@@ -292,21 +314,22 @@ function Login() {
                       }
                     }}
                   />
-                  <p className="text-xs mt-2">
-                    We’ll send you a magic code (6-digit) for a password-free
+                  <p className="text-md mt-2 text-gray-700">
+                    We'll send you a magic code (6-digit) for a password-free
                     login experience.
                   </p>
                   {otp.otp.status === STATUS.ERROR ? (
                     <p className="text-red-500 text-xs mt-2">{otp.otp.error}</p>
                   ) : null}
-                  <div className="flex justify-end">
+                  <div className="flex justify-start">
                     <button
-                      className="flex mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      className="flex mt-4 bg-gray-900 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                       type="submit"
                       onClick={() => {
-                        // sanitize email and check that it is in right format
-                        // if not, show error
-                        // if yes, then dispatch action to generate otp
+                        if (!validateEmail(email)) {
+                          toast.error("Please enter a valid email address.");
+                          return;
+                        }
                         if (
                           email &&
                           email.length > 0 &&
@@ -340,7 +363,7 @@ function Login() {
                       ) : null}
                       {otp.otp.status === STATUS.RUNNING
                         ? "Sending OTP..."
-                        : "Submit"}
+                        : "Send OTP"}
                     </button>
                   </div>
                 </div>

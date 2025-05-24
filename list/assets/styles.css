@@ -524,7 +524,72 @@ hr.ProseMirror-selectednode {
 }
 
 
+/* Basic editor styles */
+.tiptap-code-block {
+  :first-child {
+    margin-top: 0;
+  }
 
+  pre {
+    font-family: monospace;
+    background: #f3f4f6 !important;
+    margin: 1.5rem 0;
+    padding: 0.75rem 1rem;
+    color: #363636;
+  }
+
+  /* Code styling */
+  .hljs-comment,
+  .hljs-quote {
+    color: #6a737d;
+  }
+
+  .hljs-variable,
+  .hljs-template-variable,
+  .hljs-attribute,
+  .hljs-tag,
+  .hljs-name,
+  .hljs-regexp,
+  .hljs-link,
+  .hljs-selector-id,
+  .hljs-selector-class {
+    color: #d73a49;
+  }
+
+  .hljs-number,
+  .hljs-meta,
+  .hljs-built_in,
+  .hljs-builtin-name,
+  .hljs-literal,
+  .hljs-type,
+  .hljs-params {
+    color: #e36209;
+  }
+
+  .hljs-string,
+  .hljs-symbol,
+  .hljs-bullet {
+    color: #22863a;
+  }
+
+  .hljs-title,
+  .hljs-section {
+    color: #005cc5;
+  }
+
+  .hljs-keyword,
+  .hljs-selector-tag {
+    color: #6f42c1;
+  }
+
+  .hljs-emphasis {
+    font-style: italic;
+  }
+
+  .hljs-strong {
+    font-weight: 700;
+  }
+}
 
 
 
