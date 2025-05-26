@@ -42,7 +42,7 @@
     "unit-disallowed-list": [
       ["px", "em"], {
         "ignoreProperties": {
-          "px": ["max-width"]
+          "px": []
         }
       }
     ],

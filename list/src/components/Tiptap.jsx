@@ -340,7 +340,7 @@ class Tiptap extends React.Component {
           />
         </div>
         <div className="h-1 mb-4 block"></div>
-        <div className="pl-4 md:pl-0 flex flex-row md:flex-col">
+        <div className="pl-4 md:pl-0 flex ">
           {this.props.hideCharacterCount ? null : (
             <div className="character-count text-xs text-gray-400">
               {/* {this.state.chars || "0"}/{limit} characters
@@ -360,32 +360,14 @@ class Tiptap extends React.Component {
                 }
               }}
             >
-              <span className="hidden md:inline">{this.props.liveUrl}</span>
               <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
-                VIEW
+                SHARE NOTE
               </span>
             </div>
           ) : null}
-          {this.props.apiUrl ? (
-            <div
-              className="character-count text-xs text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(this.props.apiUrl);
-                  toast.success("API link copied to clipboard.");
-                } catch (err) {
-                  toast.error("Failed to copy API link.");
-                }
-              }}
-            >
-              <span className="hidden md:inline">{this.props.apiUrl}</span>
-              <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
-                API
-              </span>
-            </div>
-          ) : null}
+          
         </div>
-        <div className="h-1 mt-4 block md:hidden"></div>
+        <div className="h-1 mt-10 md:mt-4 block md:hidden"></div>
 
         <div
           className={`w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center ${

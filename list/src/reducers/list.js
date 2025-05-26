@@ -31,6 +31,9 @@ import {
   searchNodes,
   searchNodesSuccess,
   searchNodesFailure,
+  getPublicList,
+  getPublicListSuccess,
+  getPublicListFailure,
 } from "actions";
 
 export const listState = {
@@ -72,6 +75,11 @@ export const listState = {
     error: null,
   },
   publicNote: {
+    status: STATUS.IDLE,
+    data: {},
+    error: null,
+  },
+  publicList: {
     status: STATUS.IDLE,
     data: {},
     error: null,
@@ -281,6 +289,21 @@ export default {
     builder.addCase(getListFailure, (draft, { payload }) => {
       draft.fetchInProgress = false;
       draft.fetchError = payload.error;
+    });
+
+    builder.addCase(getPublicList, (draft, { payload }) => {
+      draft.publicList.status = STATUS.RUNNING;
+      draft.publicList.error = null;
+    });
+
+    builder.addCase(getPublicListSuccess, (draft, { payload }) => {
+      draft.publicList.status = STATUS.SUCCESS;
+      draft.publicList.data = payload;
+    });
+
+    builder.addCase(getPublicListFailure, (draft, { payload }) => {
+      draft.publicList.status = STATUS.ERROR;
+      draft.publicList.error = payload.error;
     });
   }),
   // listActions: createReducer(actionState, (builder) => {}),

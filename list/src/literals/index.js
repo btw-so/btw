@@ -56,6 +56,9 @@ export const ActionTypes = keyMirror({
   SEARCH_NODES: undefined,
   SEARCH_NODES_SUCCESS: undefined,
   SEARCH_NODES_FAILURE: undefined,
+  GET_PUBLIC_LIST: undefined,
+  GET_PUBLIC_LIST_SUCCESS: undefined,
+  GET_PUBLIC_LIST_FAILURE: undefined,
 });
 
 export const STATUS = {

@@ -34,6 +34,8 @@ import {
   getPublicNoteFailure,
   searchNodesSuccess,
   searchNodesFailure,
+  getPublicListSuccess,
+  getPublicListFailure,
 } from "../actions";
 
 async function getServerTime({ attempts = 1 }) {
@@ -309,12 +311,36 @@ export function* searchNodesSaga({ payload }) {
   }
 }
 
+export function* getPublicListSaga({ payload }) {
+  const { id, hash } = payload;
+  try {
+    const { data: res } = yield call(() =>
+      axiosInstance.request({
+        url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/list/public/list`,
+        method: "POST",
+        data: {
+          id,
+          hash,
+        },
+      })
+    );
+    if (res.success) {
+      yield put(getPublicListSuccess(res.data));
+    } else {
+      yield put(getPublicListFailure({ error: res.error || "Something went wrong" }));
+    }
+  } catch (e) {
+    yield put(getPublicListFailure({ error: "Something went wrong" }));
+  }
+}
+
 export default function* root() {
   yield all([
     takeEvery(ActionTypes.GET_LIST, getListSaga),
     takeEvery(ActionTypes.BATCH_PUSH_NODES, batchPushNodesSaga),
     takeEvery(ActionTypes.GET_PINNED_NODES, getPinnedNodesSaga),
     takeEvery(ActionTypes.GET_PUBLIC_NOTE, getPublicNoteSaga),
+    takeEvery(ActionTypes.GET_PUBLIC_LIST, getPublicListSaga),
     takeEvery(ActionTypes.SEARCH_NODES, searchNodesSaga),
   ]);
 }
