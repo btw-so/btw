@@ -1151,10 +1151,7 @@ function ListContainer(props) {
                           })
                         );
                       }}
-                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer truncate"
-                      style={{
-                        maxWidth: "70%",
-                      }}
+                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer truncate max-w-3xs"
                     >
                       {nodeDBMap[thirdParentOfCurrentSelection].text}
                     </a>
@@ -1175,10 +1172,7 @@ function ListContainer(props) {
                           })
                         );
                       }}
-                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer truncate"
-                      style={{
-                        maxWidth: "70%",
-                      }}
+                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer truncate max-w-3xs"
                     >
                       {nodeDBMap[secondParentOfCurrentSelection].text}
                     </a>
@@ -1199,10 +1193,7 @@ function ListContainer(props) {
                           })
                         );
                       }}
-                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer truncate"
-                      style={{
-                        maxWidth: "70%",
-                      }}
+                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer truncate max-w-3xs"
                     >
                       {nodeDBMap[firstParentOfCurrentSelection].text}
                     </a>
