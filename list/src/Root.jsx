@@ -23,6 +23,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import Settings from "./routes/Settings";
 import List from "./routes/List";
 import PublicNote from "./routes/PublicNote";
+import PublicList from "./routes/PublicList";
 import FourThousandWeeks from "./routes/FourThousandWeeks";
 
 function Root() {
@@ -91,6 +92,7 @@ function Root() {
         {/* {isLoggedIn && <Login />} */}
         {/* <Main isAuthenticated={isAuthenticated}> */}
         <Routes className="flex flex-grow">
+          <Route path="/public/list/:id/:hash" element={<PublicList />} />
           <Route path="/public/note/:id/:hash" element={<PublicNote />} />
           <Route
             element={

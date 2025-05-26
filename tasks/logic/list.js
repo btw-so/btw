@@ -161,6 +161,20 @@ async function upsertNode({
     }
 }
 
+async function getPublicFile({ id }) {
+    const pool = await db.getTasksDB();
+    const query = `SELECT id, user_id, name, url FROM btw.files WHERE id = $1`;
+    const rows = await pool.query(query, [id]);
+    const file =  rows.rows[0];
+
+    // get the corresponding node with file_id = id
+    const nodeQuery = `SELECT text FROM btw.nodes WHERE file_id = $1`;
+    const nodeRows = await pool.query(nodeQuery, [id]);
+    const node = nodeRows.rows[0];
+
+    return { ...file, heading: node.text };
+}
+
 async function getPublicNote({ id }) {
     const pool = await db.getTasksDB();
     const query = `SELECT id, md, html FROM btw.notes WHERE id = $1`;
@@ -186,5 +200,6 @@ module.exports = {
     upsertNode,
     getPinnedNodes,
     getPublicNote,
+    getPublicFile,
     searchNodes,
 };

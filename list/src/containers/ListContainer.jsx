@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useAppSelector } from "modules/hooks";
 import CryptoJS from "crypto-js";
+import toast from "react-hot-toast";
 import useInterval from "beautiful-react-hooks/useInterval";
 import { useDispatch } from "react-redux";
 import { STATUS } from "../literals";
@@ -8,6 +9,7 @@ import useCookie from "../hooks/useCookie";
 import UppyComponent from "../components/Uppy";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { selectUser, selectList, selectNotes, selectFiles } from "../selectors";
+import FileWrapper from "../components/FileWrapper";
 import {
   updateUser,
   upsertListNode,
@@ -374,7 +376,7 @@ const ContentEditable = ({
       onInput={handleInput}
       onKeyDown={handleKeyDown}
       style={{
-        wordBreak: "break-all",
+        overflowWrap: "anywhere",
         userSelect: "text",
         WebkitUserModify: "read-write-plaintext-only",
         ...styles,
@@ -907,80 +909,6 @@ const Parent = ({
   );
 };
 
-function FileWrapper({ fileLoading, fileSuccess, fileError, fileUrl }) {
-  if (fileLoading) {
-    return (
-      <div className="animate-spin">
-        <i className="ri-reset-right-line"></i>
-      </div>
-    );
-  } else if (fileError) {
-    return (
-      <div className="">
-        <div className="p-4">
-          <div className="flex items-start">
-            <div className="shrink-0">
-              <i className="ri-error-warning-line"></i>
-            </div>
-            <div className="ml-3 w-0 flex-1 pt-0.5">
-              <p className="text-sm font-medium text-gray-900">
-                Error loading file
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  } else if (fileSuccess) {
-    const ErrorComponent = () => {
-      return (
-        <div>
-          <a href={fileUrl} target="_blank" rel="noopener noreferrer">
-            Download the file directly
-          </a>
-        </div>
-      );
-    };
-
-    if (
-      fileUrl.endsWith(".png") ||
-      fileUrl.endsWith(".jpg") ||
-      fileUrl.endsWith(".jpeg")
-    ) {
-      return <img src={fileUrl} />;
-    } else if (fileUrl.endsWith(".pdf")) {
-      return (
-        <iframe
-          src={`https://docs.google.com/gview?url=${fileUrl}&embedded=true`}
-          width="100%"
-          height="100%"
-          frameBorder="0"
-        />
-      );
-    } else if (
-      fileUrl.endsWith(".mp4") ||
-      fileUrl.endsWith(".mov") ||
-      fileUrl.endsWith(".avi") ||
-      fileUrl.endsWith(".wmv") ||
-      fileUrl.endsWith(".flv") ||
-      fileUrl.endsWith(".webm")
-    ) {
-      return <video src={fileUrl} controls />;
-    } else if (
-      fileUrl.endsWith(".mp3") ||
-      fileUrl.endsWith(".wav") ||
-      fileUrl.endsWith(".ogg") ||
-      fileUrl.endsWith(".flac") ||
-      fileUrl.endsWith(".aac")
-    ) {
-      return <audio src={fileUrl} controls />;
-    } else {
-      return <ErrorComponent />;
-    }
-  } else {
-    return null;
-  }
-}
 
 function ListContainer(props) {
   const dispatch = useDispatch();
@@ -1210,11 +1138,11 @@ function ListContainer(props) {
       {token && props.userId ? (
         <div className="pt-4 pb-8 md:pt-6 md:pb-0 h-full flex flex-col list-canvas relative">
           {/* Breadcrumb and Heading - always visible */}
-          <nav className="flex pl-6 pr-16 md:pr-6" aria-label="Breadcrumb">
-            <ol role="list" className="flex items-center space-x-1">
+          <nav className="block pl-6 pr-16 md:pr-6" aria-label="Breadcrumb">
+            <ol role="list" className="flex flex-col md:flex-row md:items-center space-x-0 md:space-x-1">
               {thirdParentOfCurrentSelection ? (
                 <li>
-                  <div className="flex items-center">
+                  <div className="flex items-center w-full">
                     <a
                       onClick={() => {
                         dispatch(
@@ -1223,7 +1151,10 @@ function ListContainer(props) {
                           })
                         );
                       }}
-                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
+                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer truncate"
+                      style={{
+                        maxWidth: "70%",
+                      }}
                     >
                       {nodeDBMap[thirdParentOfCurrentSelection].text}
                     </a>
@@ -1235,7 +1166,7 @@ function ListContainer(props) {
               ) : null}
               {secondParentOfCurrentSelection ? (
                 <li>
-                  <div className="flex items-center">
+                  <div className="flex items-center w-full flex-1">
                     <a
                       onClick={() => {
                         dispatch(
@@ -1244,7 +1175,10 @@ function ListContainer(props) {
                           })
                         );
                       }}
-                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
+                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer truncate"
+                      style={{
+                        maxWidth: "70%",
+                      }}
                     >
                       {nodeDBMap[secondParentOfCurrentSelection].text}
                     </a>
@@ -1256,7 +1190,7 @@ function ListContainer(props) {
               ) : null}
               {firstParentOfCurrentSelection ? (
                 <li>
-                  <div className="flex items-center">
+                  <div className="flex items-center w-full flex-1">
                     <a
                       onClick={() => {
                         dispatch(
@@ -1265,7 +1199,10 @@ function ListContainer(props) {
                           })
                         );
                       }}
-                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
+                      className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer truncate"
+                      style={{
+                        maxWidth: "70%",
+                      }}
                     >
                       {nodeDBMap[firstParentOfCurrentSelection].text}
                     </a>
@@ -1278,11 +1215,11 @@ function ListContainer(props) {
             </ol>
           </nav>
 
-          <div className="flex items-center pt-1 md:pt-0">
+          <div className="flex flex-col md:flex-row md:items-center pt-1 md:pt-0">
             <ContentEditable
               id={selectedListId}
               classes={
-                "text-2xl font-bold tracking-tight leading-tight mb-2 pl-6 pr-1 w-fit text-black"
+                "text-2xl font-bold tracking-tight leading-none mb-2 pr-6 md:pr-1 pl-6 w-fit text-black"
               }
               val={nodeDBMap[selectedListId]?.text || ""}
               setVal={(val) => {
@@ -1324,9 +1261,7 @@ function ListContainer(props) {
               }}
             />
             <div
-              className={`hidden md:flex flex-col items-center justify-center pb-1 ml-1 cursor-pointer ${
-                selectedListId === "home" ? "hidden" : ""
-              }`}
+              className={`hidden md:flex flex-col items-center justify-center pb-1 ml-1 cursor-pointer`}
               onClick={() => {
                 upsertHelper({
                   id: selectedListId,
@@ -1346,13 +1281,62 @@ function ListContainer(props) {
                 ></i>
               </span>
             </div>
+            <div
+              className="character-count text-xs mb-2 md:mb-1 text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
+              onClick={async () => {
+                const listUrl =
+                  window.location.origin +
+                  "/public/list/" +
+                  selectedListId +
+                  "/" +
+                  shortHash(
+                    `${selectedListId}-${nodeDBMap[selectedListId]?.note_id}-${props.userId}-list`,
+                    process.env.REACT_APP_ENCRYPTION_KEY,
+                    10
+                  );
+                try {
+                  await navigator.clipboard.writeText(listUrl);
+                  toast.success("List link copied to clipboard.");
+                } catch (err) {
+                  toast.error("Failed to copy list link.");
+                }
+              }}
+            >
+              <span className="whitespace-nowrap ml-6 md:ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
+                SHARE LIST
+              </span>
+            </div>
+            <div
+              className="character-count hidden md:block mr-4 text-xs mb-1 text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
+              onClick={async () => {
+                const apiUrl =
+                  process.env.REACT_APP_TASKS_PUBLIC_URL +
+                  "/list/api/child/add/" +
+                  selectedListId +
+                  "/" +
+                  shortHash(
+                    `${nodeDBMap[selectedListId]?.note_id}`,
+                    process.env.REACT_APP_ENCRYPTION_KEY
+                  );
+                try {
+                  await navigator.clipboard.writeText(apiUrl);
+                  toast.success("API link copied to clipboard.");
+                } catch (err) {
+                  toast.error("Failed to copy API link.");
+                }
+              }}
+            >
+              <span className="whitespace-nowrap ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
+                LIST API
+              </span>
+            </div>
           </div>
 
           {/* Main Content Area */}
           <div className="flex flex-grow overflow-y-hidden flex-col md:flex-row border-t-2 border-gray-100 pb-3 md:pb-0">
             {/* Main tab content: nodes + Uppy */}
             <div
-              className={`flex mb-safe flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-2 border-gray-100 md:border-b-0 md:border-r-2 md:border-gray-100 ${
+              className={`flex flex-shrink-0 flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-0 border-gray-100 md:border-b-0 md:border-r-2 md:border-gray-100 ${
                 mobileTab !== "main" ? "hidden" : ""
               } md:flex`}
             >
@@ -1484,19 +1468,37 @@ function ListContainer(props) {
               } md:flex`}
             >
               {nodeDBMap[selectedListId]?.file_id ? (
-                <FileWrapper
-                  fileLoading={fileLoading}
-                  fileSuccess={fileSuccess}
-                  fileError={fileError}
-                  fileUrl={
-                    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]
-                      ?.file?.url
-                  }
-                />
+                <div className="h-full flex flex-col">
+                  <FileWrapper
+                    fileLoading={fileLoading}
+                    fileSuccess={fileSuccess}
+                    fileError={fileError}
+                    fileUrl={
+                      filesState.filesMap[nodeDBMap[selectedListId]?.file_id]
+                        ?.file?.url
+                    }
+                  />
+                  <div
+                    className="character-count mt-4 text-xs mb-1 text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
+                    onClick={async () => {
+                      const fileUrl = filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.file?.url;
+                      try {
+                        await navigator.clipboard.writeText(fileUrl);
+                        toast.success("File link copied to clipboard.");
+                      } catch (err) {
+                        toast.error("Failed to copy file link.");
+                      }
+                    }}
+                  >
+                    <span className="px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
+                      SHARE FILE
+                    </span>
+                  </div>
+                </div>
               ) : (
                 <Tiptap
                   ref={tiptapRef}
-                  menuBarClasses="opacity-50 hover:opacity-100 transition-opacity duration-300"
+                  menuBarClasses="opacity-50 hover:opacity-100 transition-opacity duration-300 !px-2 md:!px-0"
                   liveUrl={
                     window.location.origin +
                     "/public/note/" +
@@ -1504,16 +1506,6 @@ function ListContainer(props) {
                     "/" +
                     shortHash(
                       nodeDBMap[selectedListId]?.note_id,
-                      process.env.REACT_APP_ENCRYPTION_KEY
-                    )
-                  }
-                  apiUrl={
-                    process.env.REACT_APP_TASKS_PUBLIC_URL +
-                    "/list/api/child/add/" +
-                    selectedListId +
-                    "/" +
-                    shortHash(
-                      selectedListId,
                       process.env.REACT_APP_ENCRYPTION_KEY
                     )
                   }
@@ -1562,43 +1554,37 @@ function ListContainer(props) {
           </div>
 
           {/* Mobile Tab Bar - fixed at bottom */}
-          <div className="md:hidden z-10 fixed bottom-0 left-0 right-0 bg-transparent p-b-safe border-t border-gray-100 flex justify-around items-center h-12">
-            <button
-              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors duration-200 focus:outline-none ${
-                mobileTab === "main"
-                  ? "text-black font-semibold"
-                  : "text-gray-400"
-              }`}
-              onClick={() => setMobileTab("main")}
-            >
-              <i className={`ri-list-check`}></i>
-              <span className="text-xs">List</span>
-            </button>
-            <button
-              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors duration-200 focus:outline-none ${
-                mobileTab === "playground"
-                  ? "text-black font-semibold"
-                  : "text-gray-400"
-              }`}
-              onClick={() => setMobileTab("playground")}
-            >
-              <span>
+          <div className="fixed bottom-4 left-0 w-full flex justify-center z-50 md:hidden">
+            <div className="bg-white/90 shadow-lg rounded-full flex px-4 py-2 gap-6 border border-gray-200 backdrop-blur-md">
+              <button
+                className={`flex flex-col items-center px-3 py-1 focus:outline-none ${mobileTab === "main" ? "text-gray-900 font-bold" : "text-gray-400"}`}
+                onClick={() => setMobileTab("main")}
+                aria-label="Show List"
+              >
+                <i className="ri-list-check"></i>
+                <span className="text-xs mt-0.5">List</span>
+              </button>
+              <button
+                className={`flex flex-col items-center px-3 py-1 focus:outline-none ${mobileTab === "playground" ? "text-gray-900 font-bold" : "text-gray-400"}`}
+                onClick={() => setMobileTab("playground")}
+                aria-label={nodeDBMap[selectedListId]?.file_id ? "Show File" : "Show Note"}
+              >
                 {nodeDBMap[selectedListId]?.file_id ? (
-                  <i className={`ri-attachment-line`}></i>
+                  <i className="ri-attachment-line"></i>
                 ) : mobileTab === "playground" ? (
-                  <i className={`ri-quill-pen-fill`}></i>
+                  <i className="ri-quill-pen-fill"></i>
                 ) : (
-                  <i className={`ri-quill-pen-line`}></i>
+                  <i className="ri-quill-pen-line"></i>
                 )}
-              </span>
-              <span className="text-xs">
-                {nodeDBMap[selectedListId]?.file_id
-                  ? "File"
-                  : mobileTab === "playground"
-                  ? "Note"
-                  : "Note"}
-              </span>
-            </button>
+                <span className="text-xs mt-0.5">
+                  {nodeDBMap[selectedListId]?.file_id
+                    ? "File"
+                    : mobileTab === "playground"
+                    ? "Note"
+                    : "Note"}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
