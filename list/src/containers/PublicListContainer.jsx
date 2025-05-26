@@ -201,9 +201,9 @@ function PublicListContainer() {
     return (
       <>
         {/* Mobile: show only one view at a time, dock at bottom */}
-        <div className="md:hidden">{mobileContent}</div>
+        <div className="md:hidden min-h-full grow shrink-0 flex flex-col">{mobileContent}</div>
         {/* Desktop: show both views side by side */}
-        <div className="hidden md:flex">{desktopContent}</div>
+        <div className="hidden md:flex min-h-full grow shrink-0 flex-col">{desktopContent}</div>
       </>
     );
   }
