@@ -700,7 +700,7 @@ async function behaveLikeBaymaxGPT({ messages, user_id }) {
 
     const messagesToSend = [
         {
-            role: "user",
+            role: "system",
             content: systemMessage,
         },
         ...gptMessagesToSend,
@@ -1906,7 +1906,7 @@ async function getReminderFromId({ reminder_id, user_id }) {
 
     const { rows: reminders } = await tasksDB.query(
         `SELECT * FROM btw.reminders WHERE id = $1 AND user_id = $2`,
-        [reminder_id, user_id]
+        [reminder_id, user_id],
     );
 
     return reminders && reminders.length && reminders[0];
@@ -1917,7 +1917,7 @@ async function getAlertFromId({ alert_id, user_id }) {
 
     const { rows: alerts } = await tasksDB.query(
         `SELECT * FROM btw.alerts WHERE id = $1 AND user_id = $2`,
-        [alert_id, user_id]
+        [alert_id, user_id],
     );
 
     return alerts && alerts.length && alerts[0];
