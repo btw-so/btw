@@ -132,4 +132,95 @@ CREATE TABLE "btw"."files" (
     PRIMARY KEY ("id","user_id")
 );
 
+-- Table Definition
+CREATE TABLE "btw"."reminders" (
+    "user_id" int4 NOT NULL,
+    "duedate" timestamptz,
+    "created_at" timestamptz,
+    "updated_at" timestamptz,
+    "completed" bool,
+    "text" varchar,
+    "id" varchar,
+    "recurring" bool,
+    "crontab" text,
+    PRIMARY KEY ("user_id","id")
+);
 
+
+-- Sequence and defined type
+CREATE SEQUENCE IF NOT EXISTS btw.alerts_id_seq;
+
+-- Table Definition
+CREATE TABLE "btw"."alerts" (
+    "id" int4 NOT NULL DEFAULT nextval('btw.alerts_id_seq'::regclass),
+    "reminder_id" varchar,
+    "user_id" int4,
+    "duedate" timestamptz,
+    PRIMARY KEY ("id")
+);
+
+
+CREATE TABLE "btw"."telegram_user_map" (
+    "telegram_id" numeric NOT NULL,
+    "user_id" int4 NOT NULL,
+    PRIMARY KEY ("telegram_id")
+);
+
+
+-- Sequence and defined type
+CREATE SEQUENCE IF NOT EXISTS btw.telegram_chat_context_id_seq;
+
+-- Table Definition
+CREATE TABLE "btw"."telegram_chat_context" (
+    "id" int4 NOT NULL DEFAULT nextval('btw.telegram_chat_context_id_seq'::regclass),
+    "chat_id" numeric,
+    "added_at" timestamptz,
+    "message" jsonb,
+    "type" varchar,
+    "metadata" jsonb,
+    PRIMARY KEY ("id")
+);
+
+
+CREATE TABLE "btw"."whatsapp_user_map" (
+    "whatsapp_id" numeric NOT NULL,
+    "user_id" int4 NOT NULL,
+    PRIMARY KEY ("whatsapp_id")
+);
+
+
+-- Sequence and defined type
+CREATE SEQUENCE IF NOT EXISTS btw.whatsapp_chat_context_id_seq;
+
+-- Table Definition
+CREATE TABLE "btw"."whatsapp_chat_context" (
+    "id" int4 NOT NULL DEFAULT nextval('btw.whatsapp_chat_context_id_seq'::regclass),
+    "chat_id" numeric,
+    "added_at" timestamptz,
+    "message" jsonb,
+    "type" varchar,
+    "metadata" jsonb,
+    PRIMARY KEY ("id")
+);
+
+-- Sequence and defined type
+CREATE SEQUENCE IF NOT EXISTS btw.family_invites_id_seq;
+
+-- Table Definition
+CREATE TABLE "btw"."family_invites" (
+    "requester_user_id" int4,
+    "requested_family_number" varchar,
+    "notified" bool,
+    "requested_user_id" int4,
+    "created_on" timestamptz,
+    "id" int4 NOT NULL DEFAULT nextval('btw.family_invites_id_seq'::regclass),
+    PRIMARY KEY ("id")
+);
+
+
+-- Table Definition
+CREATE TABLE "btw"."family_users" (
+    "id1" int4 NOT NULL,
+    "id2" int4 NOT NULL,
+    PRIMARY KEY ("id1","id2")
+);
