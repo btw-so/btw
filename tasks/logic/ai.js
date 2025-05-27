@@ -1,5 +1,9 @@
 const axios = require("axios");
 var parser = require("cron-parser");
+const axiosInstance = axios.create({
+    timeout: 20000,
+    withCredentials: true,
+});
 const {
     convertDDMMYYYYtoDate,
     getNow,
@@ -44,7 +48,7 @@ const models = {
             url: "https://api.anthropic.com/v1/chat/completions",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${CLAUDE_API_KEY}`,
+                Authorization: `Bearer ${CLAUDE_API_KEY}`,
             },
             data: data,
         };
@@ -56,17 +60,24 @@ const models = {
     "gemini:2.0-flash": async (data) => {
         data["model"] = "gemini-2.0-flash";
         data["response_format"] = { type: "json_object" };
-        const config = {
-            method: "post",
-            url: `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`,
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${GEMINI_API_KEY}`,
-            },
-            data: data,
-        };
 
-        let response = await axios(config);
+        let response = await axiosInstance.post(
+            "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+            {
+                model: data.model,
+                messages: data.messages,
+                max_tokens: data.max_tokens,
+                response_format: data.response_format,
+                temperature: 0.4,
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${GEMINI_API_KEY}`,
+                },
+            }
+        );
+
         response = response.data.choices[0].message.content;
         return response;
     },
@@ -83,11 +94,7 @@ async function runLLM({ data, model }) {
 
 async function runLLMs({
     data,
-    order = [
-        "gemini:2.0-flash",
-        "openai:4o",
-        "claude:3.5sonnet",
-    ],
+    order = ["gemini:2.0-flash", "openai:4o", "claude:3.5sonnet"],
 }) {
     for (var i = 0; i < order.length; i++) {
         try {
@@ -128,7 +135,7 @@ async function classifyInput({
     const data = {
         messages: [
             {
-                role: "system",
+                role: "user",
                 content: `You are a personal AI bot. You help a user as
 
       1) "reminder" usecase. User tells their reminders. and asks for earlier reminders. can mark things as done as well. For each reminder, there will be alerts. By default an alert happens 10 minutes before the reminder. But user can add alert information along with the reminder info.
@@ -147,7 +154,7 @@ async function classifyInput({
       Input:
       <transcript>
 
-      Output format:
+      Output format: JSON
       JSON object with key as "classification", output as one of reminder, nutrition, voicenote, ask. DO NOT PRINT ANYTHING ELSE.`,
             },
             ...(convoHistory || []),
@@ -207,7 +214,7 @@ async function classifyReminder({ input, messages, timezoneOffsetInSeconds }) {
     const data = {
         messages: [
             {
-                role: "system",
+                role: "user",
                 content: `You are a personal AI reminder and alert bot. Given a transcript of user asking you to do something about reminders. Classify the user's message among four usecases: "add/delete/complete/read"
 
 Classification rules:
@@ -222,11 +229,13 @@ Transcript:
 <transcript>
 
 Output format:
-JSON:
-- key: add. Value: true if there are new reminders to be added in the transcript.  false otherwise.
-- key: delete. Value: true if there are reminders to be deleted in the transcript.  false otherwise.
-- key: edit. Value: true if there are reminders to be edited. ex: marking it as complete, incomplete, editing reminder text, editing reminder time, false otherwise.
-- key: read. Value: true if the user is asking information about their already saved reminders. false otherwise.
+JSON OBJECT:
+{
+    "add": true if there are new reminders to be added in the transcript.  false otherwise.
+    "delete": true if there are reminders to be deleted in the transcript.  false otherwise.
+    "edit": true if there are reminders to be edited. ex: marking it as complete, incomplete, editing reminder text, editing reminder time, false otherwise.
+    "read": true if the user is asking information about their already saved reminders. false otherwise.
+}
 
 DO NOT INCLUDE ANYTHING ELSE IN JSON.`,
             },
@@ -312,8 +321,10 @@ RULES:
 - WE DON'T WANT TO SPAM USER WITH ALERTS. SO KEEP SENSIBLE AMOUNT OF ALERTS ONLY. MAX 10 alerts per day. Even that if user explicitly asks for that many.
 
 Output format:
-JSON:
-- key: alerts. Value: Array of new timestamps on when an alert is to be sent to the user about the reminders. Each timestamp is of the format "DD/MM/YYYY HH:MM:SS
+JSON Object:
+{
+    "alerts": Array of new timestamps on when an alert is to be sent to the user about the reminders. Each timestamp is of the format "DD/MM/YYYY HH:MM:SS
+}
 
 DO NOT INCLUDE ANYTHING ELSE IN JSON.
 ADD MAXIMUM SEVEN DAYS ALERTS PLEASEEEE. DON'T ADD MORE THAN THAT.`;
@@ -322,7 +333,7 @@ ADD MAXIMUM SEVEN DAYS ALERTS PLEASEEEE. DON'T ADD MORE THAN THAT.`;
     const data = {
         messages: [
             {
-                role: "system",
+                role: "user",
                 content: prompt,
             },
         ],
@@ -330,7 +341,7 @@ ADD MAXIMUM SEVEN DAYS ALERTS PLEASEEEE. DON'T ADD MORE THAN THAT.`;
         max_tokens: 3024,
         top_p: 1,
         stream: false,
-    }
+    };
 
     try {
         let alerts = await runLLMs({
@@ -369,21 +380,23 @@ Transcript:
 ${input}
 
 Output format:
-JSON:
-- key: filters. Value: Object with keys fromDate, toDate, fromTime, toTime, status
-
-fromDate: DD-MM-YYYY (if not present, then it means from today)
-toDate: DD-MM-YYYY (if not present, then it means till 1 week. Max 1 week.)
-fromTime: HH:MM:SS 24 hour format
-toTime: HH:MM:SS 24 hour format
-status: "all" or "completed" or "incomplete" (by default assume that user always wants to see their incomplete reminders only.)
+JSON Object:
+{
+    "filters": {
+        "fromDate": DD-MM-YYYY (if not present, then it means from today)
+        "toDate": DD-MM-YYYY (if not present, then it means till 1 week. Max 1 week.)
+        "fromTime": HH:MM:SS 24 hour format
+        "toTime": HH:MM:SS 24 hour format
+        "status": "all" or "completed" or "incomplete" (by default assume that user always wants to see their incomplete reminders only.)
+    }
+}
 
 DO NOT INCLUDE ANYTHING ELSE IN THE JSON. TAKE THE BEST ESTIMATES FOR THE FILTERS.`;
 
     const data = {
         messages: [
             {
-                role: "system",
+                role: "user",
                 content: prompt,
             },
             {
@@ -417,7 +430,7 @@ async function getConvoHistory({ messages, timezoneOffsetInSeconds }) {
 
     // allow 500 words limit for convo history
     let msgs = messages.map((x) => ({
-        role: x.type === "bot" ? "system" : "user",
+        role: x.type === "bot" ? "assistant" : "user",
         content: `ADDED AT: ${getReadableFromUTCToLocal(
             new Date(x.added_at),
             timezoneOffsetInSeconds
@@ -579,22 +592,28 @@ Transcript:
 Rules:
 
 Output format:
-JSON:
-- key: actions
-- value: Array of actions to be taken. Each action is an object with the following keys. Include the keys only if they are relevant to the action.
-    - ActionType: Type of the action. ("ADD_NEW_REMINDER_ALERTS", "ADD_NEW_ALERT_FOR_EXISTING_REMINDERS", "EDIT_REMINDER_TEXT", "EDIT_REMINDER_STATUS_COMPLETE", "DELETE_REMINDER", "DELETE_ALERT")
-    - ReminderID: ID of the reminder.
-    - AlertID: ID of the alert.
-    - Text: Text of the reminder.
-    - WhenDate: Date of the reminder.
-    - WhenTime: Time of the reminder.
-    - WhenDateTime: Time of the alert.
-    - Recurring: true/false
-    - Crontab: Crontab string for the recurring reminder.
-    - Alerts: Array of timestamps when to alert the user.
-    - FamilyUserID: ID of the family member on whose plate this reminder is.
-    - UserID: ID of the reminder owner.
-    - Completed: true/false
+JSON Object:
+{
+    // Array of actions to be taken. Each action is an object with the following keys. Include the keys only if they are relevant to the action.
+    "actions": [
+        {
+            "ActionType": Type of the action. ("ADD_NEW_REMINDER_ALERTS", "ADD_NEW_ALERT_FOR_EXISTING_REMINDERS", "EDIT_REMINDER_TEXT", "EDIT_REMINDER_STATUS_COMPLETE", "DELETE_REMINDER", "DELETE_ALERT")
+            "ReminderID": ID of the reminder.
+            "AlertID": ID of the alert.
+            "Text": Text of the reminder.
+            "WhenDate": Date of the reminder.
+            "WhenTime": Time of the reminder.
+            "WhenDateTime": Time of the alert.
+            "Recurring": true/false,
+            "Crontab": Crontab string for the recurring reminder.
+            "Alerts": Array of timestamps when to alert the user.
+            "FamilyUserID": ID of the family member on whose plate this reminder is.
+            "UserID": ID of the reminder owner.
+            "Completed": true/false
+        }
+    ]
+}
+
 
 DO NOT INCLUDE ANYTHING ELSE IN JSON.`;
 
@@ -603,7 +622,7 @@ DO NOT INCLUDE ANYTHING ELSE IN JSON.`;
     const data = {
         messages: [
             {
-                role: "system",
+                role: "user",
                 content: prompt,
             },
             ...(convoHistory || []),
@@ -672,14 +691,16 @@ async function behaveLikeBaymaxGPT({ messages, user_id }) {
     - make it quirky but not cheap. Keep it fun but not too lazy or silly.
 
     Output format:
-    JSON:
-    - key: "response" Value: A string.
+    JSON Object:
+    {
+        "response": A string.
+    }
 
     DO NOT INCLUDE ANYTHING ELSE IN JSON.`;
 
     const messagesToSend = [
         {
-            role: "system",
+            role: "user",
             content: systemMessage,
         },
         ...gptMessagesToSend,
@@ -1885,7 +1906,7 @@ async function getReminderFromId({ reminder_id, user_id }) {
 
     const { rows: reminders } = await tasksDB.query(
         `SELECT * FROM btw.reminders WHERE id = $1 AND user_id = $2`,
-        [reminder_id, user_id],
+        [reminder_id, user_id]
     );
 
     return reminders && reminders.length && reminders[0];
@@ -1896,7 +1917,7 @@ async function getAlertFromId({ alert_id, user_id }) {
 
     const { rows: alerts } = await tasksDB.query(
         `SELECT * FROM btw.alerts WHERE id = $1 AND user_id = $2`,
-        [alert_id, user_id],
+        [alert_id, user_id]
     );
 
     return alerts && alerts.length && alerts[0];
