@@ -348,23 +348,7 @@ class Tiptap extends React.Component {
               {this.state.words || "0"} words
             </div>
           )}
-          {this.props.liveUrl ? (
-            <div
-              className="character-count text-xs text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(this.props.liveUrl);
-                  toast.success("Live URL copied to clipboard.");
-                } catch (err) {
-                  toast.error("Failed to copy live URL.");
-                }
-              }}
-            >
-              <span className="ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
-                SHARE NOTE
-              </span>
-            </div>
-          ) : null}
+          
           
         </div>
         <div className="h-1 mt-10 md:mt-4 block md:hidden"></div>

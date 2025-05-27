@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { updateUser } from "../actions";
 import seedrandom from "seedrandom";
 import AppWrapper from "../containers/AppWraper";
+import MobileTabBar from "../components/MobileTabBar";
 
 const WEEKS_IN_LIFE = 4000;
 const WEEKS_PER_YEAR = 52;
@@ -24,7 +25,8 @@ const THEME_COLORS = [
   "#eeefe7",
 ];
 
-function FourThousandWeeks({ userId, settings, name, email }) {
+
+function FourThousandWeeks({ userId, settings, name, email, ...props }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [birthday, setBirthday] = useState(settings?.birthday || null);
@@ -39,28 +41,34 @@ function FourThousandWeeks({ userId, settings, name, email }) {
   // Calculate weeks lived if birthday is set
   const getWeeksLived = () => {
     if (!birthday) return 0;
-  
+
     const birthDate = new Date(birthday);
     const today = new Date();
-    
+
     // Calculate total weeks lived
     const msInWeek = 1000 * 60 * 60 * 24 * 7;
     const totalWeeksLived = Math.floor((today - birthDate) / msInWeek);
-    
+
     // Get the birthday for this year
-    const thisYearBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
-    
+    const thisYearBirthday = new Date(
+      today.getFullYear(),
+      birthDate.getMonth(),
+      birthDate.getDate()
+    );
+
     // If birthday hasn't occurred this year yet, use last year's birthday as reference
     if (today < thisYearBirthday) {
       thisYearBirthday.setFullYear(thisYearBirthday.getFullYear() - 1);
     }
-    
+
     // Calculate weeks since last birthday
-    const weeksSinceLastBirthday = Math.ceil((today - thisYearBirthday) / msInWeek);
-    
+    const weeksSinceLastBirthday = Math.ceil(
+      (today - thisYearBirthday) / msInWeek
+    );
+
     return {
       totalWeeks: Math.min(totalWeeksLived, WEEKS_IN_LIFE),
-      currentWeek: weeksSinceLastBirthday
+      currentWeek: weeksSinceLastBirthday,
     };
   };
 
@@ -87,7 +95,14 @@ function FourThousandWeeks({ userId, settings, name, email }) {
   const maxTotalWeeks = 4000;
 
   return (
-    <AppWrapper userId={userId} name={name} email={email} isListPage={false} is4000Page={true}>
+    <AppWrapper
+      userId={userId}
+      name={name}
+      email={email}
+      {...props}
+      isListPage={false}
+      is4000Page={true}
+    >
       <div className="flex-grow flex flex-col md:flex-row border-t-2 border-gray-200 max-w-screen-2xl overflow-y-auto">
         <div className="flex flex-col h-full md:w-full max-w-screen-md">
           <div className="px-8 py-6 overflow-x-visible">
@@ -109,7 +124,9 @@ function FourThousandWeeks({ userId, settings, name, email }) {
               {/* Year label and arrow */}
               <div className="absolute -left-6 top-4">
                 <div className="relative">
-                  <span className="text-sm inline-block origin-top-right -rotate-90 translate-x-[-100%] whitespace-nowrap">Year</span>
+                  <span className="text-sm inline-block origin-top-right -rotate-90 translate-x-[-100%] whitespace-nowrap">
+                    Year
+                  </span>
                   <span className="text-sm block mt-1 ml-[8px]">↓</span>
                 </div>
               </div>
@@ -154,7 +171,9 @@ function FourThousandWeeks({ userId, settings, name, email }) {
                 return (
                   <div
                     key={year + 1 + "year"}
-                    className={`grid grid-cols-53 gap-0 md:gap-0.5 year-${year + 1}`}
+                    className={`grid grid-cols-53 gap-0 md:gap-0.5 year-${
+                      year + 1
+                    }`}
                   >
                     {Array.from({ length: WEEKS_PER_YEAR + 1 }).map(
                       (_, week) => {
@@ -197,7 +216,9 @@ function FourThousandWeeks({ userId, settings, name, email }) {
 
                         const weekNumber = year * WEEKS_PER_YEAR + week;
                         // Check if this square is in a past year or in current year but within weeks lived
-                        const isLived = year < currentYear || (year === currentYear && week <= currentWeek);
+                        const isLived =
+                          year < currentYear ||
+                          (year === currentYear && week <= currentWeek);
                         if (weekNumber > maxTotalWeeks) return null;
                         return (
                           <div
@@ -219,8 +240,32 @@ function FourThousandWeeks({ userId, settings, name, email }) {
           </div>
         </div>
       </div>
+      {!props.isSidebarOpen && (
+        <MobileTabBar
+          showHomeOption={true}
+          showSearchOption={true}
+          showSettingsOption={true}
+          onSelect={(tabName) => {
+            if (tabName === "search") {
+              props.showSidebar();
+            } else if (tabName === "home") {
+              props.hideSidebar();
+              navigate("/list");
+              dispatch(
+                changeSelectedNode({
+                  id: "home",
+                })
+              );
+            } else if (tabName === "settings") {
+              props.hideSidebar();
+              navigate("/settings");
+            }
+          }}
+        />
+      )}
     </AppWrapper>
   );
 }
+
 
 export default FourThousandWeeks;

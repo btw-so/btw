@@ -10,6 +10,8 @@ import UppyComponent from "../components/Uppy";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { selectUser, selectList, selectNotes, selectFiles } from "../selectors";
 import FileWrapper from "../components/FileWrapper";
+import MobileTabBar from "../components/MobileTabBar";
+import { useNavigate } from "react-router-dom";
 import {
   updateUser,
   upsertListNode,
@@ -909,7 +911,6 @@ const Parent = ({
   );
 };
 
-
 function ListContainer(props) {
   const dispatch = useDispatch();
   const userState = useAppSelector(selectUser);
@@ -928,6 +929,10 @@ function ListContainer(props) {
     ""
   );
 
+  const navigate = useNavigate();
+
+  const [showList, setShowList] = useState(true);
+
   const fileLoading =
     filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status ===
     STATUS.RUNNING;
@@ -939,7 +944,6 @@ function ListContainer(props) {
     STATUS.SUCCESS;
 
   const tiptapRef = useRef(null);
-  const [mobileTab, setMobileTab] = useState("main"); // 'main' or 'playground'
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -1133,13 +1137,33 @@ function ListContainer(props) {
     return (beforePos + afterPos) / 2;
   };
 
+  useEffect(() => {
+    if (!selectedListId) return;
+
+    console.log("selectedListId", selectedListId, nodeUIMap, nodeDBMap);
+
+    const numChildren =
+      (nodeUIMap || {})[selectedListId]?.children?.length || 0;
+
+    console.log("numChildren", numChildren);
+
+    if (numChildren === 0) {
+      setShowList(false);
+    } else {
+      setShowList(true);
+    }
+  }, [selectedListId, nodeUIMap]);
+
   return (
     <AppWrapper {...props} listPage={true}>
       {token && props.userId ? (
         <div className="pt-4 pb-8 md:pt-6 md:pb-0 h-full flex flex-col list-canvas relative">
           {/* Breadcrumb and Heading - always visible */}
           <nav className="block pl-6 pr-16 md:pr-6" aria-label="Breadcrumb">
-            <ol role="list" className="flex flex-col md:flex-row md:items-center space-x-0 md:space-x-1">
+            <ol
+              role="list"
+              className="flex flex-col md:flex-row md:items-center space-x-0 md:space-x-1"
+            >
               {thirdParentOfCurrentSelection ? (
                 <li>
                   <div className="flex items-center w-full">
@@ -1297,6 +1321,53 @@ function ListContainer(props) {
                 SHARE LIST
               </span>
             </div>
+            {nodeDBMap[selectedListId]?.file_id ? (
+              <div
+                className="character-count text-xs mb-2 md:mb-1 text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
+                onClick={async () => {
+                  const fileUrl =
+                    filesState.filesMap[nodeDBMap[selectedListId]?.file_id]
+                      ?.file?.url;
+                  try {
+                    await navigator.clipboard.writeText(fileUrl);
+                    toast.success("File link copied to clipboard.");
+                  } catch (err) {
+                    toast.error("Failed to copy file link.");
+                  }
+                }}
+              >
+                <span className="whitespace-nowrap ml-6 md:ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
+                  SHARE FILE
+                </span>
+              </div>
+            ) : (
+              <div
+                className="character-count text-xs mb-2 md:mb-1 text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
+                onClick={async () => {
+                  const noteUrl =
+                    window.location.origin +
+                    "/public/note/" +
+                    nodeDBMap[selectedListId]?.note_id +
+                    "/" +
+                    shortHash(
+                      nodeDBMap[selectedListId]?.note_id,
+                      process.env.REACT_APP_ENCRYPTION_KEY
+                    );
+
+                  try {
+                    await navigator.clipboard.writeText(noteUrl);
+                    toast.success("Note link copied to clipboard.");
+                  } catch (err) {
+                    toast.error("Failed to copy note link.");
+                  }
+                }}
+              >
+                <span className="whitespace-nowrap ml-6 md:ml-1 px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
+                  SHARE NOTE
+                </span>
+              </div>
+            )}
+
             <div
               className="character-count hidden md:block mr-4 text-xs mb-1 text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
               onClick={async () => {
@@ -1328,7 +1399,7 @@ function ListContainer(props) {
             {/* Main tab content: nodes + Uppy */}
             <div
               className={`flex flex-shrink-0 flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-0 border-gray-100 md:border-b-0 md:border-r-2 md:border-gray-100 ${
-                mobileTab !== "main" ? "hidden" : ""
+                !showList ? "hidden" : ""
               } md:flex`}
             >
               <div
@@ -1455,7 +1526,7 @@ function ListContainer(props) {
             {/* Playground tab content: file view or Tiptap */}
             <div
               className={`flex flex-col h-full overflow-y-auto md:flex-grow text-black md:p-4 ${
-                mobileTab !== "playground" ? "hidden" : ""
+                showList ? "hidden" : ""
               } md:flex`}
             >
               {nodeDBMap[selectedListId]?.file_id ? (
@@ -1469,37 +1540,11 @@ function ListContainer(props) {
                         ?.file?.url
                     }
                   />
-                  <div
-                    className="character-count mt-4 text-xs mb-1 text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
-                    onClick={async () => {
-                      const fileUrl = filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.file?.url;
-                      try {
-                        await navigator.clipboard.writeText(fileUrl);
-                        toast.success("File link copied to clipboard.");
-                      } catch (err) {
-                        toast.error("Failed to copy file link.");
-                      }
-                    }}
-                  >
-                    <span className="px-1 text-xxs py-0.5 bg-gray-200 rounded text-gray-400 text-[10px] align-middle">
-                      SHARE FILE
-                    </span>
-                  </div>
                 </div>
               ) : (
                 <Tiptap
                   ref={tiptapRef}
                   menuBarClasses="opacity-50 hover:opacity-100 transition-opacity duration-300 !px-2 md:!px-0"
-                  liveUrl={
-                    window.location.origin +
-                    "/public/note/" +
-                    nodeDBMap[selectedListId]?.note_id +
-                    "/" +
-                    shortHash(
-                      nodeDBMap[selectedListId]?.note_id,
-                      process.env.REACT_APP_ENCRYPTION_KEY
-                    )
-                  }
                   reviewerMode={false}
                   usecase="list"
                   className="h-full flex-grow p-6"
@@ -1543,42 +1588,43 @@ function ListContainer(props) {
               )}
             </div>
           </div>
-
-          {/* Mobile Tab Bar - fixed at bottom */}
-          <div className="fixed bottom-4 left-0 w-full flex justify-center z-50 md:hidden">
-            <div className="bg-white/90 shadow-lg rounded-full flex px-4 py-2 gap-6 border border-gray-200 backdrop-blur-md">
-              <button
-                className={`flex flex-col items-center px-3 py-1 focus:outline-none ${mobileTab === "main" ? "text-gray-900 font-bold" : "text-gray-400"}`}
-                onClick={() => setMobileTab("main")}
-                aria-label="Show List"
-              >
-                <i className="ri-list-check"></i>
-                <span className="text-xs mt-0.5">List</span>
-              </button>
-              <button
-                className={`flex flex-col items-center px-3 py-1 focus:outline-none ${mobileTab === "playground" ? "text-gray-900 font-bold" : "text-gray-400"}`}
-                onClick={() => setMobileTab("playground")}
-                aria-label={nodeDBMap[selectedListId]?.file_id ? "Show File" : "Show Note"}
-              >
-                {nodeDBMap[selectedListId]?.file_id ? (
-                  <i className="ri-attachment-line"></i>
-                ) : mobileTab === "playground" ? (
-                  <i className="ri-quill-pen-fill"></i>
-                ) : (
-                  <i className="ri-quill-pen-line"></i>
-                )}
-                <span className="text-xs mt-0.5">
-                  {nodeDBMap[selectedListId]?.file_id
-                    ? "File"
-                    : mobileTab === "playground"
-                    ? "Note"
-                    : "Note"}
-                </span>
-              </button>
-            </div>
-          </div>
         </div>
       ) : null}
+
+      {!props.isSidebarOpen && (
+        <MobileTabBar
+          showSearchOption={true}
+          showHomeOption={selectedListId !== "home"}
+          showSettingsOption={true}
+          isHomeSelected={selectedListId === "home"}
+          showListOption={true}
+          isListSelected={!!showList}
+          showNoteOption={!nodeDBMap[selectedListId]?.file_id}
+          isNoteSelected={!showList}
+          showFileOption={!!nodeDBMap[selectedListId]?.file_id}
+          isFileSelected={!showList}
+          onSelect={(tabName) => {
+            if (tabName === "list") {
+              setShowList(true);
+            } else if (tabName === "note") {
+              setShowList(false);
+            } else if (tabName === "file") {
+              setShowList(false);
+            } else if (tabName === "search") {
+              props.showSidebar();
+            } else if (tabName === "home") {
+              navigate("/list");
+              dispatch(
+                changeSelectedNode({
+                  id: "home",
+                })
+              );
+            } else if (tabName === "settings") {
+              navigate("/settings");
+            }
+          }}
+        />
+      )}
     </AppWrapper>
   );
 }

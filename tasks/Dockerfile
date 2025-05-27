@@ -28,7 +28,7 @@ RUN cd /tmp && npm install
 
 # RUN npm install        
 
-RUN npm install pm2@latest -g
+RUN npm install pm2@6.0.5 -g
 RUN npm install db-migrate -g
 RUN npm install cross-env -g
 

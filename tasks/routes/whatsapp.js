@@ -971,7 +971,6 @@ router.get(
         origin: process.env.CORS_DOMAINS.split(","),
     }),
     async (req, res) => {
-        console.log("ASDADSA");
         // Your verify token should be a random string that you have previously decided
         const VERIFY_TOKEN = "kalki";
 

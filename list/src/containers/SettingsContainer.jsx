@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useAppSelector } from "modules/hooks";
-import useInterval from "beautiful-react-hooks/useInterval";
 import { useDispatch } from "react-redux";
+import { useNavigate, useLocation } from "react-router-dom";
 import { STATUS } from "../literals";
 import useCookie from "../hooks/useCookie";
 import UppyComponent from "../components/Uppy";
@@ -12,11 +12,12 @@ import useTreeChanges from "tree-changes-hook";
 import Tiptap from "../components/Tiptap";
 import { Switch } from "@headlessui/react";
 import { logOut } from "../actions/user";
-
+import MobileTabBar from "../components/MobileTabBar";
 import AppWrapper from "./AppWraper";
 
 function SettingsContainer(props) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const userState = useAppSelector(selectUser);
   const { user } = userState;
   const { changed } = useTreeChanges(userState);
@@ -62,7 +63,6 @@ function SettingsContainer(props) {
       birthday: currentSettings.birthday || "",
     },
   });
-
 
   useEffect(() => {
     if (changed("user.data.name")) {
@@ -124,8 +124,6 @@ function SettingsContainer(props) {
         (currentSettings.links || []).filter((x) => x.name || x.url)
       ) ||
     settings.birthday !== currentSettings.birthday;
-
-  
 
   return (
     <AppWrapper {...props} settingsPage={true}>
@@ -253,6 +251,28 @@ function SettingsContainer(props) {
           </div>
         </div>
       ) : null}
+      {!props.isSidebarOpen && (
+        <MobileTabBar
+          showSearchOption={true}
+          showHomeOption={true}
+          showSettingsOption={true}
+          isSettingsSelected={true}
+          onSelect={(tabName) => {
+            if (tabName === "search") {
+              props.showSidebar();
+            } else if (tabName === "home") {
+              navigate("/list");
+              dispatch(
+                changeSelectedNode({
+                  id: "home",
+                })
+              );
+              props.hideSidebar();
+            } else if (tabName === "settings") {
+            }
+          }}
+        />
+      )}
     </AppWrapper>
   );
 }

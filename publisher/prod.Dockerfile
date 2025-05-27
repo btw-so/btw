@@ -25,7 +25,7 @@ RUN apk add --no-cache nasm pkgconfig libtool build-base zlib-dev
 RUN npm config set unsafe-perm true
 RUN npm install        
 
-RUN npm install pm2@latest -g
+RUN npm install pm2@6.0.5 -g
 
 RUN npm install cross-env@latest -g
 

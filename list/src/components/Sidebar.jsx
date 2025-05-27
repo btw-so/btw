@@ -14,6 +14,7 @@ import {
   batchPushNodes,
   searchNodes,
 } from "../actions";
+import MobileTabBar from "./MobileTabBar";
 
 function Sidebar(props) {
   const location = useLocation();
@@ -31,11 +32,6 @@ function Sidebar(props) {
   const nodeDBMap = useAppSelector((state) => state.list.nodeDBMap);
   const [updatedNodeIds, setUpdatedNodeIds] = useState({});
   const searchResults = useAppSelector((state) => state.list.searchNodes);
-
-  const [sidebarIsOpen, setSidebarIsOpen] = useLocalStorage(
-    "sidebarIsOpen",
-    false
-  );
 
   const [draggedNode, setDraggedNode] = useState(null);
   const [dragOverNodeId, setDragOverNodeId] = useState(null);
@@ -191,7 +187,10 @@ function Sidebar(props) {
                     <div
                       className={`flex justify-center items-center text-gray-400`}
                     >
-                      <i className={`remix ri-search-line`} style={{ fontSize: '0.75em' }}></i>
+                      <i
+                        className={`remix ri-search-line`}
+                        style={{ fontSize: "0.75em" }}
+                      ></i>
                     </div>
                   </div>
                 </div>
@@ -240,7 +239,6 @@ function Sidebar(props) {
                           : "text-gray-900"
                       }`}
                       onClick={() => {
-                        props.closeSidebar();
                         // make sure we are on /list page
                         if (!isListPage) {
                           navigate("/list");
@@ -251,6 +249,8 @@ function Sidebar(props) {
                             id: node.id,
                           })
                         );
+
+                        props.toggleSidebar();
                       }}
                       draggable={!isFirstNode && searchTerm.length < 3}
                       onDragStart={(e) => handleDragStart(e, node)}
@@ -282,7 +282,7 @@ function Sidebar(props) {
                   is4000Page ? "text-gray-900 bg-gray-200" : "text-gray-900"
                 }`}
                 onClick={() => {
-                  props.closeSidebar();
+                  props.toggleSidebar();
                   navigate("/4000");
                 }}
               >
@@ -311,7 +311,6 @@ function Sidebar(props) {
                       onClick={() => {
                         // make sure we are on /list page
                         if (!isListPage) {
-                          props.closeSidebar();
                           navigate("/list");
                         }
 
@@ -320,6 +319,8 @@ function Sidebar(props) {
                             id: node.id,
                           })
                         );
+
+                        props.toggleSidebar();
                       }}
                     >
                       <span className="mr-2 pt-0.5 mb-1">
@@ -337,13 +338,13 @@ function Sidebar(props) {
             </div>
           )}
         </div>
-        <div className="w-full sidebar-toolkit">
+        <div className="hidden md:block w-full sidebar-toolkit">
           <button
             className={`w-full py-1.5 px-2 transition-colors duration-200 rounded-md flex items-center hover:bg-gray-200 ${
               props.settingsPage ? "text-gray-900 bg-gray-200" : "text-black"
             }`}
             onClick={() => {
-              props.closeSidebar();
+              props.toggleSidebar();
               navigate("/settings");
             }}
           >
@@ -353,6 +354,30 @@ function Sidebar(props) {
             <span className="">Settings</span>
           </button>
         </div>
+        {props.isSidebarOpen && (
+          <MobileTabBar
+            showHomeOption={true}
+            showSearchOption={true}
+            showSettingsOption={true}
+            isSearchSelected={true}
+            onSelect={(tabName) => {
+              if (tabName === "search") {
+                props.showSidebar();
+              } else if (tabName === "home") {
+                props.hideSidebar();
+                navigate("/list");
+                dispatch(
+                  changeSelectedNode({
+                    id: "home",
+                  })
+                );
+              } else if (tabName === "settings") {
+                props.hideSidebar();
+                navigate("/settings");
+              }
+            }}
+          />
+        )}
       </>
     );
   }

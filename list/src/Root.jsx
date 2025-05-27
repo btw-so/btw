@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useDispatch } from "react-redux";
 import {
@@ -52,6 +52,17 @@ function Root() {
     }
   }, [dispatch, changed]);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+  const hideSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+  const showSidebar = () => {
+    setIsSidebarOpen(true);
+  };
+
   // THOUGHTS 101
   // create a component that checks if the environment is electron, then it would be BrowserRouter
   // otherwise, it would be HashRouter
@@ -92,20 +103,20 @@ function Root() {
         {/* {isLoggedIn && <Login />} */}
         {/* <Main isAuthenticated={isAuthenticated}> */}
         <Routes className="flex flex-grow">
-          <Route path="/public/list/:id/:hash" element={<PublicList />} />
-          <Route path="/public/note/:id/:hash" element={<PublicNote />} />
+          <Route path="/public/list/:id/:hash" element={<PublicList isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} hideSidebar={hideSidebar} showSidebar={showSidebar} />} />
+          <Route path="/public/note/:id/:hash" element={<PublicNote isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} hideSidebar={hideSidebar} showSidebar={showSidebar} />} />
           <Route
             element={
-              <PublicRoute isLoggedIn={isLoggedIn} to="/list">
-                <Login />
+              <PublicRoute isLoggedIn={isLoggedIn} to="/list" isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar}>
+                <Login isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} hideSidebar={hideSidebar} showSidebar={showSidebar} />
               </PublicRoute>
             }
             path="/login"
           />
           <Route
             element={
-              <PublicRoute isLoggedIn={isLoggedIn} to="/list">
-                <Login />
+              <PublicRoute isLoggedIn={isLoggedIn} to="/list" isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar}>
+                <Login isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} hideSidebar={hideSidebar} showSidebar={showSidebar} />
               </PublicRoute>
             }
             path="/"
@@ -113,7 +124,7 @@ function Root() {
           <Route
             className="flex flex-grow"
             element={
-              <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
+              <PrivateRoute isLoggedIn={isLoggedIn} to="/login" isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar}>
                 <List
                   userId={user && user.data ? user.data.id : null}
                   name={user && user.data ? user.data.name : null}
@@ -129,6 +140,10 @@ function Root() {
                     ].includes(user.data.email)
                   }
                   isListPage={true}
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={toggleSidebar}
+                  hideSidebar={hideSidebar}
+                  showSidebar={showSidebar}
                 />
               </PrivateRoute>
             }
@@ -137,7 +152,7 @@ function Root() {
           <Route
             className="flex flex-grow"
             element={
-              <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
+              <PrivateRoute isLoggedIn={isLoggedIn} to="/login" isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar}>
                 <Settings
                   userId={user && user.data ? user.data.id : null}
                   name={user && user.data ? user.data.name : null}
@@ -163,6 +178,10 @@ function Root() {
                       "deepti.vchopra@gmail.com",
                     ].includes(user.data.email)
                   }
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={toggleSidebar}
+                  hideSidebar={hideSidebar}
+                  showSidebar={showSidebar}
                 />
               </PrivateRoute>
             }
@@ -171,13 +190,17 @@ function Root() {
           <Route
             className="flex flex-grow"
             element={
-              <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
+              <PrivateRoute isLoggedIn={isLoggedIn} to="/login" isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar}>
                 <FourThousandWeeks
                   userId={user && user.data ? user.data.id : null}
                   name={user && user.data ? user.data.name : null}
                   email={user && user.data ? user.data.email : null}
                   settings={user && user.data ? user.data.settings : null}
                   is4000Page={true}
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={toggleSidebar}
+                  hideSidebar={hideSidebar}
+                  showSidebar={showSidebar}
                 />
               </PrivateRoute>
             }
