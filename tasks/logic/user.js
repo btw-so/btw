@@ -379,6 +379,17 @@ baseQueue.process("removeOldLoginTokens", async (job, done) => {
     done();
 });
 
+async function getUserFromId({ user_id }) {
+    const tasksDB = await db.getTasksDB();
+
+    const { rows } = await tasksDB.query(
+        `SELECT * FROM btw.users WHERE id = $1`,
+        [user_id]
+    );
+
+    return rows.length > 0 ? rows[0] : null;
+}
+
 // function to get users
 async function getUserFromToken({ token, fingerprint }) {
     const tasksDB = await db.getTasksDB();
@@ -486,6 +497,8 @@ async function createLoginToken({ email, fingerprint, ip_address }) {
 
 // function to create user
 async function createUser({ email, slug }) {
+    const tasksDB = await db.getTasksDB();
+
     if (!email) {
         return {
             success: false,
@@ -493,19 +506,16 @@ async function createUser({ email, slug }) {
         };
     }
 
-    const tasksDB = await db.getTasksDB();
-    const client = await tasksDB.connect();
-
     // check if user already exists
-    const { rows } = await client.query(
+    const { rows } = await tasksDB.query(
         `SELECT * FROM btw.users WHERE processed_email = $1`,
         [(email || "").toLowerCase().split(".").join("")]
     );
 
     if (rows.length == 0) {
         // create user
-        await client.query(
-            `INSERT INTO btw.users (email, processed_email, created_at, slug) VALUES ($1, $2, $3, $4)`,
+        const { rows: nRows } = await tasksDB.query(
+            `INSERT INTO btw.users (email, processed_email, created_at, slug) VALUES ($1, $2, $3, $4) RETURNING *`,
             [
                 email,
                 email.toLowerCase().split(".").join(""),
@@ -513,9 +523,17 @@ async function createUser({ email, slug }) {
                 slug || null,
             ]
         );
-    }
 
-    client.release();
+        return {
+            userId: nRows[0].id,
+            newUser: true,
+        };
+    } else {
+        return {
+            userId: rows[0].id,
+            newUser: false,
+        };
+    }
 }
 
 async function setUserDetails({
@@ -606,6 +624,66 @@ async function setUserDetails({
     }
 }
 
+async function setUserName({ user_id, name }) {
+    const tasksDB = await db.getTasksDB();
+
+    try {
+        await tasksDB.query(`UPDATE btw.users SET name = $1 WHERE id = $2`, [
+            name,
+            user_id,
+        ]);
+
+        return {
+            success: true,
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            success: false,
+            error: e.message,
+        };
+    }
+}
+
+async function setUserTimezone({ user_id, timezone, timezoneOffsetInSeconds }) {
+    const tasksDB = await db.getTasksDB();
+
+    // get settings
+    const { rows } = await tasksDB.query(
+        `SELECT settings FROM btw.users WHERE id = $1`,
+        [user_id]
+    );
+
+    let settings = rows[0].settings || {};
+
+    settings.timezone = timezone;
+    settings.timezoneOffsetInSeconds = timezoneOffsetInSeconds;
+
+    await tasksDB.query(`UPDATE btw.users SET settings = $1 WHERE id = $2`, [
+        settings,
+        user_id,
+    ]);
+}
+
+async function setUserPhone({ user_id, phone }) {
+    const tasksDB = await db.getTasksDB();
+
+    // get settings
+    const { rows } = await tasksDB.query(
+        `SELECT settings FROM btw.users WHERE id = $1`,
+        [user_id]
+    );
+
+    let settings = rows[0].settings || {};
+
+    settings.phone = phone;
+
+    await tasksDB.query(`UPDATE btw.users SET settings = $1 WHERE id = $2`, [
+        settings,
+        user_id,
+    ]);
+}
+
 async function getDomains({ user_id }) {
     const tasksDB = await db.getTasksDB();
 
@@ -678,6 +756,102 @@ async function deleteLoginToken({ token, fingerprint }) {
     );
 }
 
+async function areFamily({ id1, id2 }) {
+    // if id2 is < id1, swap them
+    if (id2 < id1) {
+        const temp = id1;
+        id1 = id2;
+        id2 = temp;
+    }
+
+    // check in family_users db if id1 column = id1 and id2 column = id2 entry exists or not
+    const tasksDB = await db.getTasksDB();
+    const { rows } = await tasksDB.query(
+        `SELECT * FROM btw.family_users WHERE id1 = $1 AND id2 = $2`,
+        [id1, id2]
+    );
+
+    return rows.length > 0;
+}
+
+async function addFamily({ id1, id2 }) {
+    // if id2 is < id1, swap them
+    if (id2 < id1) {
+        const temp = id1;
+        id1 = id2;
+        id2 = temp;
+    }
+
+    const alreadyFamily = await areFamily({ id1, id2 });
+
+    if (!alreadyFamily) {
+        // insert into family_users
+        const tasksDB = await db.getTasksDB();
+        await tasksDB.query(
+            `INSERT INTO btw.family_users (id1, id2) VALUES ($1, $2)`,
+            [id1, id2]
+        );
+    }
+}
+
+async function getFamilyUsers({ id }) {
+    const tasksDB = await db.getTasksDB();
+    const { rows } = await tasksDB.query(
+        `SELECT * FROM btw.family_users WHERE id1 = $1 OR id2 = $1`,
+        [id]
+    );
+
+    let familyUsers = [];
+
+    for (var i = 0; i < rows.length; i++) {
+        if (rows[i].id1 == id) {
+            familyUsers.push(rows[i].id2);
+        } else {
+            familyUsers.push(rows[i].id1);
+        }
+    }
+
+    // get all user details of family users and send them
+    const users = [];
+
+    for (var i = 0; i < familyUsers.length; i++) {
+        const user = await getUserFromId({ user_id: familyUsers[i] });
+        users.push(user);
+    }
+
+    return users;
+}
+
+async function getUserByPhone({ phone }) {
+    const tasksDB = await db.getTasksDB();
+    const { rows } = await tasksDB.query(
+        `SELECT * FROM btw.users WHERE settings->>'phone' = $1`,
+        [phone]
+    );
+
+    return rows.length > 0 ? rows[0] : null;
+}
+
+async function generateFamilyInviteEntry({
+    requester_user_id,
+    requested_family_number,
+    requested_user_id,
+}) {
+    const tasksDB = await db.getTasksDB();
+
+    // insert into family_invites
+    await tasksDB.query(
+        `INSERT INTO btw.family_invites (requester_user_id, requested_family_number, requested_user_id, created_on, notified) VALUES ($1, $2, $3, $4, $5)`,
+        [
+            requester_user_id,
+            requested_family_number,
+            requested_user_id,
+            new Date(),
+            false,
+        ]
+    );
+}
+
 module.exports = {
     getUserFromToken,
     createLoginToken,
@@ -687,4 +861,13 @@ module.exports = {
     addUserDomain,
     getDomains,
     deleteLoginToken,
+    getUserFromId,
+    areFamily,
+    addFamily,
+    getFamilyUsers,
+    getUserByPhone,
+    generateFamilyInviteEntry,
+    setUserName,
+    setUserTimezone,
+    setUserPhone,
 };

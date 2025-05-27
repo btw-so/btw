@@ -38,7 +38,11 @@ const { TaskList } = require("@tiptap/extension-task-list");
 const { Typography } = require("@tiptap/extension-typography");
 const { Underline } = require("@tiptap/extension-underline");
 const { Node, mergeAttributes } = require("@tiptap/core");
-const { tiptapExtensions, Embed, CustomDocument } = require("./logic/tiptapExtensions");
+const {
+    tiptapExtensions,
+    Embed,
+    CustomDocument,
+} = require("./logic/tiptapExtensions");
 var { generateHTML, generateJSON } = require("@tiptap/html");
 var { TiptapTransformer } = require("@hocuspocus/transformer");
 var MyTipTapTransformer = TiptapTransformer.extensions(tiptapExtensions);
@@ -47,12 +51,17 @@ var MyTipTapTransformerJSON = (html) => generateJSON(html, tiptapExtensions);
 var { Database } = require("@hocuspocus/extension-database");
 var { Server } = require("@hocuspocus/server");
 
+var jobsRouter = require("./routes/jobs");
 var indexRouter = require("./routes/index");
 var otpRouter = require("./routes/otp");
 var notesRouter = require("./routes/notes");
 var listRouter = require("./routes/list");
 var filesRouter = require("./routes/files");
-var { baseQueue } = require("./services/queue");
+var whatsappRouter = require("./routes/whatsapp");
+var telegramRouter = require("./routes/telegram");
+var userRouter = require("./routes/user");
+var a1Router = require("./routes/a1");
+var { baseQueue, alertsQueue, uxQueue } = require("./services/queue");
 var { upsertNote, getNote } = require("./logic/notes");
 
 var {
@@ -90,12 +99,20 @@ app.use("/otp", otpRouter);
 app.use("/notes", notesRouter);
 app.use("/list", listRouter);
 app.use("/files", filesRouter);
-app.use("/user", require("./routes/user"));
+app.use("/whatsapp", whatsappRouter);
+app.use("/telegram", telegramRouter);
+app.use("/a1", a1Router);
+app.use("/user", userRouter);
+app.use("/jobs", jobsRouter);
 
 // Queue monitor
 const serverAdapter = new ExpressAdapter();
 const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
-    queues: [new BullAdapter(baseQueue)],
+    queues: [
+        new BullAdapter(baseQueue),
+        new BullAdapter(alertsQueue),
+        new BullAdapter(uxQueue),
+    ],
     serverAdapter: serverAdapter,
 });
 serverAdapter.setBasePath("/admin/queues");
@@ -245,8 +262,10 @@ const yjsServer = Server.configure({
                 // console.log("fetching", documentName);
                 const id = documentName.split("note.")[1].split(".")[1];
                 const user_id = documentName.split("note.")[1].split(".")[0];
-                let usecase = documentName.split("note.")[1].split(".").length > 2 ? documentName.split("note.")[1].split(".")[2] : null;
-
+                let usecase =
+                    documentName.split("note.")[1].split(".").length > 2
+                        ? documentName.split("note.")[1].split(".")[2]
+                        : null;
 
                 return new Promise((resolve, reject) => {
                     resolve(
@@ -286,7 +305,10 @@ const yjsServer = Server.configure({
                 // console.log("storing", documentName);
                 const id = documentName.split("note.")[1].split(".")[1];
                 const user_id = documentName.split("note.")[1].split(".")[0];
-                let usecase = documentName.split("note.")[1].split(".").length > 2 ? documentName.split("note.")[1].split(".")[2] : null;
+                let usecase =
+                    documentName.split("note.")[1].split(".").length > 2
+                        ? documentName.split("note.")[1].split(".")[2]
+                        : null;
 
                 return new Promise((resolve, reject) => {
                     resolve(
@@ -305,7 +327,7 @@ const yjsServer = Server.configure({
                                     state,
                                     new Date(),
                                     new Date(),
-                                    usecase || ""
+                                    usecase || "",
                                 ]
                             );
                         })

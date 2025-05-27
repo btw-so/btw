@@ -1159,7 +1159,8 @@ div:focus-visible {
 
 html,
 body {
-  font-family: Circular, "Satoshi", sans-serif;
+  font-family: "Circular", "Satoshi", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .tiptap-editor li p {
@@ -1363,6 +1364,77 @@ hr.ProseMirror-selectednode {
   align-items: center;
 }
 
+/* Circular fonts */
+@font-face {
+  font-family: 'Circular';
+  src: url('/Circular/CircularStd-Book.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/Circular/CircularStd-BookItalic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/Circular/CircularStd-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/Circular/CircularStd-Light Italic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/Circular/CircularStd-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/Circular/CircularStd-MediumItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/Circular/CircularStd-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/Circular/CircularStd-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/Circular/CircularStd-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/Circular/CircularStd-BlackItalic.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+}
+
 @media (min-width: 640px) {
 
   .sm\:mb-0 {
@@ -1401,3 +1473,15 @@ hr.ProseMirror-selectednode {
     flex-direction: column;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
