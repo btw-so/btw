@@ -38,102 +38,30 @@ const { TaskList } = require("@tiptap/extension-task-list");
 const { Typography } = require("@tiptap/extension-typography");
 const { Underline } = require("@tiptap/extension-underline");
 const { Node, mergeAttributes } = require("@tiptap/core");
-
-const Embed = Node.create({
-    name: "btw-embed",
-    group: "block",
-    selectable: true,
-    draggable: true,
-    atom: true,
-
-    parseHTML() {
-        return [
-            {
-                tag: "btw-embed",
-                contentElement: "textarea",
-            },
-        ];
-    },
-    addAttributes() {
-        return {
-            code: {
-                default: null,
-            },
-        };
-    },
-    renderHTML({ HTMLAttributes }) {
-        return ["btw-embed", mergeAttributes(HTMLAttributes)];
-    },
-    parseHTML() {
-        return [
-            {
-                tag: "btw-embed",
-            },
-        ];
-    },
-});
-
-const CustomDocument = Document.extend({
-    content: "heading block*",
-});
-var { Database } = require("@hocuspocus/extension-database");
-var { Server } = require("@hocuspocus/server");
-var { generateHTML, generateJSON } = require("@tiptap/html");
-var { TiptapTransformer } = require("@hocuspocus/transformer");
-var extensions = [
+const {
+    tiptapExtensions,
     Embed,
     CustomDocument,
-    Paragraph,
-    Text,
-    Bold,
-    Blockquote,
-    OrderedList,
-    BulletList,
-    ListItem,
-    Code,
-    Dropcursor,
-    Gapcursor,
-    HardBreak,
-    Heading,
-    Highlight,
-    HorizontalRule,
-    Italic,
-    Link,
-    Strike,
-    TaskList,
-    Typography,
-    Underline,
-    Image,
-    TaskItem.configure({
-        nested: true,
-    }),
-    Placeholder.configure({
-        placeholder: ({ node }) => {
-            if (node.type.name === "heading") {
-                return "What’s the title?";
-            }
+} = require("./logic/tiptapExtensions");
+var { generateHTML, generateJSON } = require("@tiptap/html");
+var { TiptapTransformer } = require("@hocuspocus/transformer");
+var MyTipTapTransformer = TiptapTransformer.extensions(tiptapExtensions);
+var MyTipTapTransformerHTML = (json) => generateHTML(json, tiptapExtensions);
+var MyTipTapTransformerJSON = (html) => generateJSON(html, tiptapExtensions);
+var { Database } = require("@hocuspocus/extension-database");
+var { Server } = require("@hocuspocus/server");
 
-            return "Write something...";
-        },
-    }),
-    Youtube.configure({
-        controls: false,
-    }),
-    CodeBlockLowlight,
-    Mention.configure({
-        HTMLAttributes: {
-            class: "mention",
-        },
-    }),
-];
-var MyTipTapTransformer = TiptapTransformer.extensions(extensions);
-var MyTipTapTransformerHTML = (json) => generateHTML(json, extensions);
-var MyTipTapTransformerJSON = (html) => generateJSON(html, extensions);
-
+var jobsRouter = require("./routes/jobs");
 var indexRouter = require("./routes/index");
 var otpRouter = require("./routes/otp");
 var notesRouter = require("./routes/notes");
-var { baseQueue } = require("./services/queue");
+var listRouter = require("./routes/list");
+var filesRouter = require("./routes/files");
+var whatsappRouter = require("./routes/whatsapp");
+var telegramRouter = require("./routes/telegram");
+var userRouter = require("./routes/user");
+var a1Router = require("./routes/a1");
+var { baseQueue, alertsQueue, uxQueue } = require("./services/queue");
 var { upsertNote, getNote } = require("./logic/notes");
 
 var {
@@ -169,12 +97,22 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/otp", otpRouter);
 app.use("/notes", notesRouter);
-app.use("/user", require("./routes/user"));
+app.use("/list", listRouter);
+app.use("/files", filesRouter);
+app.use("/whatsapp", whatsappRouter);
+app.use("/telegram", telegramRouter);
+app.use("/a1", a1Router);
+app.use("/user", userRouter);
+app.use("/jobs", jobsRouter);
 
 // Queue monitor
 const serverAdapter = new ExpressAdapter();
 const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
-    queues: [new BullAdapter(baseQueue)],
+    queues: [
+        new BullAdapter(baseQueue),
+        new BullAdapter(alertsQueue),
+        new BullAdapter(uxQueue),
+    ],
     serverAdapter: serverAdapter,
 });
 serverAdapter.setBasePath("/admin/queues");
@@ -192,8 +130,6 @@ const UPPY_OPTIONS = {
     debug: !!Number(process.env.DEBUG),
     providerOptions: {
         s3: {
-            getKey: (req, fileName) =>
-                `${Date.now()}/${fileName.split(" ").join("_")}`,
             key: process.env.S3_KEY,
             secret: process.env.S3_SECRET,
             bucket: process.env.S3_BUCKET,
@@ -201,6 +137,9 @@ const UPPY_OPTIONS = {
             region: "us-east-1",
             acl: process.env.COMPANION_AWS_ACL || "public-read",
             object_url: { public: true },
+            getKey: (req, fileName) => {
+                return req.query.metadata?.fileName || fileName;
+            },
         },
     },
     object_url: { public: true },
@@ -323,6 +262,10 @@ const yjsServer = Server.configure({
                 // console.log("fetching", documentName);
                 const id = documentName.split("note.")[1].split(".")[1];
                 const user_id = documentName.split("note.")[1].split(".")[0];
+                let usecase =
+                    documentName.split("note.")[1].split(".").length > 2
+                        ? documentName.split("note.")[1].split(".")[2]
+                        : null;
 
                 return new Promise((resolve, reject) => {
                     resolve(
@@ -362,12 +305,16 @@ const yjsServer = Server.configure({
                 // console.log("storing", documentName);
                 const id = documentName.split("note.")[1].split(".")[1];
                 const user_id = documentName.split("note.")[1].split(".")[0];
+                let usecase =
+                    documentName.split("note.")[1].split(".").length > 2
+                        ? documentName.split("note.")[1].split(".")[2]
+                        : null;
 
                 return new Promise((resolve, reject) => {
                     resolve(
                         db.getTasksDB().then((db) => {
                             return db.query(
-                                `INSERT INTO btw.notes (id, user_id, ydoc, created_at, updated_at) VALUES($1, $2, $3, $4, $5) ON CONFLICT(id, user_id) DO UPDATE SET ydoc = $3, updated_at = CASE WHEN
+                                `INSERT INTO btw.notes (id, user_id, ydoc, created_at, updated_at, tags) VALUES($1, $2, $3, $4, $5, $6) ON CONFLICT(id, user_id) DO UPDATE SET ydoc = $3, updated_at = CASE WHEN
                                 notes.ydoc <> EXCLUDED.ydoc
                                 OR FALSE THEN
                                 EXCLUDED.updated_at
@@ -380,6 +327,7 @@ const yjsServer = Server.configure({
                                     state,
                                     new Date(),
                                     new Date(),
+                                    usecase || "",
                                 ]
                             );
                         })

@@ -30,7 +30,6 @@ function AppWrapper(props) {
           <div
             className="absolute left-4 top-2 z-10 sm:hidden"
             onClick={() => {
-              console.log("FOR SOME REASON");
               setSidebarIsOpen(!sidebarIsOpen);
             }}
           >

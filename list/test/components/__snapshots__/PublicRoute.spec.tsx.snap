@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PublicRoute should redirect to /private for authenticated access 1`] = `
+<div>
+  <div
+    data-component-name="Navigate"
+  >
+    NAVIGATE
+  </div>
+</div>
+`;
+
+exports[`PublicRoute should render the Login component for unauthenticated access 1`] = `
+<div>
+  <div>
+    LOGIN
+  </div>
+</div>
+`;

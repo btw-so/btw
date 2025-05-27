@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig",
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "noImplicitAny": false,
+    "module": "esnext",
+    "sourceMap": false
+  },
+  "include": ["../src/types/**/*", "**/*"]
+}

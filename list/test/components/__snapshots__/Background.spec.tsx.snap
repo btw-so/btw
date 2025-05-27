@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Background should render properly 1`] = `
+.c0 {
+  background: #000 linear-gradient(to bottom,#00657e 0%,#002529 100%) fixed;
+  color: #fff;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.c0:before {
+  background: linear-gradient(to bottom,#000,#fff);
+  bottom: 0;
+  content: '';
+  left: 0;
+  opacity: 0.4;
+  position: absolute;
+  right: 0;
+  top: 0;
+  -webkit-transform: rotate(-20deg) scale(2) translate(0,45%);
+  -ms-transform: rotate(-20deg) scale(2) translate(0,45%);
+  transform: rotate(-20deg) scale(2) translate(0,45%);
+}
+
+<div>
+  <div
+    class="c0"
+  />
+</div>
+`;

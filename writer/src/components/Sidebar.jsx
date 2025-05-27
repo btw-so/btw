@@ -485,6 +485,7 @@ function Sidebar(props) {
               <span className="font-extrabold">Analytics</span>
             </button>
           ) : null}
+          
           <button
             className={`w-full pb-2 pt-4 flex items-center hover:font-extrabold hover:text-blue-500 ${
               props.settingsPage ? "text-blue-500" : ""

@@ -42,6 +42,9 @@ import {
   searchNotes,
   searchNotesSuccess,
   searchNotesFailure,
+  makeNotePrivate,
+  makeNotePrivateSuccess,
+  makeNotePrivateFailure,
 } from "actions";
 
 import TurndownService from "turndown";
@@ -75,6 +78,10 @@ export const actionState = {
     data: null,
   },
   searchNotes: {
+    status: STATUS.IDLE,
+    data: null,
+  },
+  makeNotePrivate: {
     status: STATUS.IDLE,
     data: null,
   },
@@ -114,6 +121,7 @@ export default {
               archive,
               publish,
               delete: deletedAs,
+              private: privated,
               deleted_at,
               slug,
             } = note;
@@ -148,6 +156,7 @@ export default {
               archive,
               publish,
               deleted: deletedAs,
+              private: privated,
               deleted_at,
               slug,
             });
@@ -297,6 +306,7 @@ export default {
           : null;
         draft.notesMap[payload.id].publish = payload.publish;
         draft.notesMap[payload.id].archive = payload.archive;
+        draft.notesMap[payload.id].private = payload.private;
         draft.notesMap[payload.id].delete = payload.delete;
         draft.notesMap[payload.id].deleted_at = payload.deleted_at
           ? new Date(payload.deleted_at).getTime()
@@ -423,6 +433,20 @@ export default {
       .addCase(publishNoteFailure, (draft, { payload }) => {
         draft.publishNote.status = STATUS.ERROR;
         draft.publishNote.error = payload.error;
+      });
+
+    builder
+      .addCase(makeNotePrivate, (draft) => {
+        draft.makeNotePrivate.status = STATUS.RUNNING;
+        draft.makeNotePrivate.error = null;
+      })
+      .addCase(makeNotePrivateSuccess, (draft, { payload }) => {
+        draft.makeNotePrivate.status = STATUS.SUCCESS;
+        draft.makeNotePrivate.error = null;
+      })
+      .addCase(makeNotePrivateFailure, (draft, { payload }) => {
+        draft.makeNotePrivate.status = STATUS.ERROR;
+        draft.makeNotePrivate.error = payload.error;
       });
 
     builder

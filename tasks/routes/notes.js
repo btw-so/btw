@@ -14,6 +14,8 @@ var {
     deleteNote,
     undeleteNote,
     setNoteSlug,
+    makeNotePrivate,
+    makeNotePublic,
 } = require("../logic/notes");
 
 router.options(
@@ -53,6 +55,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             (urls || []).map((url) => {
                 importNote({
@@ -108,6 +114,11 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
             const note = await getNote({
                 user_id: user.id,
                 id,
@@ -153,6 +164,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             if (!Number(process.env.TURN_OFF_SINGLE_USER_MODE)) {
                 // single user mode.
@@ -233,6 +248,10 @@ router.post(
                 fingerprint,
             });
 
+            if (!user) {
+                throw new Error("User not found");
+            }
+
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators
             if (user.id !== user_id) {
@@ -290,6 +309,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators
@@ -352,6 +375,10 @@ router.post(
                 fingerprint,
             });
 
+            if (!user) {
+                throw new Error("User not found");
+            }
+
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators
             if (user.id !== user_id) {
@@ -372,6 +399,70 @@ router.post(
             } else {
                 res.send(
                     await unarchiveNote({
+                        id,
+                        user_id,
+                    })
+                );
+            }
+        } catch (e) {
+            res.json({
+                success: false,
+                error: e.message,
+            });
+            return;
+        }
+    }
+);
+
+router.options(
+    "/update/private",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/update/private",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, id, user_id, private: privated } = req.body || {};
+
+        // get loginToken as btw_uuid cookie
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
+            // access check. for now the access check requires user to own the note
+            // in future, we can add collaborators
+            if (user.id !== user_id) {
+                res.json({
+                    success: false,
+                    error: "Access denied",
+                });
+                return;
+            }
+
+            if (privated) {
+                res.send(
+                    await makeNotePrivate({
+                        id,
+                        user_id,
+                    })
+                );
+            } else {
+                res.send(
+                    await makeNotePublic({
                         id,
                         user_id,
                     })
@@ -411,6 +502,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators
@@ -471,6 +566,10 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             // access check. for now the access check requires user to own the note
             // in future, we can add collaborators

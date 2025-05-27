@@ -379,6 +379,17 @@ baseQueue.process("removeOldLoginTokens", async (job, done) => {
     done();
 });
 
+async function getUserFromId({ user_id }) {
+    const tasksDB = await db.getTasksDB();
+
+    const { rows } = await tasksDB.query(
+        `SELECT * FROM btw.users WHERE id = $1`,
+        [user_id]
+    );
+
+    return rows.length > 0 ? rows[0] : null;
+}
+
 // function to get users
 async function getUserFromToken({ token, fingerprint }) {
     const tasksDB = await db.getTasksDB();
@@ -387,14 +398,11 @@ async function getUserFromToken({ token, fingerprint }) {
         !Number(process.env.TURN_OFF_SINGLE_USER_MODE) &&
         !process.env.ADMIN_OTP
     ) {
-        const client = await tasksDB.connect();
         // Single user mode and admin otp is not set. so we return admin user always
-        const { rows } = await client.query(
+        const { rows } = await tasksDB.query(
             `SELECT * FROM btw.users WHERE email = $1`,
             [process.env.ADMIN_EMAIL.split(",")[0]]
         );
-
-        client.release();
 
         if (rows.length > 0) {
             return rows[0];
@@ -406,8 +414,7 @@ async function getUserFromToken({ token, fingerprint }) {
     if (!token) return null;
     if (!fingerprint) return null;
 
-    const client = await tasksDB.connect();
-    const { rows } = await client.query(
+    const { rows } = await tasksDB.query(
         `SELECT * FROM btw.login_token WHERE uuid = $1`,
         [token]
     );
@@ -417,35 +424,31 @@ async function getUserFromToken({ token, fingerprint }) {
 
         if (fingerprint && fingerprint == loginTokens.fingerprint) {
             // get the user of this login token
-            const { rows: users } = await client.query(
+            const { rows: users } = await tasksDB.query(
                 `SELECT * FROM btw.users WHERE id = $1`,
                 [loginTokens.user_id]
             );
 
             if (users.length > 0) {
-                client.release();
                 return users[0];
             } else {
                 // delete the token from DB
-                await client.query(
+                await tasksDB.query(
                     `DELETE FROM btw.login_token WHERE uuid = $1`,
                     [token]
                 );
 
-                client.release();
                 return null;
             }
         } else {
             // delete the token from DB
-            await client.query(`DELETE FROM btw.login_token WHERE uuid = $1`, [
+            await tasksDB.query(`DELETE FROM btw.login_token WHERE uuid = $1`, [
                 token,
             ]);
 
-            client.release();
             return null;
         }
     } else {
-        client.release();
         return null;
     }
 }
@@ -495,18 +498,24 @@ async function createLoginToken({ email, fingerprint, ip_address }) {
 // function to create user
 async function createUser({ email, slug }) {
     const tasksDB = await db.getTasksDB();
-    const client = await tasksDB.connect();
+
+    if (!email) {
+        return {
+            success: false,
+            error: "Email is required",
+        };
+    }
 
     // check if user already exists
-    const { rows } = await client.query(
+    const { rows } = await tasksDB.query(
         `SELECT * FROM btw.users WHERE processed_email = $1`,
         [(email || "").toLowerCase().split(".").join("")]
     );
 
     if (rows.length == 0) {
         // create user
-        await client.query(
-            `INSERT INTO btw.users (email, processed_email, created_at, slug) VALUES ($1, $2, $3, $4)`,
+        const { rows: nRows } = await tasksDB.query(
+            `INSERT INTO btw.users (email, processed_email, created_at, slug) VALUES ($1, $2, $3, $4) RETURNING *`,
             [
                 email,
                 email.toLowerCase().split(".").join(""),
@@ -514,9 +523,17 @@ async function createUser({ email, slug }) {
                 slug || null,
             ]
         );
-    }
 
-    client.release();
+        return {
+            userId: nRows[0].id,
+            newUser: true,
+        };
+    } else {
+        return {
+            userId: rows[0].id,
+            newUser: false,
+        };
+    }
 }
 
 async function setUserDetails({
@@ -607,6 +624,66 @@ async function setUserDetails({
     }
 }
 
+async function setUserName({ user_id, name }) {
+    const tasksDB = await db.getTasksDB();
+
+    try {
+        await tasksDB.query(`UPDATE btw.users SET name = $1 WHERE id = $2`, [
+            name,
+            user_id,
+        ]);
+
+        return {
+            success: true,
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            success: false,
+            error: e.message,
+        };
+    }
+}
+
+async function setUserTimezone({ user_id, timezone, timezoneOffsetInSeconds }) {
+    const tasksDB = await db.getTasksDB();
+
+    // get settings
+    const { rows } = await tasksDB.query(
+        `SELECT settings FROM btw.users WHERE id = $1`,
+        [user_id]
+    );
+
+    let settings = rows[0].settings || {};
+
+    settings.timezone = timezone;
+    settings.timezoneOffsetInSeconds = timezoneOffsetInSeconds;
+
+    await tasksDB.query(`UPDATE btw.users SET settings = $1 WHERE id = $2`, [
+        settings,
+        user_id,
+    ]);
+}
+
+async function setUserPhone({ user_id, phone }) {
+    const tasksDB = await db.getTasksDB();
+
+    // get settings
+    const { rows } = await tasksDB.query(
+        `SELECT settings FROM btw.users WHERE id = $1`,
+        [user_id]
+    );
+
+    let settings = rows[0].settings || {};
+
+    settings.phone = phone;
+
+    await tasksDB.query(`UPDATE btw.users SET settings = $1 WHERE id = $2`, [
+        settings,
+        user_id,
+    ]);
+}
+
 async function getDomains({ user_id }) {
     const tasksDB = await db.getTasksDB();
 
@@ -638,8 +715,8 @@ async function addUserDomain({ domain, user_id }) {
 
     try {
         await tasksDB.query(
-            `INSERT INTO btw.custom_domains (domain, user_id) VALUES ($1, $2)`,
-            [domain, user_id]
+            `INSERT INTO btw.custom_domains (domain, user_id) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET domain = EXCLUDED.domain`,
+            [domain || "", user_id]
         );
 
         // get user email
@@ -648,7 +725,7 @@ async function addUserDomain({ domain, user_id }) {
             [user_id]
         );
 
-        if (users.length > 0) {
+        if (users.length > 0 && domain) {
             const user = users[0];
 
             customDomainSetupEmail({
@@ -671,6 +748,110 @@ async function addUserDomain({ domain, user_id }) {
     }
 }
 
+async function deleteLoginToken({ token, fingerprint }) {
+    const tasksDB = await db.getTasksDB();
+    await tasksDB.query(
+        `DELETE FROM btw.login_token WHERE uuid = $1 AND fingerprint = $2`,
+        [token, fingerprint]
+    );
+}
+
+async function areFamily({ id1, id2 }) {
+    // if id2 is < id1, swap them
+    if (id2 < id1) {
+        const temp = id1;
+        id1 = id2;
+        id2 = temp;
+    }
+
+    // check in family_users db if id1 column = id1 and id2 column = id2 entry exists or not
+    const tasksDB = await db.getTasksDB();
+    const { rows } = await tasksDB.query(
+        `SELECT * FROM btw.family_users WHERE id1 = $1 AND id2 = $2`,
+        [id1, id2]
+    );
+
+    return rows.length > 0;
+}
+
+async function addFamily({ id1, id2 }) {
+    // if id2 is < id1, swap them
+    if (id2 < id1) {
+        const temp = id1;
+        id1 = id2;
+        id2 = temp;
+    }
+
+    const alreadyFamily = await areFamily({ id1, id2 });
+
+    if (!alreadyFamily) {
+        // insert into family_users
+        const tasksDB = await db.getTasksDB();
+        await tasksDB.query(
+            `INSERT INTO btw.family_users (id1, id2) VALUES ($1, $2)`,
+            [id1, id2]
+        );
+    }
+}
+
+async function getFamilyUsers({ id }) {
+    const tasksDB = await db.getTasksDB();
+    const { rows } = await tasksDB.query(
+        `SELECT * FROM btw.family_users WHERE id1 = $1 OR id2 = $1`,
+        [id]
+    );
+
+    let familyUsers = [];
+
+    for (var i = 0; i < rows.length; i++) {
+        if (rows[i].id1 == id) {
+            familyUsers.push(rows[i].id2);
+        } else {
+            familyUsers.push(rows[i].id1);
+        }
+    }
+
+    // get all user details of family users and send them
+    const users = [];
+
+    for (var i = 0; i < familyUsers.length; i++) {
+        const user = await getUserFromId({ user_id: familyUsers[i] });
+        users.push(user);
+    }
+
+    return users;
+}
+
+async function getUserByPhone({ phone }) {
+    const tasksDB = await db.getTasksDB();
+    const { rows } = await tasksDB.query(
+        `SELECT * FROM btw.users WHERE settings->>'phone' = $1`,
+        [phone]
+    );
+
+    return rows.length > 0 ? rows[0] : null;
+}
+
+async function generateFamilyInviteEntry({
+    requester_user_id,
+    requested_family_number,
+    requested_user_id,
+}) {
+    const tasksDB = await db.getTasksDB();
+
+    // insert into family_invites
+    await tasksDB.query(
+        `INSERT INTO btw.family_invites (requester_user_id, requested_family_number, requested_user_id, created_on, notified) VALUES ($1, $2, $3, $4, $5)`,
+        [
+            requester_user_id,
+            requested_family_number,
+            requested_user_id,
+            new Date(),
+            false,
+        ]
+    );
+}
+
 module.exports = {
     getUserFromToken,
     createLoginToken,
@@ -679,4 +860,14 @@ module.exports = {
     setUserDetails,
     addUserDomain,
     getDomains,
+    deleteLoginToken,
+    getUserFromId,
+    areFamily,
+    addFamily,
+    getFamilyUsers,
+    getUserByPhone,
+    generateFamilyInviteEntry,
+    setUserName,
+    setUserTimezone,
+    setUserPhone,
 };

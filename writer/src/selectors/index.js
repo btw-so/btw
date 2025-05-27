@@ -29,3 +29,8 @@ export const selectOtp = createSelector(
   (state) => state.otp,
   (otp) => otp
 );
+
+export const selectList = createSelector(
+  (state) => state.list,
+  (list) => list
+);

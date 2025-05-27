@@ -26,6 +26,11 @@ function SettingsContainer(props) {
   );
 
   const isUserPro = !!(user.data || {}).pro;
+  const isAdmin =
+    isUserPro &&
+    ["deepti.vchopra@gmail.com", "siddhartha.gunti191@gmail.com"].includes(
+      (user.data || {}).email
+    );
   const currentName = (user.data || {}).name || "";
   const currentSlug = (user.data || {}).slug || "";
   const currentBio = (user.data || {}).bio || "";
@@ -51,6 +56,10 @@ function SettingsContainer(props) {
   const bioRef = useRef(null);
   const [settings, setSettings] = useState({
     ...currentSettings,
+    ...{
+      links: [...(currentSettings.links || []), { name: "", url: "" }],
+      birthday: currentSettings.birthday || "",
+    },
   });
 
   useEffect(() => {
@@ -115,7 +124,11 @@ function SettingsContainer(props) {
     twitter !== currentTwitter ||
     instagram !== currentInstagram ||
     settings.removeImagesInMainPage !==
-      currentSettings.removeImagesInMainPage;
+      currentSettings.removeImagesInMainPage ||
+    JSON.stringify((settings.links || []).filter((x) => x.name || x.url)) !==
+      JSON.stringify(
+        (currentSettings.links || []).filter((x) => x.name || x.url)
+      );
 
   return (
     <AppWrapper {...props} settingsPage={true}>
@@ -315,6 +328,74 @@ function SettingsContainer(props) {
                 </div>
               </div>
             ) : null}
+            {isAdmin ? (
+              <div className="mb-4 max-w-lg">
+                <label className="block font-bold mb-2" htmlFor="slug">
+                  Links
+                </label>
+                <div className="flex flex-col space-y-2">
+                  {(settings.links || []).map(({ name, url }, i) => {
+                    return (
+                      <div key={i} className="flex items-center space-x-2">
+                        <input
+                          className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                          type="text"
+                          placeholder="Name"
+                          value={name}
+                          onChange={(e) => {
+                            setSettings({
+                              ...settings,
+                              links: [
+                                ...settings.links.map((link, j) => {
+                                  if (j === i) {
+                                    return {
+                                      ...link,
+                                      name: e.target.value,
+                                    };
+                                  }
+
+                                  return link;
+                                }),
+                                ...(i === settings.links.length - 1
+                                  ? [
+                                      {
+                                        name: "",
+                                        url: "",
+                                      },
+                                    ]
+                                  : []),
+                              ],
+                            });
+                          }}
+                        />
+                        <span>⇢</span>
+                        <input
+                          className="shadow appearance-none border rounded w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                          type="text"
+                          placeholder="URL"
+                          value={url}
+                          onChange={(e) => {
+                            setSettings({
+                              ...settings,
+                              links: settings.links.map((link, j) => {
+                                if (j === i) {
+                                  return {
+                                    ...link,
+                                    url: e.target.value,
+                                  };
+                                }
+
+                                return link;
+                              }),
+                            });
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
             <div className="flex mt-2 items-center justify-between">
               <button
                 className={`flex items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm ${
@@ -332,16 +413,20 @@ function SettingsContainer(props) {
 
                   dispatch(
                     updateUser({
+                      ...user.data,
                       name,
                       slug,
                       bio,
                       pic,
-                      twitter,
                       linkedin,
                       twitter,
                       instagram,
                       settings: {
+                        ...user.data.settings,
                         ...settings,
+                        links: settings.links.filter(
+                          (link) => link.name && link.url
+                        ),
                       },
                     })
                   );
@@ -393,7 +478,7 @@ function SettingsContainer(props) {
                 onChange={(e) => {
                   // only allow changing domain if current domain is empty
                   // later we can have delete domain + add domain functionality so multiple domains with multiple tag bindings can be setup
-                  if (currentDomain) {
+                  if (currentDomain && (isUserPro || isAdmin)) {
                     return;
                   }
                   setDomain(e.target.value);

@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Footer should render properly 1`] = `
+.c0 {
+  box-sizing: border-box;
+  border-top: 0.1rem solid #ddd;
+}
+
+.c1 {
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  position: relative;
+  width: 100%;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.c2 {
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+@media screen and (min-width:1024px) {
+  .c1 {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+<div>
+  <footer
+    class="c0"
+  >
+    <div
+      class="c1"
+    >
+      <div
+        class="c2"
+      >
+        <iframe
+          frameborder="0"
+          height="20px"
+          scrolling="0"
+          src="https://ghbtns.com/github-btn.html?user=gilbarbara&repo=react-redux-saga-boilerplate&type=star&count=true"
+          title="GitHub Stars"
+          width="110px"
+        />
+        <iframe
+          frameborder="0"
+          height="20px"
+          scrolling="0"
+          src="https://ghbtns.com/github-btn.html?user=gilbarbara&type=follow&count=true"
+          title="GitHub Follow"
+          width="130px"
+        />
+      </div>
+    </div>
+  </footer>
+</div>
+`;

@@ -1,0 +1,601 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Remove arrows/spinners from number input fields */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Remove arrows/spinners from number input fields */
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+div:focus-visible {
+  @apply ring-offset-0 ring-0 outline-none;
+}
+
+html,
+body {
+  font-family: "Circular", "Satoshi", sans-serif;
+}
+
+.tiptap-editor li p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  line-height: 1.5 !important;
+}
+
+
+.tiptap-editor li {
+  margin-top: 0.1em !important;
+  margin-bottom: 0 !important;
+}
+
+@layer base {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+hr.ProseMirror-selectednode {
+  border-top: 1px solid #68cef8;
+}
+
+.tiptap-editor mark {
+  background-color: #ffe066;
+  border-radius: 0.25em;
+  box-decoration-break: clone;
+  padding: 0.125em 0;
+}
+
+.tiptap-editor .items {
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0px 10px 20px rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 0.9rem;
+  overflow: hidden;
+  padding: 0.2rem;
+  position: relative;
+}
+
+.tiptap-editor .item {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.4rem;
+  display: block;
+  margin: 0;
+  padding: 0.2rem 0.4rem;
+  text-align: left;
+  width: 100%;
+}
+
+.tiptap-editor .mention {
+  border: 1px solid #000;
+  border-radius: 0.4rem;
+  box-decoration-break: clone;
+  padding: 0.1rem 0.3rem;
+}
+
+.tiptap-editor .item .is-selected {
+  border-color: #000;
+}
+
+/* Give a remote user a caret */
+.tiptap-editor .collaboration-cursor__caret {
+  border-left: 1px solid #0d0d0d;
+  border-right: 1px solid #0d0d0d;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+
+/* Render the username above the caret */
+.tiptap-editor .collaboration-cursor__label {
+  border-radius: 3px 3px 3px 0;
+  color: #0d0d0d;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  left: -1px;
+  line-height: normal;
+  padding: 0.1rem 0.3rem;
+  position: absolute;
+  top: -1.4em;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.editor__header .menu-item {
+  background-color: transparent;
+  border: none;
+  border-radius: 0.4rem;
+  color: #0d0d0d;
+  height: 1.75rem;
+  margin-right: 0.25rem;
+  padding: 0.25rem;
+  width: 1.75rem;
+  display: block;
+}
+
+.editor__header button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor__header i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor__header .menu-item i {
+  fill: currentColor;
+  height: 100%;
+  width: 100%;
+}
+
+.editor__header .menu-item:hover,
+.editor__header .menu-item.is-active {
+  background-color: #0d0d0d;
+  color: #fff;
+}
+
+.editor__header .ProseMirror h1.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #ced4da;
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap-editor h1 {
+  @apply text-2xl mb-2;
+  font-weight: 700;
+}
+
+.tiptap-editor h2 {
+  @apply text-xl mb-2;
+  font-weight: 700;
+}
+
+.tiptap-editor h3 {
+  @apply text-lg mb-2;
+  font-weight: 700;
+}
+
+.tiptap-editor h4 {
+  @apply text-base mb-2;
+  font-weight: 700;
+}
+
+.tiptap-editor ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+.tiptap-editor ul[data-type="taskList"] p {
+  margin: 0;
+}
+.tiptap-editor ul[data-type="taskList"] li {
+  display: flex;
+}
+.tiptap-editor ul[data-type="taskList"] li > label {
+  flex: 0 0 auto;
+  margin-right: 0.5rem;
+  user-select: none;
+  display: flex;
+  /* align-items: center; */
+}
+.tiptap-editor ul[data-type="taskList"] li > div {
+  flex: 1 1 auto;
+  margin-bottom: 0 !important;
+}
+.tiptap-editor ul[data-type="taskList"] li > label {
+  margin-top: 0.3rem !important;
+}
+.tiptap-editor ul[data-type="taskList"] li > div > ul[data-type="taskList"] {
+  margin-top: 0rem !important;
+  margin-bottom: 0rem !important;
+}
+
+.tiptap-editor ul[data-type="taskList"] li > label > input[type="checkbox"], .tiptap-checkbox {
+  border-radius: 0.25rem;
+  background: transparent;
+  width: 0.85rem;
+  height: 0.85rem;
+  cursor: pointer;
+  @apply border-gray-500;
+  outline: none;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.tiptap-editor ul[data-type="taskList"] li > label > input[type="checkbox"]:checked, .tiptap-checkbox:checked {
+  background-color: #9ca3af;
+  border-color: #9ca3af;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+}
+.tiptap-editor ul[data-type="taskList"] li[data-checked="true"],
+.tiptap-editor ul[data-type="taskList"] li[data-checked]:not([data-checked="false"]) {
+  text-decoration: line-through !important;
+  @apply text-gray-500;
+}
+
+.tiptap-editor ul[data-type="taskList"] li[data-checked="true"] p,
+.tiptap-editor ul[data-type="taskList"] li[data-checked]:not([data-checked="false"]) p {
+  @apply text-gray-500;
+}
+
+.tiptap-editor ol > li > ol {
+  margin-top: 0rem !important;
+  margin-bottom: 0rem !important;
+}
+
+.tiptap-editor ul > li > ul {
+  margin-top: 0rem !important;
+  margin-bottom: 0rem !important;
+}
+
+.tiptap-editor ul > li::marker {
+  color: rgb(107, 114, 128) !important;
+}
+
+.sidebar-toolkit button i {
+  display: flex;
+  align-items: center;
+}
+
+.problem {
+  /* position: relative; */
+}
+
+:root {
+  --tiptop: 0;
+  --tipleft: 0;
+}
+
+@media (min-width: 768px) {
+  .tiptap-editor .md\:prose-lg li p {
+    line-height: 1.5;
+  }
+
+  .tiptap-editor .md\:prose-lg ul[data-type="taskList"] li > label > input[type="checkbox"] {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  .tiptap-editor .md\:prose-lg ul[data-type="taskList"] li > label {
+    margin-top: 0.35rem !important;
+  }
+
+}
+
+.problem.tooltip::before {
+  content: attr(data-message);
+  position: absolute;
+  z-index: 1;
+  background-color: white;
+  padding: 5px;
+  text-align: center;
+  border-radius: 2px;
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  width: 180px;
+  line-height: 1.5;
+  display: block;
+  font-size: 12px;
+  top: var(--tiptop);
+  left: var(--tipleft);
+}
+
+.problem.hardSentences,
+.problem.hardSentences::before {
+  /* apply tailwind yellow 500 as bg */
+  background: #fffab5;
+  content: attr(data-hardsentences);
+}
+
+.problem.veryHardSentences,
+.problem.veryHardSentences::before {
+  /* apply tailwind red 500 as bg */
+  @apply bg-red-300;
+  content: attr(data-veryhardsentences);
+}
+
+.problem.complex,
+.problem.complex::before {
+  /* apply tailwind indigo 500 */
+  @apply bg-indigo-200;
+  content: attr(data-complex);
+}
+
+.problem.adverbs,
+.problem.adverbs::before {
+  /* apply tailwind purple 500 */
+  @apply bg-purple-200;
+  content: attr(data-adverbs);
+}
+
+.problem.qualifier,
+.problem.qualifier::before {
+  /* apply tailwind purple 500 */
+  @apply bg-purple-200;
+  content: attr(data-qualifier);
+}
+
+.problem.passiveVoice,
+.problem.passiveVoice::before {
+  /* apply tailwind pink 500 */
+  @apply bg-green-200;
+  content: attr(data-passivevoice);
+}
+
+.problem.MonotonousTone,
+.problem.MonotonousTone::before {
+  background: #c4e3ff;
+  content: attr(data-monotonoustone);
+}
+
+.problem.FirstElementNotH1,
+.problem.FirstElementNotH1::before {
+  @apply bg-red-200;
+}
+
+.problem.MoreThanOneH1,
+.problem.MoreThanOneH1::before {
+  /* apply tailwind red 500 */
+  @apply bg-red-200;
+}
+
+.problem.HeadingLevel,
+.problem.HeadingLevel::before {
+  @apply bg-red-200;
+}
+
+.problem.tooltip:hover::before,
+.problem.tooltip:focus::before {
+  opacity: 1;
+}
+
+.lint-icon {
+  display: inline-block;
+  position: absolute;
+  right: 2px;
+  cursor: pointer;
+  border-radius: 100px;
+  background: #f22;
+  color: white;
+  font-family: times, georgia, serif;
+  font-size: 15px;
+  font-weight: bold;
+  width: 1.1em;
+  height: 1.1em;
+  text-align: center;
+  padding-left: 0.5px;
+  line-height: 1.1em;
+}
+
+.lint-icon:before {
+  content: "!";
+}
+
+.ProseMirror {
+  padding-right: 20px;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cccccc #ffffff;
+}
+
+/* Chrome, Edge and Safari */
+*::-webkit-scrollbar {
+  width: 6px;
+  width: 6px;
+}
+*::-webkit-scrollbar-track {
+  border-radius: 6px;
+  background-color: #ffffff;
+}
+
+/* .small-scrollbar::-webkit-scrollbar-track {
+  width: 60px !important;
+  height: 60px !important;
+}
+
+.small-scrollbar::-webkit-scrollbar-track {
+  background-color: red !important;
+} */
+
+*::-webkit-scrollbar-track:hover {
+  background-color: #ffffff;
+}
+
+*::-webkit-scrollbar-track:active {
+  background-color: #ffffff;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+  background-color: #cccccc;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #bbbbbb;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: #bbbbbb;
+}
+
+
+.uppy-parent .uppy-Dashboard-inner {
+  height: 100% !important;
+  min-height: unset !important;
+  font-family: "Circular", "Satoshi", sans-serif;
+}
+
+
+
+
+/* Circular fonts */
+@font-face {
+  font-family: 'Circular';
+  src: url('/media/fonts/Circular/CircularStd-Book.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/media/fonts/Circular/CircularStd-BookItalic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/media/fonts/Circular/CircularStd-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/media/fonts/Circular/CircularStd-Light Italic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/media/fonts/Circular/CircularStd-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/media/fonts/Circular/CircularStd-MediumItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/media/fonts/Circular/CircularStd-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/media/fonts/Circular/CircularStd-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/media/fonts/Circular/CircularStd-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Circular';
+  src: url('/media/fonts/Circular/CircularStd-BlackItalic.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+}
+
+
+/* Basic editor styles */
+.tiptap-code-block {
+  :first-child {
+    margin-top: 0;
+  }
+
+  pre {
+    font-family: monospace;
+    background: #f3f4f6 !important;
+    margin: 1.5rem 0;
+    padding: 0.75rem 1rem;
+    color: #040402;
+  }
+
+  /* Code styling */
+  .hljs-comment,
+  .hljs-quote {
+    color: #6a737d;
+  }
+
+  .hljs-variable,
+  .hljs-template-variable,
+  .hljs-attribute,
+  .hljs-tag,
+  .hljs-name,
+  .hljs-regexp,
+  .hljs-link,
+  .hljs-selector-id,
+  .hljs-selector-class {
+    color: #d73a49;
+  }
+
+  .hljs-number,
+  .hljs-meta,
+  .hljs-built_in,
+  .hljs-builtin-name,
+  .hljs-literal,
+  .hljs-type,
+  .hljs-params {
+    color: #e36209;
+  }
+
+  .hljs-string,
+  .hljs-symbol,
+  .hljs-bullet {
+    color: #22863a;
+  }
+
+  .hljs-title,
+  .hljs-section {
+    color: #005cc5;
+  }
+
+  .hljs-keyword,
+  .hljs-selector-tag {
+    color: #6f42c1;
+  }
+
+  .hljs-emphasis {
+    font-style: italic;
+  }
+
+  .hljs-strong {
+    font-weight: 700;
+  }
+}
+
+
+
+
+
+
+
+
+

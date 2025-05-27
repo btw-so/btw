@@ -1,0 +1,273 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Loader with type \`grow\` (default) should render properly 1`] = `
+.c0 {
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  height: 32px;
+  margin: 0 auto;
+  position: relative;
+  width: 32px;
+}
+
+.c0 > div {
+  -webkit-animation: hqrBsq 1.15s infinite cubic-bezier(0.2,0.6,0.36,1);
+  animation: hqrBsq 1.15s infinite cubic-bezier(0.2,0.6,0.36,1);
+  border: 0 solid #00b4d5;
+  border-radius: 50%;
+  box-sizing: border-box;
+  height: 0;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translate(-50%,-50%);
+  -ms-transform: translate(-50%,-50%);
+  transform: translate(-50%,-50%);
+  width: 0;
+}
+
+<div
+  class="c0"
+  color="#00b4d5"
+  data-testid="Loader"
+  size="32"
+  type="grow"
+>
+  <div />
+</div>
+`;
+
+exports[`Loader with type \`grow\` (default) should render properly with options 1`] = `
+.c0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 100px;
+  margin: 2rem auto;
+  position: relative;
+  width: 100px;
+}
+
+.c0 > div {
+  -webkit-animation: LFoXL 1.15s infinite cubic-bezier(0.2,0.6,0.36,1);
+  animation: LFoXL 1.15s infinite cubic-bezier(0.2,0.6,0.36,1);
+  border: 0 solid #00b4d5;
+  border-radius: 50%;
+  box-sizing: border-box;
+  height: 0;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translate(-50%,-50%);
+  -ms-transform: translate(-50%,-50%);
+  transform: translate(-50%,-50%);
+  width: 0;
+}
+
+<div
+  class="c0"
+  color="#00b4d5"
+  data-testid="Loader"
+  size="100"
+  type="grow"
+>
+  <div />
+</div>
+`;
+
+exports[`Loader with type \`pulse\` should render properly 1`] = `
+.c0 {
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  height: 32px;
+  margin: 0 auto;
+  position: relative;
+  width: 32px;
+}
+
+.c0 > div {
+  -webkit-animation: cxdnOv 1.2s cubic-bezier(0,0.2,0.8,1) infinite;
+  animation: cxdnOv 1.2s cubic-bezier(0,0.2,0.8,1) infinite;
+  border: 2px solid #00b4d5;
+  border-radius: 50%;
+  opacity: 1;
+  position: absolute;
+}
+
+.c0 > div:nth-child(2) {
+  -webkit-animation-delay: -0.5s;
+  animation-delay: -0.5s;
+}
+
+<div
+  class="c0"
+  color="#00b4d5"
+  data-testid="Loader"
+  size="32"
+  type="pulse"
+>
+  <div />
+  <div />
+</div>
+`;
+
+exports[`Loader with type \`pulse\` should render properly with options 1`] = `
+.c0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  height: 32px;
+  margin: 2rem auto;
+  position: relative;
+  width: 32px;
+}
+
+.c0 > div {
+  -webkit-animation: cxdnOv 1.2s cubic-bezier(0,0.2,0.8,1) infinite;
+  animation: cxdnOv 1.2s cubic-bezier(0,0.2,0.8,1) infinite;
+  border: 2px solid #00b4d5;
+  border-radius: 50%;
+  opacity: 1;
+  position: absolute;
+}
+
+.c0 > div:nth-child(2) {
+  -webkit-animation-delay: -0.5s;
+  animation-delay: -0.5s;
+}
+
+<div
+  class="c0"
+  color="#00b4d5"
+  data-testid="Loader"
+  size="32"
+  type="pulse"
+>
+  <div />
+  <div />
+</div>
+`;
+
+exports[`Loader with type \`rotate\` should render properly 1`] = `
+.c0 {
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.c1 {
+  -webkit-animation: GLFYz 2s linear infinite;
+  animation: GLFYz 2s linear infinite;
+  height: 32px;
+  margin: auto;
+  -webkit-transform-origin: center center;
+  -ms-transform-origin: center center;
+  transform-origin: center center;
+  width: 32px;
+}
+
+.c2 {
+  -webkit-animation: bgPtUW 1.5s ease-in-out infinite;
+  animation: bgPtUW 1.5s ease-in-out infinite;
+  stroke: #00b4d5;
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+}
+
+<div
+  class="c0"
+  color="#00b4d5"
+  data-testid="Loader"
+  size="32"
+  type="rotate"
+>
+  <svg
+    class="c1"
+    color="#00b4d5"
+    size="32"
+    type="rotate"
+    viewBox="25 25 50 50"
+  >
+    <circle
+      class="c2"
+      color="#00b4d5"
+      cx="50"
+      cy="50"
+      fill="none"
+      r="20"
+      size="32"
+      stroke-width="2"
+      type="rotate"
+    />
+  </svg>
+</div>
+`;
+
+exports[`Loader with type \`rotate\` should render properly with options 1`] = `
+.c0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  margin: 2rem auto;
+  text-align: center;
+}
+
+.c1 {
+  -webkit-animation: GLFYz 2s linear infinite;
+  animation: GLFYz 2s linear infinite;
+  height: 32px;
+  margin: auto;
+  -webkit-transform-origin: center center;
+  -ms-transform-origin: center center;
+  transform-origin: center center;
+  width: 32px;
+}
+
+.c2 {
+  -webkit-animation: bgPtUW 1.5s ease-in-out infinite;
+  animation: bgPtUW 1.5s ease-in-out infinite;
+  stroke: #00b4d5;
+  stroke-dasharray: 1,200;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+}
+
+<div
+  class="c0"
+  color="#00b4d5"
+  data-testid="Loader"
+  size="32"
+  type="rotate"
+>
+  <svg
+    class="c1"
+    color="#00b4d5"
+    size="32"
+    type="rotate"
+    viewBox="25 25 50 50"
+  >
+    <circle
+      class="c2"
+      color="#00b4d5"
+      cx="50"
+      cy="50"
+      fill="none"
+      r="20"
+      size="32"
+      stroke-width="2"
+      type="rotate"
+    />
+  </svg>
+</div>
+`;

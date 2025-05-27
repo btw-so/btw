@@ -6,6 +6,7 @@ const fetch = require("node-fetch");
 const { JSDOM } = require("jsdom");
 const turndown = require("turndown")();
 const axios = require("axios");
+const Y = require('yjs');
 
 // do a POST request to process.env.PUBLISHER_SERVER_URL with user_id of the note
 // to the url /internal/cache/refresh/notes
@@ -194,7 +195,7 @@ async function getNote({ id, user_id }) {
     }
 }
 
-async function upsertNote({ id, user_id, json, html, title: defaultTitle }) {
+async function upsertNote({ id, user_id, json, html, title: defaultTitle, ydoc, tags }) {
     const created_at = new Date();
     const updated_at = new Date();
 
@@ -205,7 +206,7 @@ async function upsertNote({ id, user_id, json, html, title: defaultTitle }) {
         try {
             title = json.content[0].content[0].text;
         } catch (e) {
-            console.log(e);
+            // console.log(e);
         }
     }
 
@@ -246,6 +247,27 @@ END`;
         ...(json ? [json] : []),
         ...(hasHTML ? [html.replaceAll("\u0000", "")] : []),
     ]);
+
+    if (ydoc) {
+        // If ydoc is a Y.Doc, serialize it
+        let ydocBuffer;
+        if (typeof ydoc.encodeStateAsUpdate === 'function' || (ydoc.constructor && ydoc.constructor.name === 'Doc')) {
+            // ydoc is a Y.Doc instance
+            const update = Y.encodeStateAsUpdate(ydoc);
+            ydocBuffer = Buffer.from(update);
+        } else if (Buffer.isBuffer(ydoc)) {
+            ydocBuffer = ydoc;
+        } else if (ydoc instanceof Uint8Array) {
+            ydocBuffer = Buffer.from(ydoc);
+        } else {
+            throw new Error("Invalid ydoc type");
+        }
+        await pool.query(`UPDATE btw.notes SET ydoc = $1 WHERE id = $2 AND user_id = $3`, [ydocBuffer, id, user_id]);
+    }
+
+    if (tags) {
+        await pool.query(`UPDATE btw.notes SET tags = $1 WHERE id = $2 AND user_id = $3`, [tags, id, user_id]);
+    }
 }
 
 async function getNotes({ user_id, page, limit, after = 0 }) {
@@ -259,13 +281,13 @@ async function getNotes({ user_id, page, limit, after = 0 }) {
     limit = Number(limit);
     after = new Date(after);
     const { rows } = await pool.query(
-        `SELECT id, user_id, title, md, created_at, updated_at, published_at, publish, slug, ydoc, delete, archive, deleted_at FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
+        `SELECT id, user_id, title, md, created_at, updated_at, published_at, publish, private, slug, ydoc, delete, archive, deleted_at FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) AND (tags NOT LIKE '%list%' OR tags IS NULL) ORDER BY updated_at DESC LIMIT $4 OFFSET $5`,
         [user_id, after, after, limit, (page - 1) * limit]
     );
 
     // get total number of notes
     const { rows: totalRows } = await pool.query(
-        `SELECT COUNT(*) as count FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3)`,
+        `SELECT COUNT(*) as count FROM btw.notes WHERE user_id = $1 AND (created_at >=$2 OR updated_at >= $3) AND (tags NOT LIKE '%list%' OR tags IS NULL)`,
         [user_id, after, after]
     );
 
@@ -489,6 +511,39 @@ baseQueue.process("importNote", async (job, done) => {
     done();
 });
 
+async function makeNotePrivate({ user_id, id }) {
+    // set private to true
+
+    const pool = await db.getTasksDB();
+
+    await pool.query(
+        `UPDATE btw.notes SET private = true WHERE id = $1 AND user_id = $2`,
+        [id, user_id]
+    );
+
+    noteCacheHelper(user_id);
+
+    return {
+        success: true,
+    };
+}
+
+async function makeNotePublic({ user_id, id }) {
+    // set private to false
+    const pool = await db.getTasksDB();
+
+    await pool.query(
+        `UPDATE btw.notes SET private = false WHERE id = $1 AND user_id = $2`,
+        [id, user_id]
+    );
+
+    noteCacheHelper(user_id);
+
+    return {
+        success: true,
+    };
+}
+
 module.exports = {
     getNote,
     upsertNote,
@@ -502,4 +557,6 @@ module.exports = {
     unarchiveNote,
     setNoteSlug,
     noteCacheHelper,
+    makeNotePrivate,
+    makeNotePublic,
 };

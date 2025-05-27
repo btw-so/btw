@@ -211,8 +211,11 @@ export function* updateUser({ payload }) {
 export function* addCustomDomain({ payload }) {
   const fingerprint = yield call(getFingerPrint);
   const { domain } = payload || {};
+  let toastId;
 
-  const toastId = toast.loading("Adding custom domain");
+  if (domain) {
+    toastId = toast.loading("Adding custom domain");
+  }
 
   try {
     const { data: res } = yield call(() =>
@@ -231,13 +234,17 @@ export function* addCustomDomain({ payload }) {
     if (success) {
       yield put(addCustomDomainSuccess());
 
-      toast.success(`Added domain: ${domain}`, {
-        id: toastId,
-      });
+      if (domain) {
+        toast.success(`Added domain: ${domain}`, {
+          id: toastId,
+        });
 
-      toast.success(
-        "Domain verification instructions will be sent to your email with in 24 hours"
-      );
+        toast.success(
+          "Domain verification instructions will be sent to your email with in 24 hours"
+        );
+      } else {
+        toast.success("Domain removed successfully");
+      }
 
       // call getUserSaga to update the user in the store
       yield call(getUserSaga);
@@ -246,18 +253,22 @@ export function* addCustomDomain({ payload }) {
         addCustomDomainFailure({ error: error || "Something went wrong" })
       );
 
-      toast.error(`Error: ${error}`, {
-        id: toastId,
-      });
+      if (domain) {
+        toast.error(`Error: ${error}`, {
+          id: toastId,
+        });
+      }
     }
   } catch (e) {
     yield put(
       addCustomDomainFailure({ error: e.message || "Something went wrong" })
     );
 
-    toast.error(`Error: ${e.message}`, {
-      id: toastId,
-    });
+    if (domain) {
+      toast.error(`Error: ${e.message}`, {
+        id: toastId,
+      });
+    }
   }
 }
 

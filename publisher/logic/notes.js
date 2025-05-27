@@ -17,7 +17,7 @@ async function cacheNotes({ user_id } = {}) {
 
   while (true) {
     const { rows } = await pool.query(
-      `select user_id, html, image, slug, title, published_at from btw.notes where published_at is not null AND publish = TRUE ${
+      `select user_id, html, image, slug, title, published_at, private from btw.notes where published_at is not null AND publish = TRUE ${
         user_id ? `AND user_id = $1` : ""
       } ORDER BY published_at DESC LIMIT ${limit} OFFSET ${offset}`,
       user_id ? [user_id] : []
@@ -43,11 +43,6 @@ async function cacheNotes({ user_id } = {}) {
   if (user_id) {
     NOTE_SLUG_CACHE["" + user_id] = temp;
   }
-
-  console.log(
-    `Notes cache complete ${user_id ? "for user_id " + user_id : ""}`,
-    NOTE_SLUG_CACHE
-  );
 }
 
 async function cacheUsers({ user_id } = {}) {
@@ -113,11 +108,6 @@ async function cacheUsers({ user_id } = {}) {
 
     offset += limit;
   }
-
-  console.log(
-    `User cache complete ${user_id ? "for user_id " + user_id : ""}`,
-    USER_CACHE
-  );
 }
 
 async function getAllNotes({ slug, customDomain }) {
@@ -154,7 +144,7 @@ async function getAllNotes({ slug, customDomain }) {
   }
 
   const { rows } = await pool.query(
-    `select slug, published_at, title, image, html, tags from btw.notes where publish = TRUE and user_id in (${subquery}) ORDER BY published_at DESC LIMIT 1000`,
+    `select slug, published_at, title, image, html, tags, private from btw.notes where publish = TRUE and user_id in (${subquery}) ORDER BY published_at DESC LIMIT 1000`,
     [slug]
   );
 
