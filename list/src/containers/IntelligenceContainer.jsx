@@ -350,10 +350,16 @@ function IntelligenceTab({
   const apiKeySaved = !!providerApiKeys[modelDetails.provider];
 
   // --- Auto-scroll to bottom on new message ---
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    const container = messagesContainerRef.current;
+    if (container) {
+      const shouldAutoScroll = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      if (shouldAutoScroll) {
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 50);
+      }
     }
   }, [messages]);
   // -------------------------------------------
@@ -437,7 +443,10 @@ function IntelligenceTab({
           </div>
         )}
         {/* Messages area */}
-        <div className="mt-4 flex-1 flex flex-col gap-2 rounded p-2 overflow-y-auto">
+        <div
+          className="mt-4 flex-1 flex flex-col gap-2 rounded p-2 overflow-y-auto"
+          ref={messagesContainerRef}
+        >
           {messages && messages.length > 0 ? (
             messages.map((msg, idx) => (
               <div
@@ -461,8 +470,6 @@ function IntelligenceTab({
           ) : (
             <div className="text-xs text-gray-400 hidden">No messages yet.</div>
           )}
-          {/* Dummy div for auto-scroll */}
-          <div ref={messagesEndRef} />
           {/* Streaming/Thinking/Error indicators */}
           {status === "ongoing" && (
             <div className="flex items-center gap-2 mt-2">
