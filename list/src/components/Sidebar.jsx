@@ -252,7 +252,7 @@ function Sidebar(props) {
                           })
                         );
 
-                        props.toggleSidebar();
+                        props.hideSidebar();
                       }}
                       draggable={!isFirstNode && searchTerm.length < 3}
                       onDragStart={(e) => handleDragStart(e, node)}
@@ -284,7 +284,7 @@ function Sidebar(props) {
                   is4000Page ? "text-gray-900 bg-gray-200" : "text-gray-900"
                 }`}
                 onClick={() => {
-                  props.toggleSidebar();
+                  props.hideSidebar();
                   navigate("/4000");
                 }}
               >
@@ -302,7 +302,7 @@ function Sidebar(props) {
                   isIntelligencePage ? "text-gray-900 bg-gray-200" : "text-gray-900"
                 }`}
                 onClick={() => {
-                  props.toggleSidebar();
+                  props.hideSidebar();
                   navigate("/intelligence");
                 }}
               >
@@ -340,7 +340,7 @@ function Sidebar(props) {
                           })
                         );
 
-                        props.toggleSidebar();
+                        props.hideSidebar();
                       }}
                     >
                       <span className="mr-2 pt-0.5 mb-1">

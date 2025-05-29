@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAppSelector } from "modules/hooks";
 import toast from "react-hot-toast";
 import AppWrapper from "./AppWraper";
 import { GoogleGenAI } from "@google/genai";
 import { selectIntelligence } from "selectors";
-import { saveIntelligenceApiKeys, savePreferredTabs } from "actions";
+import { saveIntelligenceApiKeys, savePreferredTabs, changeSelectedNode } from "actions";
 import Markdown from "react-markdown";
+import MobileTabBar from "../components/MobileTabBar";
 
 const providers = [
   {
@@ -352,7 +353,7 @@ function IntelligenceTab({
   const messagesEndRef = useRef(null);
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
     }
   }, [messages]);
   // -------------------------------------------
@@ -369,7 +370,7 @@ function IntelligenceTab({
           <div className="text-md text-gray-700 font-bold flex items-center gap-2">
             {modelDetails.displayName}
           </div>
-          <div className="text-xs text-gray-400">{modelDetails.model}</div>
+          <div className="text-xs text-gray-400 hidden md:block">{modelDetails.model}</div>
           {apiKeySaved && !showApiKeyForm && (
             <>
               <button
@@ -482,7 +483,7 @@ function IntelligenceTab({
 }
 
 const cardClasses =
-  "bg-gray-50 w-full md:min-w-[600px] md:max-w-[600px] shrink-0 grow h-full overflow-hidden rounded-lg border border-gray-200 p-5 transition";
+  "bg-gray-50 w-[calc(100%-2rem)] md:min-w-[600px] md:max-w-[600px] shrink-0 grow h-full overflow-hidden rounded-lg border border-gray-200 p-5 transition";
 
 const ModelSelector = ({ onSelect }) => {
   const [search, setSearch] = useState("");
@@ -511,7 +512,7 @@ const ModelSelector = ({ onSelect }) => {
           {filteredModels.map((model) => (
             <div
               key={`${model.model}-${model.provider}-${model.displayName}`}
-              className="bg-gray-50 flex gap-2 h-fit rounded-lg border border-gray-200 p-4 cursor-pointer shadow-sm hover:border-gray-900 hover:shadow-lg transition w-[calc(50%-0.625rem)]"
+              className="bg-gray-50 flex gap-2 h-fit rounded-lg border border-gray-200 p-4 cursor-pointer shadow-sm hover:border-gray-900 hover:shadow-lg transition w-[calc(100%-0.625rem)] md:w-[calc(50%-0.625rem)]"
               onClick={() => onSelect(model)}
             >
               <div className="grow shrink-0">
@@ -564,6 +565,8 @@ function IntelligenceContainer(props) {
   const dispatch = useDispatch();
   const { apiKeys: providerApiKeys, preferredTabs } =
     useAppSelector(selectIntelligence);
+
+  const navigate = useNavigate();
 
   // Helper: get model details by model name
   const getModelDetails = (modelName) => {
@@ -775,7 +778,7 @@ function IntelligenceContainer(props) {
 
   return (
     <AppWrapper {...props} isIntelligencePage={true}>
-      <div className="p-6 h-full w-screen lg:w-[calc(100vw-16rem)] flex flex-col">
+      <div className="p-6 h-full w-screen lg:w-[calc(100vw-16rem)] flex flex-col pb-24 md:pb-6">
         <div className="flex gap-2 h-full w-full overflow-x-auto">
           {tabs.map((tab) => (
             <IntelligenceTab
@@ -807,8 +810,7 @@ function IntelligenceContainer(props) {
         {/* Shared input below the tabs */}
         <div className="w-full flex flex-col items-end mt-4">
           <div
-            className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-md px-3 py-2 relative"
-            style={{ minHeight: 60 }}
+            className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-md px-2 md:px-3 py-1 md:py-2 min-h-[40px] md:min-h-[60px] relative"
           >
             <textarea
               className="flex-1 bg-transparent border-none outline-none resize-none text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0"
@@ -836,6 +838,30 @@ function IntelligenceContainer(props) {
           </div>
         </div>
       </div>
+      {/* Mac-style dock at the bottom, same as FourThousandWeeks */}
+      {(!props.isSidebarOpen) && (
+        <MobileTabBar
+          showHomeOption={true}
+          showSearchOption={true}
+          showSettingsOption={true}
+          onSelect={(tabName) => {
+            if (tabName === "search") {
+              props.showSidebar();
+            } else if (tabName === "home") {
+              props.hideSidebar();
+              navigate("/list");
+              dispatch(
+                changeSelectedNode({
+                  id: "home",
+                })
+              );
+            } else if (tabName === "settings") {
+              props.hideSidebar();
+              navigate("/settings");
+            }
+          }}
+        />
+      )}
     </AppWrapper>
   );
 }

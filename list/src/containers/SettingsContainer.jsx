@@ -7,7 +7,7 @@ import useCookie from "../hooks/useCookie";
 import UppyComponent from "../components/Uppy";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { selectUser, selectOtp } from "../selectors";
-import { updateUser } from "../actions";
+import { updateUser, changeSelectedNode } from "../actions";
 import useTreeChanges from "tree-changes-hook";
 import Tiptap from "../components/Tiptap";
 import { Switch } from "@headlessui/react";

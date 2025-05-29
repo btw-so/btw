@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { updateUser } from "../actions";
+import { updateUser, changeSelectedNode } from "../actions";
 import seedrandom from "seedrandom";
 import AppWrapper from "../containers/AppWraper";
 import MobileTabBar from "../components/MobileTabBar";
