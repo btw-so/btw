@@ -25,6 +25,7 @@ import List from "./routes/List";
 import PublicNote from "./routes/PublicNote";
 import PublicList from "./routes/PublicList";
 import FourThousandWeeks from "./routes/FourThousandWeeks";
+import Intelligence from "./routes/Intelligence";
 
 function Root() {
   const dispatch = useDispatch();
@@ -103,20 +104,60 @@ function Root() {
         {/* {isLoggedIn && <Login />} */}
         {/* <Main isAuthenticated={isAuthenticated}> */}
         <Routes className="flex flex-grow">
-          <Route path="/public/list/:id/:hash" element={<PublicList isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} hideSidebar={hideSidebar} showSidebar={showSidebar} />} />
-          <Route path="/public/note/:id/:hash" element={<PublicNote isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} hideSidebar={hideSidebar} showSidebar={showSidebar} />} />
+          <Route
+            path="/public/list/:id/:hash"
+            element={
+              <PublicList
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+                hideSidebar={hideSidebar}
+                showSidebar={showSidebar}
+              />
+            }
+          />
+          <Route
+            path="/public/note/:id/:hash"
+            element={
+              <PublicNote
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+                hideSidebar={hideSidebar}
+                showSidebar={showSidebar}
+              />
+            }
+          />
           <Route
             element={
-              <PublicRoute isLoggedIn={isLoggedIn} to="/list" isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar}>
-                <Login isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} hideSidebar={hideSidebar} showSidebar={showSidebar} />
+              <PublicRoute
+                isLoggedIn={isLoggedIn}
+                to="/list"
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+              >
+                <Login
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={toggleSidebar}
+                  hideSidebar={hideSidebar}
+                  showSidebar={showSidebar}
+                />
               </PublicRoute>
             }
             path="/login"
           />
           <Route
             element={
-              <PublicRoute isLoggedIn={isLoggedIn} to="/list" isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar}>
-                <Login isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} hideSidebar={hideSidebar} showSidebar={showSidebar} />
+              <PublicRoute
+                isLoggedIn={isLoggedIn}
+                to="/list"
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+              >
+                <Login
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={toggleSidebar}
+                  hideSidebar={hideSidebar}
+                  showSidebar={showSidebar}
+                />
               </PublicRoute>
             }
             path="/"
@@ -124,7 +165,12 @@ function Root() {
           <Route
             className="flex flex-grow"
             element={
-              <PrivateRoute isLoggedIn={isLoggedIn} to="/login" isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar}>
+              <PrivateRoute
+                isLoggedIn={isLoggedIn}
+                to="/login"
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+              >
                 <List
                   userId={user && user.data ? user.data.id : null}
                   name={user && user.data ? user.data.name : null}
@@ -152,7 +198,12 @@ function Root() {
           <Route
             className="flex flex-grow"
             element={
-              <PrivateRoute isLoggedIn={isLoggedIn} to="/login" isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar}>
+              <PrivateRoute
+                isLoggedIn={isLoggedIn}
+                to="/login"
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+              >
                 <Settings
                   userId={user && user.data ? user.data.id : null}
                   name={user && user.data ? user.data.name : null}
@@ -190,7 +241,12 @@ function Root() {
           <Route
             className="flex flex-grow"
             element={
-              <PrivateRoute isLoggedIn={isLoggedIn} to="/login" isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar}>
+              <PrivateRoute
+                isLoggedIn={isLoggedIn}
+                to="/login"
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+              >
                 <FourThousandWeeks
                   userId={user && user.data ? user.data.id : null}
                   name={user && user.data ? user.data.name : null}
@@ -205,6 +261,30 @@ function Root() {
               </PrivateRoute>
             }
             path="/4000"
+          />
+          <Route
+            className="flex flex-grow"
+            element={
+              <PrivateRoute
+                isLoggedIn={isLoggedIn}
+                to="/login"
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+              >
+                <Intelligence
+                  userId={user && user.data ? user.data.id : null}
+                  name={user && user.data ? user.data.name : null}
+                  email={user && user.data ? user.data.email : null}
+                  settings={user && user.data ? user.data.settings : null}
+                  isIntelligencePage={true}
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={toggleSidebar}
+                  hideSidebar={hideSidebar}
+                  showSidebar={showSidebar}
+                />
+              </PrivateRoute>
+            }
+            path="/intelligence"
           />
           <Route element={<NotFound />} path="*" />
         </Routes>

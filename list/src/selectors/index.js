@@ -34,3 +34,8 @@ export const selectFiles = createSelector(
   (state) => state.files,
   (files) => files
 );
+
+export const selectIntelligence = createSelector(
+  (state) => state.intelligence,
+  (intelligence) => intelligence
+);

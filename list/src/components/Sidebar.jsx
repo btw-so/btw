@@ -20,6 +20,8 @@ function Sidebar(props) {
   const location = useLocation();
   const is4000Page = !!props.is4000Page;
   const isListPage = !!props.isListPage;
+  const isIntelligencePage = !!props.isIntelligencePage;
+  const showSelectedNode = !is4000Page && !isIntelligencePage && !props.settingsPage;
   const [token, setToken] = useCookie(
     process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
     ""
@@ -234,7 +236,7 @@ function Sidebar(props) {
                     <button
                       key={node.id}
                       className={`w-full py-1 px-2 transition-colors duration-200 rounded-md flex items-center hover:bg-gray-200 ${
-                        node.id === selectedListId && !is4000Page
+                        node.id === selectedListId && showSelectedNode
                           ? "text-gray-900 bg-gray-200"
                           : "text-gray-900"
                       }`}
@@ -295,6 +297,24 @@ function Sidebar(props) {
                   4000 Weeks
                 </span>
               </div>
+              <div
+                className={`w-full cursor-pointer py-0.5 px-2 transition-colors duration-200 rounded-md flex items-center hover:bg-gray-200 ${
+                  isIntelligencePage ? "text-gray-900 bg-gray-200" : "text-gray-900"
+                }`}
+                onClick={() => {
+                  props.toggleSidebar();
+                  navigate("/intelligence");
+                }}
+              >
+                <span className="mr-2">
+                  <i className="ri-checkbox-blank-circle-fill ri-xxs text-gray-400"></i>
+                </span>
+                <span
+                  className={`overflow-hidden text-ellipsis truncate text-black`}
+                >
+                  Intelligence
+                </span>
+              </div>
             </>
           ) : (
             // Show search results only when searching
@@ -304,7 +324,7 @@ function Sidebar(props) {
                   <div key={node.id}>
                     <button
                       className={`flex w-full items-center cursor-pointer px-2 py-0.5 rounded-md transition-colors duration-200 hover:bg-gray-200 ${
-                        node.id === selectedListId && !is4000Page
+                        node.id === selectedListId && showSelectedNode
                           ? "text-gray-900 bg-gray-200"
                           : "text-gray-900"
                       }`}

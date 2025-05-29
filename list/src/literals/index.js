@@ -59,6 +59,8 @@ export const ActionTypes = keyMirror({
   GET_PUBLIC_LIST: undefined,
   GET_PUBLIC_LIST_SUCCESS: undefined,
   GET_PUBLIC_LIST_FAILURE: undefined,
+  SAVE_INTELLIGENCE_API_KEYS: undefined,
+  SAVE_PREFERRED_TABS: undefined,
 });
 
 export const STATUS = {

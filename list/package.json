@@ -22,6 +22,7 @@
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^3.4.0",
     "@gilbarbara/helpers": "^0.5.1",
+    "@google/genai": "^1.2.0",
     "@headlessui/react": "^1.7.13",
     "@hocuspocus/provider": "^1.1.1",
     "@monokai/monoco-react": "^0.2.3",
@@ -92,6 +93,7 @@
     "react-helmet-async": "^1.2.3",
     "react-hot-toast": "^2.4.0",
     "react-inlinesvg": "^2.3.0",
+    "react-markdown": "^10.1.0",
     "react-redux": "^7.2.6",
     "react-router-dom": "^6.2.2",
     "react-transition-group": "^4.4.2",

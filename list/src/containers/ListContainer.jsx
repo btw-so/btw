@@ -1140,12 +1140,9 @@ function ListContainer(props) {
   useEffect(() => {
     if (!selectedListId) return;
 
-    console.log("selectedListId", selectedListId, nodeUIMap, nodeDBMap);
-
     const numChildren =
       (nodeUIMap || {})[selectedListId]?.children?.length || 0;
 
-    console.log("numChildren", numChildren);
 
     if (numChildren === 0) {
       setShowList(false);
