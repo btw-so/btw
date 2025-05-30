@@ -6,9 +6,14 @@ import toast from "react-hot-toast";
 import AppWrapper from "./AppWraper";
 import { GoogleGenAI } from "@google/genai";
 import { selectIntelligence } from "selectors";
-import { saveIntelligenceApiKeys, savePreferredTabs, changeSelectedNode } from "actions";
+import {
+  saveIntelligenceApiKeys,
+  savePreferredTabs,
+  changeSelectedNode,
+} from "actions";
 import Markdown from "react-markdown";
 import MobileTabBar from "../components/MobileTabBar";
+import sessionsDB from "../utils/sessionsDB";
 
 const providers = [
   {
@@ -354,7 +359,9 @@ function IntelligenceTab({
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (container) {
-      const shouldAutoScroll = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      const shouldAutoScroll =
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        100;
       if (shouldAutoScroll) {
         setTimeout(() => {
           container.scrollTop = container.scrollHeight;
@@ -376,7 +383,9 @@ function IntelligenceTab({
           <div className="text-md text-gray-700 font-bold flex items-center gap-2">
             {modelDetails.displayName}
           </div>
-          <div className="text-xs text-gray-400 hidden md:block">{modelDetails.model}</div>
+          <div className="text-xs text-gray-400 hidden md:block">
+            {modelDetails.model}
+          </div>
           {apiKeySaved && !showApiKeyForm && (
             <>
               <button
@@ -402,7 +411,8 @@ function IntelligenceTab({
           <div>
             <div className="flex flex-col gap-2">
               <div className="text-sm text-gray-500">
-                Please enter your {modelDetails.provider} API key to continue
+                Please enter your {modelDetails.provider} API key to continue.
+                The key will be saved in your browser.
               </div>
               <div className="flex flex-col gap-2">
                 <input
@@ -505,6 +515,9 @@ const ModelSelector = ({ onSelect }) => {
 
   return (
     <div className={cardClasses} style={{ maxHeight: "100%" }}>
+      <h1 className="text-md font-bold mb-4">
+        Select the models you want to use.
+      </h1>
       <div className="mb-4">
         <input
           type="text"
@@ -515,7 +528,7 @@ const ModelSelector = ({ onSelect }) => {
         />
       </div>
       <div className="h-full overflow-y-auto">
-        <div className="flex flex-wrap gap-5 pb-12 mt-2 overflow-y-auto">
+        <div className="flex flex-wrap gap-5 pb-32 mt-2 overflow-y-auto">
           {filteredModels.map((model) => (
             <div
               key={`${model.model}-${model.provider}-${model.displayName}`}
@@ -575,6 +588,15 @@ function IntelligenceContainer(props) {
 
   const navigate = useNavigate();
 
+  const [sessions, setSessions] = useState([]);
+  const [sessionsPage, setSessionsPage] = useState(0);
+  const [sessionsTotal, setSessionsTotal] = useState(0);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const [currentSessionName, setCurrentSessionName] = useState("");
+  const [currentSessionCreatedAt, setCurrentSessionCreatedAt] = useState(null);
+  const [generatingTitle, setGeneratingTitle] = useState(false);
+
   // Helper: get model details by model name
   const getModelDetails = (modelName) => {
     console.log("modelName", modelName);
@@ -632,10 +654,82 @@ function IntelligenceContainer(props) {
   }, [tabs, initializedTabs, dispatch]);
   // -------------------------------------------------------------------------
 
+  // Helper: Generate a short title for the session using the first message
+  const generateSessionTitle = useCallback(
+    async (userInput) => {
+      if (!selectedSessionId || generatingTitle) return;
+      // Only generate if currentSessionName is a date string (default)
+      if (isNaN(Date.parse(currentSessionName))) return;
+      // Use the first tab with an API key
+      const firstTab = tabs.find((tab) => getApiKey(tab.modelDisplayName));
+      if (!firstTab) return;
+      const apiKey = getApiKey(firstTab.modelDisplayName);
+      const modelDetails = getModelDetails(firstTab.modelDisplayName);
+      const provider = modelDetails.provider;
+      let streamFn;
+      if (provider === "OpenAI") streamFn = streamOpenAI;
+      else if (provider === "Gemini") streamFn = streamGemini;
+      else if (provider === "Claude") streamFn = streamClaude;
+      else return;
+      setGeneratingTitle(true);
+      let title = "";
+      try {
+        const stream = streamFn({
+          model: firstTab.model,
+          reasoning: false,
+          grounding: false,
+          messages: [
+            {
+              role: "user",
+              content: `Generate a short, descriptive title (max 4 words) for this conversation: "${userInput}". Respond with only the title, no punctuation at the end.`,
+            },
+          ],
+          apiKey,
+          onNewTokenOutput: (token) => {
+            title += token;
+          },
+          onComplete: () => {},
+          modelDetails,
+        });
+        for await (const _ of stream) {
+        }
+        title = title.trim().replace(/^["']|["']$/g, "");
+        if (title && title.length > 2) {
+          await sessionsDB.updateSession(selectedSessionId, { name: title });
+          setCurrentSessionName(title);
+          // Also update in sessions list
+          setSessions((prev) =>
+            prev.map((s) =>
+              s.id === selectedSessionId ? { ...s, name: title } : s
+            )
+          );
+        }
+      } catch (e) {
+        // ignore errors
+      } finally {
+        setGeneratingTitle(false);
+      }
+    },
+    [
+      selectedSessionId,
+      currentSessionName,
+      tabs,
+      getApiKey,
+      getModelDetails,
+      setCurrentSessionName,
+      setSessions,
+      generatingTitle,
+    ]
+  );
+
   // Main send handler
   const handleSend = async () => {
     const userInput = inputValue.trim();
     if (!userInput) return;
+    // If this is the first message in the session, generate a title
+    if (tabs.every((tab) => tab.messages.length === 0)) {
+      generateSessionTitle(userInput);
+    }
 
     // For each tab with API key, send message and start streaming
     setTabs((prevTabs) =>
@@ -783,74 +877,292 @@ function IntelligenceContainer(props) {
   // Disable textarea if any tab is ongoing
   const textareaDisabled = anyTabOngoing;
 
+  // Helper: Load sessions paginated
+  const loadSessions = useCallback(async (page = 0) => {
+    setSessionsLoading(true);
+    const { sessions, total } = await sessionsDB.getSessionsPaginated({
+      page,
+      pageSize: 30,
+    });
+    setSessions(sessions);
+    setSessionsTotal(total);
+    setSessionsLoading(false);
+  }, []);
+
+  // Helper: Load a session by id and set tabs
+  const loadSessionById = useCallback(async (id) => {
+    const session = await sessionsDB.getSessionById(id);
+    if (session) {
+      setTabs(session.tabs || []);
+      setSelectedSessionId(session.id);
+      setCurrentSessionName(session.name);
+      setCurrentSessionCreatedAt(session.createdAt);
+    }
+  }, []);
+
+  // Helper: Create a new session
+  const createNewSession = useCallback(async () => {
+    const initialTabs = preferredTabs
+      ? preferredTabs
+          .map((displayName) => {
+            const model = availableModels.find(
+              (m) => m.displayName === displayName
+            );
+            if (!model) return null;
+            return {
+              model: model.model,
+              modelDisplayName: model.displayName,
+              tabId: tabIdGenerator(),
+              messages: [],
+              status: "idle",
+              thinking: "",
+              error: null,
+            };
+          })
+          .filter(Boolean)
+      : [];
+    const name = new Date().toLocaleString();
+    const id = await sessionsDB.addSession({ name, tabs: initialTabs });
+    await loadSessions(0);
+    await loadSessionById(id);
+    setSessionsPage(0);
+  }, [preferredTabs, loadSessions, loadSessionById]);
+
+  // On mount: expire old sessions, load sessions, select most recent or create new
+  useEffect(() => {
+    (async () => {
+      await sessionsDB.expireOldSessions();
+      await loadSessions(0);
+      setSessionsPage(0);
+    })();
+  }, [loadSessions]);
+
+  // When sessions load, select most recent or create new if none
+  useEffect(() => {
+    if (!sessionsLoading && sessions.length > 0 && selectedSessionId == null) {
+      // Select most recent
+      loadSessionById(sessions[0].id);
+    } else if (
+      !sessionsLoading &&
+      sessions.length === 0 &&
+      selectedSessionId == null
+    ) {
+      // No sessions, create new
+      createNewSession();
+    }
+  }, [
+    sessions,
+    sessionsLoading,
+    selectedSessionId,
+    loadSessionById,
+    createNewSession,
+  ]);
+
+  // On tabs change, update session in DB
+  useEffect(() => {
+    if (selectedSessionId) {
+      sessionsDB.updateSession(selectedSessionId, { tabs });
+    }
+  }, [tabs, selectedSessionId]);
+
+  // Sidebar UI
+  const Sidebar = () => (
+    <div
+      className={`sticky left-0 top-0 h-screen bg-transparent border-r border-gray-200 flex flex-col w-full md:flex md:w-64 z-20 ${
+        showSidebarInMobile ? "flex" : "hidden"
+      }`}
+    >
+      {/* Header */}
+      <div
+        className="px-1.5 py-1 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+        onClick={() => {
+          setShowSidebarInMobile(false);
+          createNewSession();
+        }}
+      >
+        <button className="px-5 py-3 md:px-2 md:py-1 flex gap-1 items-center">
+          <span>
+            <i className="ri-add-circle-fill text-sm"></i>
+          </span>
+          <span className="text-md md:text-sm">New chat</span>
+        </button>
+      </div>
+      {/* Scrollable sessions list */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {sessionsLoading ? (
+          <div className="p-4 text-gray-400 text-sm">Loading...</div>
+        ) : sessions.length === 0 ? (
+          <div className="p-4 text-gray-400 text-sm">No sessions yet.</div>
+        ) : (
+          <ul>
+            {sessions.map((session, idx) => (
+              <li
+                key={session.id}
+                className={`px-6 py-3 md:px-4 md:py-1.5 border-b border-gray-100 flex items-center justify-between group ${
+                  selectedSessionId === session.id
+                    ? "bg-gray-200 font-bold"
+                    : "hover:bg-gray-50"
+                }`}
+                onClick={() => {
+                  setShowSidebarInMobile(false);
+                  loadSessionById(session.id);
+                }}
+              >
+                <div className="truncate text-md md:text-sm flex-1">
+                  {session.name}
+                </div>
+                <button
+                  className="ml-2 text-xs px-0.5 py-0.5 text-gray-400 hover:text-red-600 transition opacity-0 group-hover:opacity-100"
+                  title="Delete session"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    await sessionsDB.deleteSession(session.id);
+                    setSessions((prev) =>
+                      prev.filter((s) => s.id !== session.id)
+                    );
+                    setSessionsTotal((prev) => prev - 1);
+                    // If deleted session is selected, select next or clear
+                    if (selectedSessionId === session.id) {
+                      const remaining = sessions.filter(
+                        (s) => s.id !== session.id
+                      );
+                      if (remaining.length > 0) {
+                        loadSessionById(remaining[0].id);
+                      } else {
+                        setSelectedSessionId(null);
+                        setTabs([]);
+                        setCurrentSessionName("");
+                        setCurrentSessionCreatedAt(null);
+                      }
+                    }
+                  }}
+                >
+                  <i className="ri-close-line"></i>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {/* Footer (pagination controls) */}
+      <div className="p-2 border-t border-gray-100 flex items-center justify-between text-md md:text-xs bg-gray-100">
+        <button
+          className="px-5 py-3 md:px-2 md:py-1 rounded disabled:opacity-50"
+          onClick={() => {
+            if (sessionsPage > 0) {
+              setSessionsPage(sessionsPage - 1);
+              loadSessions(sessionsPage - 1);
+            }
+          }}
+          disabled={sessionsPage === 0}
+        >
+          Prev
+        </button>
+        <span>
+          Page {sessionsPage + 1} / {Math.max(1, Math.ceil(sessionsTotal / 30))}
+        </span>
+        <button
+          className="px-5 py-3 md:px-2 md:py-1 rounded disabled:opacity-50"
+          onClick={() => {
+            if ((sessionsPage + 1) * 30 < sessionsTotal) {
+              setSessionsPage(sessionsPage + 1);
+              loadSessions(sessionsPage + 1);
+            }
+          }}
+          disabled={(sessionsPage + 1) * 30 >= sessionsTotal}
+        >
+          Next
+        </button>
+      </div>
+      <div className="h-24 block md:hidden"></div>
+    </div>
+  );
+
+  const [showSidebarInMobile, setShowSidebarInMobile] = useState(false);
+
   return (
     <AppWrapper {...props} isIntelligencePage={true}>
-      <div className="p-6 h-full w-screen lg:w-[calc(100vw-16rem)] flex flex-col pb-24 md:pb-6">
-        <div className="flex gap-2 h-full w-full overflow-x-auto">
-          {tabs.map((tab) => (
-            <IntelligenceTab
-              key={tab.tabId}
-              model={tab.model}
-              modelDisplayName={tab.modelDisplayName}
-              providerApiKeys={providerApiKeys}
-              setProviderApiKeys={(apiKeys) => {
-                dispatch(saveIntelligenceApiKeys(apiKeys));
-              }}
-              messages={tab.messages}
-              setMessages={(messages) => {
-                setTabs((prev) =>
-                  prev.map((t) =>
-                    t.tabId === tab.tabId ? { ...t, messages } : t
-                  )
-                );
-              }}
-              thinking={tab.thinking}
-              error={tab.error}
-              status={tab.status}
-              onClose={() => {
-                setTabs((prev) => prev.filter((t) => t.tabId !== tab.tabId));
-              }}
-            />
-          ))}
-          <ModelSelector onSelect={handleAddTab} />
-        </div>
-        {/* Shared input below the tabs */}
-        <div className="w-full flex flex-col items-end mt-4">
-          <div
-            className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-md px-2 md:px-3 py-1 md:py-2 min-h-[40px] md:min-h-[60px] relative"
-          >
-            <textarea
-              className="flex-1 bg-transparent border-none outline-none resize-none text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0"
-              rows={1}
-              placeholder="Type your message..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              style={{ minHeight: 32, maxHeight: 120 }}
-              disabled={textareaDisabled}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey && !textareaDisabled) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-            />
-            <button
-              className="ml-4 flex items-center justify-center w-10 h-10 rounded-full  transition"
-              onClick={handleSend}
-              type="button"
-              disabled={textareaDisabled}
-            >
-              <i className="ri-send-plane-fill text-gray-900 text-xl"></i>
-            </button>
+      <div className="flex h-full w-full">
+        <Sidebar />
+        <div
+          className={`p-6 h-full w-screen lg:w-[calc(100vw-16rem-16rem)] flex-col pb-24 md:pb-6 overflow-x-auto md:flex ${
+            showSidebarInMobile ? "hidden" : "flex"
+          }`}
+        >
+          <div>
+            <h1 className="text-lg font-bold">
+              Chat with multiple AI models at once.
+            </h1>
+            <p className="text-sm text-gray-500 mb-4">
+              All chats are saved to your device and stored for 30 days.
+            </p>
+          </div>
+          <div className="flex gap-2 h-full w-full overflow-x-auto">
+            {tabs.map((tab) => (
+              <IntelligenceTab
+                key={tab.tabId}
+                model={tab.model}
+                modelDisplayName={tab.modelDisplayName}
+                providerApiKeys={providerApiKeys}
+                setProviderApiKeys={(apiKeys) => {
+                  dispatch(saveIntelligenceApiKeys(apiKeys));
+                }}
+                messages={tab.messages}
+                setMessages={(messages) => {
+                  setTabs((prev) =>
+                    prev.map((t) =>
+                      t.tabId === tab.tabId ? { ...t, messages } : t
+                    )
+                  );
+                }}
+                thinking={tab.thinking}
+                error={tab.error}
+                status={tab.status}
+                onClose={() => {
+                  setTabs((prev) => prev.filter((t) => t.tabId !== tab.tabId));
+                }}
+              />
+            ))}
+            <ModelSelector onSelect={handleAddTab} />
+          </div>
+          {/* Shared input below the tabs */}
+          <div className="w-full flex flex-col items-end mt-4">
+            <div className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-md px-2 md:px-3 py-1 md:py-2 min-h-[40px] md:min-h-[60px] relative">
+              <textarea
+                className="flex-1 bg-transparent border-none outline-none resize-none text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0"
+                rows={1}
+                placeholder="Send message to all AI models"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                style={{ minHeight: 32, maxHeight: 120 }}
+                disabled={textareaDisabled}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && !textareaDisabled) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+              />
+              <button
+                className="ml-4 flex items-center justify-center w-10 h-10 rounded-full  transition"
+                onClick={handleSend}
+                type="button"
+                disabled={textareaDisabled}
+              >
+                <i className="ri-send-plane-fill text-gray-900 text-xl"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
       {/* Mac-style dock at the bottom, same as FourThousandWeeks */}
-      {(!props.isSidebarOpen) && (
+      {!props.isSidebarOpen && (
         <MobileTabBar
           showHomeOption={true}
           showSearchOption={true}
           showSettingsOption={true}
+          showChatsOption={true}
+          isChatsSelected={showSidebarInMobile}
           onSelect={(tabName) => {
             if (tabName === "search") {
               props.showSidebar();
@@ -865,6 +1177,8 @@ function IntelligenceContainer(props) {
             } else if (tabName === "settings") {
               props.hideSidebar();
               navigate("/settings");
+            } else if (tabName === "chats") {
+              setShowSidebarInMobile(!showSidebarInMobile);
             }
           }}
         />

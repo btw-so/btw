@@ -13,6 +13,8 @@ export default function MobileTabBar({
   isHomeSelected,
   showSettingsOption,
   isSettingsSelected,
+  showChatsOption,
+  isChatsSelected,
   onSelect,
 }) {
   const options = [
@@ -51,6 +53,12 @@ export default function MobileTabBar({
       label: "Settings",
       icon: "ri-settings-line",
       selected: isSettingsSelected,
+    },
+    showChatsOption && {
+      key: "chats",
+      label: "Chats",
+      icon: "ri-chat-1-line",
+      selected: isChatsSelected,
     },
   ].filter(Boolean);
 

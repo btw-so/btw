@@ -1538,6 +1538,10 @@ input[type="number"]::-webkit-inner-spin-button,
   position: relative;
 }
 
+.sticky {
+  position: sticky;
+}
+
 .-inset-x-1\/4 {
   left: -25%;
   right: -25%;
@@ -1614,6 +1618,14 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .z-50 {
   z-index: 50;
+}
+
+.z-30 {
+  z-index: 30;
+}
+
+.z-40 {
+  z-index: 40;
 }
 
 .m-2 {
@@ -1760,6 +1772,10 @@ input[type="number"]::-webkit-inner-spin-button,
   margin-top: 1rem;
 }
 
+.-mr-2 {
+  margin-right: -0.5rem;
+}
+
 .block {
   display: block;
 }
@@ -1840,6 +1856,22 @@ input[type="number"]::-webkit-inner-spin-button,
   height: 100%;
 }
 
+.h-screen {
+  height: 100vh;
+}
+
+.h-16 {
+  height: 4rem;
+}
+
+.h-20 {
+  height: 5rem;
+}
+
+.h-24 {
+  height: 6rem;
+}
+
 .max-h-screen {
   max-height: 100vh;
 }
@@ -1854,6 +1886,10 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .min-h-\[40px\] {
   min-height: 40px;
+}
+
+.min-h-0 {
+  min-height: 0px;
 }
 
 .w-0 {
@@ -1985,6 +2021,16 @@ input[type="number"]::-webkit-inner-spin-button,
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
+.-translate-x-full {
+  --tw-translate-x: -100%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.translate-x-0 {
+  --tw-translate-x: 0px;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
 .-rotate-90 {
   --tw-rotate: -90deg;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -2052,6 +2098,10 @@ input[type="number"]::-webkit-inner-spin-button,
   justify-content: flex-start;
 }
 
+.justify-end {
+  justify-content: flex-end;
+}
+
 .justify-center {
   justify-content: center;
 }
@@ -2078,6 +2128,10 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .gap-6 {
   gap: 1.5rem;
+}
+
+.gap-1 {
+  gap: 0.25rem;
 }
 
 .space-x-0 > :not([hidden]) ~ :not([hidden]) {
@@ -2397,6 +2451,26 @@ input[type="number"]::-webkit-inner-spin-button,
   padding-bottom: 1.5rem;
 }
 
+.py-3 {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.px-1\.5 {
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
+}
+
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.px-5 {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
 .\!pt-8 {
   padding-top: 2rem !important;
 }
@@ -2493,6 +2567,14 @@ input[type="number"]::-webkit-inner-spin-button,
   padding-top: 1.5rem;
 }
 
+.pb-32 {
+  padding-bottom: 8rem;
+}
+
+.pr-2 {
+  padding-right: 0.5rem;
+}
+
 .text-left {
   text-align: left;
 }
@@ -2541,6 +2623,16 @@ input[type="number"]::-webkit-inner-spin-button,
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
 }
 
 .font-black {
@@ -2749,6 +2841,12 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .transition-opacity {
   transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-transform {
+  transition-property: transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -3938,6 +4036,11 @@ hr.ProseMirror-selectednode {
   background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));
 }
 
+.hover\:bg-gray-50:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
+}
+
 .hover\:text-gray-500:hover {
   --tw-text-opacity: 1;
   color: rgb(107 114 128 / var(--tw-text-opacity, 1));
@@ -4011,6 +4114,10 @@ hr.ProseMirror-selectednode {
   --tw-ring-offset-width: 0px;
 }
 
+.disabled\:opacity-50:disabled {
+  opacity: 0.5;
+}
+
 .group:hover .group-hover\:w-4 {
   width: 1rem;
 }
@@ -4063,12 +4170,20 @@ hr.ProseMirror-selectednode {
 }
 
 @media (min-width: 768px) {
+  .md\:sticky {
+    position: sticky;
+  }
+
   .md\:right-2 {
     right: 0.5rem;
   }
 
   .md\:top-2 {
     top: 0.5rem;
+  }
+
+  .md\:z-20 {
+    z-index: 20;
   }
 
   .md\:mx-auto {
@@ -4108,6 +4223,10 @@ hr.ProseMirror-selectednode {
     height: 3rem;
   }
 
+  .md\:h-screen {
+    height: 100vh;
+  }
+
   .md\:min-h-\[60px\] {
     min-height: 60px;
   }
@@ -4124,6 +4243,10 @@ hr.ProseMirror-selectednode {
     width: 100%;
   }
 
+  .md\:w-64 {
+    width: 16rem;
+  }
+
   .md\:min-w-96 {
     min-width: 24rem;
   }
@@ -4138,6 +4261,11 @@ hr.ProseMirror-selectednode {
 
   .md\:flex-grow {
     flex-grow: 1;
+  }
+
+  .md\:translate-x-0 {
+    --tw-translate-x: 0px;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
   }
 
   .md\:flex-row {
@@ -4171,6 +4299,10 @@ hr.ProseMirror-selectednode {
     border-color: rgb(243 244 246 / var(--tw-border-opacity, 1));
   }
 
+  .md\:bg-transparent {
+    background-color: transparent;
+  }
+
   .md\:\!p-2 {
     padding: 0.5rem !important;
   }
@@ -4197,6 +4329,26 @@ hr.ProseMirror-selectednode {
   .md\:py-2 {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
+  }
+
+  .md\:py-1\.5 {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+
+  .md\:px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .md\:px-2 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .md\:py-1 {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
   }
 
   .md\:\!pr-32 {
@@ -4238,11 +4390,33 @@ hr.ProseMirror-selectednode {
   .md\:pb-6 {
     padding-bottom: 1.5rem;
   }
+
+  .md\:text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .md\:text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  .md\:opacity-0 {
+    opacity: 0;
+  }
+
+  .group:hover .md\:group-hover\:opacity-100 {
+    opacity: 1;
+  }
 }
 
 @media (min-width: 1024px) {
   .lg\:w-\[calc\(100vw-16rem\)\] {
     width: calc(100vw - 16rem);
+  }
+
+  .lg\:w-\[calc\(100vw-16rem-16rem\)\] {
+    width: calc(100vw - 16rem - 16rem);
   }
 }
 

@@ -78,6 +78,7 @@
     "charenc": "^0.0.2",
     "crypt": "^0.0.2",
     "crypto-js": "^4.2.0",
+    "dexie": "^4.0.11",
     "framer-motion": "^12.12.1",
     "fuse.js": "^6.6.2",
     "html-react-parser": "^5.2.5",
