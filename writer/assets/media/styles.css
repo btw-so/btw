@@ -602,8 +602,7 @@ select {
   background-repeat: no-repeat;
   background-size: 1.5em 1.5em;
   padding-right: 2.5rem;
-  -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 [multiple],[size]:where(select:not([size="1"])) {
@@ -612,15 +611,13 @@ select {
   background-repeat: unset;
   background-size: initial;
   padding-right: 0.75rem;
-  -webkit-print-color-adjust: unset;
-          print-color-adjust: unset;
+  print-color-adjust: unset;
 }
 
 [type='checkbox'],[type='radio'] {
   appearance: none;
   padding: 0;
-  -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
+  print-color-adjust: exact;
   display: inline-block;
   vertical-align: middle;
   background-origin: border-box;
@@ -2285,7 +2282,7 @@ input[type="number"]::-webkit-inner-spin-button,
 }
 
 .antialiased {
-  -webkit-font-smoothing: antialiased;
+  /* -webkit-font-smoothing: antialiased; */
   -moz-osx-font-smoothing: grayscale;
 }
 
@@ -2451,7 +2448,7 @@ div:focus-visible {
 
 html,
 body {
-  font-family: "Circular", "Satoshi", sans-serif;
+  font-family: "Satoshi", sans-serif;
 }
 
 .tiptap-editor li p {
@@ -2848,107 +2845,6 @@ hr.ProseMirror-selectednode {
   background-color: #bbbbbb;
 }
 
-/* Circular fonts */
-
-@font-face {
-  font-family: 'Circular';
-
-  src: url('/media/fonts/Circular/CircularStd-Book.otf') format('opentype');
-
-  font-weight: 400;
-
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Circular';
-
-  src: url('/media/fonts/Circular/CircularStd-BookItalic.otf') format('opentype');
-
-  font-weight: 400;
-
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'Circular';
-
-  src: url('/media/fonts/Circular/CircularStd-Light.otf') format('opentype');
-
-  font-weight: 300;
-
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Circular';
-
-  src: url('/media/fonts/Circular/CircularStd-Light Italic.otf') format('opentype');
-
-  font-weight: 300;
-
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'Circular';
-
-  src: url('/media/fonts/Circular/CircularStd-Medium.otf') format('opentype');
-
-  font-weight: 500;
-
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Circular';
-
-  src: url('/media/fonts/Circular/CircularStd-MediumItalic.otf') format('opentype');
-
-  font-weight: 500;
-
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'Circular';
-
-  src: url('/media/fonts/Circular/CircularStd-Bold.otf') format('opentype');
-
-  font-weight: 700;
-
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Circular';
-
-  src: url('/media/fonts/Circular/CircularStd-BoldItalic.otf') format('opentype');
-
-  font-weight: 700;
-
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'Circular';
-
-  src: url('/media/fonts/Circular/CircularStd-Black.otf') format('opentype');
-
-  font-weight: 900;
-
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Circular';
-
-  src: url('/media/fonts/Circular/CircularStd-BlackItalic.otf') format('opentype');
-
-  font-weight: 900;
-
-  font-style: italic;
-}
 
 @media (min-width: 1024px) {
   .lg\:prose-lg {

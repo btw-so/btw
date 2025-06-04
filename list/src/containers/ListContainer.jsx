@@ -1453,7 +1453,7 @@ function ListContainer(props) {
               <div
                 className="h-18 hidden md:block overflow-y-hidden max-h-18 opacity-30 hover:opacity-100 transition-opacity duration-300 uppy-parent"
                 style={{
-                  fontFamily: "Circular, Satoshi !important",
+                  fontFamily: "Satoshi !important",
                 }}
               >
                 <UppyComponent
