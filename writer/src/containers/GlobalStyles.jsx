@@ -11,7 +11,11 @@ const GlobalStyle = createGlobalStyle`
   }
 
   html {
+<<<<<<< HEAD:writer/src/containers/GlobalStyles.jsx
     /* -webkit-font-smoothing: antialiased; */
+=======
+  /*  -webkit-font-smoothing: antialiased; */
+>>>>>>> 7300016088b24138c8a97f160e55e44572f4e3cb:writer/src/containers/GlobalStyles.tsx
     height: 100%;
   }
 

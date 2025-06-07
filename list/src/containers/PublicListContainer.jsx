@@ -55,6 +55,9 @@ function PublicListContainer() {
         key="PublicList"
         data-testid="PublicList"
         className="min-h-full flex flex-col shrink-0 grow"
+        style={{
+          wordBreak: "break-word",
+        }}
       >
         <div className="w-full h-0.5 border-b border-gray-100 h-6 md:h-12 flex">
           <div className="container mx-6 md:mx-auto px-6 md:px-12 pt-0 md:pt-12 border-solid border-gray-100 border-x max-w-5xl w-full"></div>
@@ -91,6 +94,9 @@ function PublicListContainer() {
         key="PublicList"
         data-testid="PublicList"
         className="min-h-full flex flex-col shrink-0 grow"
+        style={{
+          wordBreak: "break-word",
+        }}
       >
         <div className="w-full h-0.5 border-b border-gray-100 h-6 md:h-12 flex">
           <div className="container mx-6 md:mx-auto px-6 md:px-12 pt-0 md:pt-12 border-solid border-gray-100 border-x max-w-5xl w-full"></div>

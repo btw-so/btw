@@ -11,7 +11,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   html {
-    /* -webkit-font-smoothing: antialiased; */
+  /*  -webkit-font-smoothing: antialiased; */
     height: 100%;
   }
 

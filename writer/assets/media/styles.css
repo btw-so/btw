@@ -2448,7 +2448,7 @@ div:focus-visible {
 
 html,
 body {
-  font-family: "Satoshi", sans-serif;
+  font-family: "Satoshi", "Circular", sans-serif;
 }
 
 .tiptap-editor li p {

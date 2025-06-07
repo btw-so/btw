@@ -20,7 +20,7 @@ function AppWrapper(props) {
                 : "w-64 p-4 hidden sm:visible sm:flex"
             } border-r-2 border-gray-100 flex flex-col max-h-screen shrink-0 bg-white`}
             style={{
-              background: "#F7F7F7",
+              background: "#FBFBFB",
             }}
           >
             <Sidebar {...props} />
@@ -28,7 +28,7 @@ function AppWrapper(props) {
           <div
             className="flex-grow flex flex-col max-h-screen"
             style={{
-              background: "#F7F7F7",
+              background: "#FBFBFB",
             }}
           >
             {/* children go here */}
