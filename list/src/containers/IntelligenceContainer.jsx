@@ -28,6 +28,10 @@ const providers = [
     name: "Gemini",
     icon: "ri-gemini-fill",
   },
+  {
+    name: "Mistral",
+    icon: "ri-mixtral-fill",
+  },
 ];
 
 const availableModels = [
@@ -343,6 +347,71 @@ const availableModels = [
     max_total_tokens: 1048576 + 65536,
     input_token_price: 2.5,
     output_token_price: 15,
+  },
+  {
+    provider: "Gemini",
+    output: "image",
+    input: ["text", "image"],
+    reasoning: false,
+    model: "imagen-4.0-generate-preview-05-20",
+    displayName: "Imagen 4.0 (Gemini Image)",
+    max_input_tokens: 1048576,
+    max_output_tokens: 8192,
+    max_total_tokens: 1048576 + 8192,
+    input_token_price: 0.2,
+    output_token_price: 0.8,
+  },
+  {
+    provider: "Mistral",
+    output: "text",
+    input: ["text"],
+    reasoning: true,
+    model: "mistral-large-latest",
+    displayName: "Mistral Large",
+    max_input_tokens: 128000,
+    max_output_tokens: 32000,
+    max_total_tokens: 128000 + 32000,
+    input_token_price: 2,
+    output_token_price: 6,
+  },
+  {
+    provider: "Mistral",
+    output: "text",
+    input: ["text", "image"],
+    reasoning: true,
+    model: "mistral-medium-latest",
+    displayName: "Mistral Medium",
+    max_input_tokens: 128000,
+    max_output_tokens: 32000,
+    max_total_tokens: 128000 + 32000,
+    input_token_price: 0.4,
+    output_token_price: 2.0,
+  },
+  {
+    provider: "Mistral",
+    output: "text",
+    input: ["text", "image"],
+    reasoning: true,
+    model: "mistral-small-latest",
+    displayName: "Mistral Small",
+    max_input_tokens: 128000,
+    max_output_tokens: 32000,
+    max_total_tokens: 128000 + 32000,
+    input_token_price: 0.1,
+    output_token_price: 0.3,
+  },
+  {
+    provider: "Mistral",
+    output: "text",
+    input: ["text", "image"],
+    reasoning: true,
+    model: "pixtral-large-latest",
+    displayName: "Pixtral Large",
+    max_input_tokens: 128000,
+    max_output_tokens: 32000,
+    max_total_tokens: 128000 + 32000,
+    input_token_price: 2,
+    output_token_price: 6,
   },
 ];
 
@@ -700,6 +769,7 @@ function IntelligenceContainer(props) {
       if (provider === "OpenAI") streamFn = streamOpenAI;
       else if (provider === "Gemini") streamFn = streamGemini;
       else if (provider === "Claude") streamFn = streamClaude;
+      else if (provider === "Mistral") streamFn = streamMistral;
       else return;
       setGeneratingTitle(true);
       let title = "";
@@ -823,7 +893,9 @@ function IntelligenceContainer(props) {
   // Main send handler
   const handleSend = async () => {
     const userInput = inputValue.trim();
-    if (!userInput && attachedImages.length === 0) return;
+    if (!userInput) {
+      return;
+    }
     // If this is the first message in the session, generate a title
     if (tabs.every((tab) => tab.messages.length === 0)) {
       generateSessionTitle(userInput);
@@ -834,11 +906,8 @@ function IntelligenceContainer(props) {
     if (attachedImages.length > 0) {
       imagesBase64 = await Promise.all(
         attachedImages.map(async (img) => {
-          // DataURL: "data:image/png;base64,...."
-          const dataUrl = await fileToBase64(img.file);
-          // Split to get only base64 if needed
           return {
-            dataUrl,
+            dataUrl: img.dataUrl,
             file: img.file,
             mime: img.file.type,
             name: img.file.name,
@@ -884,8 +953,8 @@ function IntelligenceContainer(props) {
         content: userInput,
         images: imagesBase64,
       };
-      const assistantMessage = { role: "assistant", content: "", images: [] };
       const baseMessages = [...tab.messages, userMessage];
+
       // If this is an image generation model, use image gen API
       if (tab.model === "gpt-image-1") {
         (async () => {
@@ -909,7 +978,10 @@ function IntelligenceContainer(props) {
                                   ...m,
                                   content: "",
                                   images: [
-                                    { dataUrl: imgUrl, name: "Generated Image" },
+                                    {
+                                      dataUrl: imgUrl,
+                                      name: "Generated Image",
+                                    },
                                   ],
                                 }
                               : m
@@ -950,6 +1022,7 @@ function IntelligenceContainer(props) {
       if (provider === "OpenAI") streamFn = streamOpenAI;
       else if (provider === "Gemini") streamFn = streamGemini;
       else if (provider === "Claude") streamFn = streamClaude;
+      else if (provider === "Mistral") streamFn = streamMistral;
       else return;
       // Start streaming
       (async () => {
@@ -1276,17 +1349,23 @@ function IntelligenceContainer(props) {
   }, [inputValue]);
 
   // Handle drag and drop for images
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     const files = Array.from(e.dataTransfer.files).filter((file) =>
       file.type.startsWith("image/")
     );
     if (files.length > 0) {
-      const newImages = files.map((file) => ({
-        file,
-        url: URL.createObjectURL(file),
-      }));
+      const newImages = await Promise.all(
+        files.map(async (file) => {
+          const dataUrl = await fileToBase64(file);
+          return {
+            file,
+            url: URL.createObjectURL(file),
+            dataUrl,
+          };
+        })
+      );
       setAttachedImages((prev) => [...prev, ...newImages]);
     }
   };
@@ -1300,15 +1379,21 @@ function IntelligenceContainer(props) {
   const handleImageButtonClick = () => {
     if (fileInputRef.current) fileInputRef.current.click();
   };
-  const handleFileInputChange = (e) => {
+  const handleFileInputChange = async (e) => {
     const files = Array.from(e.target.files).filter((file) =>
       file.type.startsWith("image/")
     );
     if (files.length > 0) {
-      const newImages = files.map((file) => ({
-        file,
-        url: URL.createObjectURL(file),
-      }));
+      const newImages = await Promise.all(
+        files.map(async (file) => {
+          const dataUrl = await fileToBase64(file);
+          return {
+            file,
+            url: URL.createObjectURL(file),
+            dataUrl,
+          };
+        })
+      );
       setAttachedImages((prev) => [...prev, ...newImages]);
     }
     e.target.value = "";
@@ -1476,10 +1561,7 @@ function IntelligenceContainer(props) {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70"
           onClick={() => setZoomedImage(null)}
         >
-          <div
-            className="relative"
-            onClick={e => e.stopPropagation()}
-          >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
             <img
               src={zoomedImage}
               alt="Zoomed"
@@ -1502,6 +1584,26 @@ export default IntelligenceContainer;
 
 // --- Streaming Functions for OpenAI, Gemini, Claude ---
 
+const formatMessagesForOpenAI = ({ messages, supportsImages, images }) => {
+  let formatted = [];
+  messages.forEach(({ images, content, role }) => {
+    formatted.push({
+      role,
+      content: [
+        {
+          type: "text",
+          text: content || "",
+        },
+        ...(supportsImages && images || []).map((img) => ({
+          type: "image_url",
+          image_url: { url: img.dataUrl },
+        })),
+      ],
+    });
+  });
+  return formatted;
+};
+
 // 1. OpenAI Streaming
 export async function* streamOpenAI({
   model,
@@ -1518,23 +1620,10 @@ export async function* streamOpenAI({
   let completed = false;
   try {
     // If model supports images, format user message accordingly
-    let formattedMessages = messages;
-    const supportsImages = modelDetails?.input?.includes("image");
-    if (supportsImages && images && images.length > 0) {
-      formattedMessages = messages.map((msg) => {
-        if (msg.role !== "user") return msg;
-        // Compose content as array of text and image_url objects
-        let contentArr = [];
-        if (msg.content) contentArr.push({ type: "text", text: msg.content });
-        for (const img of images) {
-          contentArr.push({
-            type: "image_url",
-            image_url: { url: img.dataUrl },
-          });
-        }
-        return { ...msg, content: contentArr };
-      });
-    }
+    let formattedMessages = formatMessagesForOpenAI({
+      messages,
+      supportsImages: modelDetails.input.includes("image"),
+    });
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -1596,26 +1685,30 @@ export async function* streamOpenAI({
   }
 }
 
-// Helper: Format messages for OpenAI API
-function formatMessagesForOpenAI(messages, images) {
-  const supportsImages = messages.some(
-    (msg) => msg.role === "user" && msg.images && msg.images.length > 0
-  );
-  if (!supportsImages) return messages;
-  return messages.map((msg) => {
-    if (msg.role !== "user") return msg;
-    const { images: msgImages, ...rest } = msg;
-    const content = msg.content || "";
-    const contentArr = [
-      { type: "text", text: content },
-      ...(msgImages || []).map((img) => ({
-        type: "image_url",
-        image_url: { url: img.dataUrl },
-      })),
-    ];
-    return { ...rest, content: contentArr };
+
+const formatMessagesForClaude = ({ messages, supportsImages, images }) => {
+  let formatted = [];
+  messages.forEach(({ images, content, role }) => {
+    formatted.push({
+      role,
+      content: [
+        {
+          type: "text",
+          text: content || "",
+        },
+        ...(supportsImages && images || []).map((img) => ({
+          type: "image",
+          source: {
+            type: "base64",
+            media_type: img.mime,
+            data: img.dataUrl.split(`data:${img.mime};base64,`)[1],
+          },
+        })),
+      ],
+    });
   });
-}
+  return formatted;
+};
 
 // 3. Claude Streaming
 export async function* streamClaude({
@@ -1634,48 +1727,15 @@ export async function* streamClaude({
   try {
     const url = "https://api.anthropic.com/v1/messages";
     // If model supports images, format user message accordingly
-    let formattedMessages = messages;
-    const supportsImages = modelDetails?.input?.includes("image");
-    if (supportsImages && images && images.length > 0) {
-      formattedMessages = messages.map((msg) => {
-        if (msg.role !== "user") return msg;
-        let contentArr = [];
-        if (msg.content) contentArr.push({ type: "text", text: msg.content });
-        for (const img of images) {
-          // Extract base64 from dataUrl
-          let base64 = img.dataUrl.split(",")[1];
-          contentArr.push({
-            type: "image",
-            source: {
-              type: "base64",
-              media_type: img.mime,
-              data: base64,
-            },
-          });
-        }
-        return { ...msg, content: contentArr };
-      });
-    }
+    let formattedMessages = formatMessagesForClaude({
+      messages,
+      supportsImages: modelDetails.input.includes("image"),
+    });
     const body = {
       model,
       messages: formattedMessages,
       stream: true,
       max_tokens: modelDetails.max_output_tokens,
-      ...(reasoning && {
-        thinking: {
-          type: "enabled",
-          budget_tokens: 16000,
-        },
-      }),
-      ...(grounding && {
-        tools: [
-          {
-            name: "web_search",
-            type: "web_search_20250305",
-            max_uses: 5,
-          },
-        ],
-      }),
     };
     const response = await fetch(url, {
       method: "POST",
@@ -1745,6 +1805,25 @@ export async function* streamClaude({
   }
 }
 
+const formatMessagesForGemini = ({ messages, supportsImages, images }) => {
+  let formatted = [];
+  messages.forEach(({ images, content, role }) => {
+    formatted.push({
+      role,
+      parts: [
+        { text: content },
+        ...(supportsImages && images || []).map((img) => ({
+          inlineData: {
+            data: img.dataUrl.split(",")[1],
+            mimeType: img.mime,
+          },
+        })),
+      ],
+    });
+  });
+  return formatted;
+};
+
 export async function* streamGemini({
   model,
   reasoning,
@@ -1757,9 +1836,6 @@ export async function* streamGemini({
   modelDetails,
   images = [],
 }) {
-  console.log("reasoning", reasoning);
-  console.log("grounding", grounding);
-  console.log("messages", messages);
 
   try {
     const genai = new GoogleGenAI({
@@ -1767,38 +1843,10 @@ export async function* streamGemini({
     });
 
     // If model supports images, format user message accordingly
-    let formattedMessages = messages;
-    const supportsImages = modelDetails?.input?.includes("image");
-    if (supportsImages && images && images.length > 0) {
-      formattedMessages = messages.map((msg) => {
-        if (msg.role !== "user")
-          return {
-            role: msg.role === "assistant" ? "model" : msg.role,
-            parts: [{ text: msg.content }],
-          };
-        let parts = [];
-        if (msg.content) parts.push({ text: msg.content });
-        for (const img of images) {
-          // Remove data URL prefix for Gemini
-          let base64 = img.dataUrl.split(",")[1];
-          parts.push({
-            inlineData: {
-              data: base64,
-              mimeType: img.mime,
-            },
-          });
-        }
-        return {
-          role: msg.role === "assistant" ? "model" : msg.role,
-          parts,
-        };
-      });
-    } else {
-      formattedMessages = messages.map((m) => ({
-        role: m.role === "assistant" ? "model" : m.role,
-        parts: [{ text: m.content }],
-      }));
-    }
+    let formattedMessages = formatMessagesForGemini({
+      messages,
+      supportsImages: modelDetails.input.includes("image"),
+    });
     const response = await genai.models.generateContentStream({
       model: model,
       contents: formattedMessages,
@@ -1838,5 +1886,113 @@ export async function* streamGemini({
     if (onComplete) {
       onComplete(false, err.message || String(err));
     }
+  }
+}
+
+const formatMessagesForMistral = ({ messages, supportsImages, images }) => {
+  let formatted = [];
+  messages.forEach(({ images, content, role }) => {
+    formatted.push({
+      role,
+      content: [
+        {
+          type: "text",
+          text: content || "",
+        },
+        ...(supportsImages && images || []).map((img) => ({
+          type: "image_url",
+          image_url: img.dataUrl,
+        })),
+      ],
+    });
+  });
+  return formatted;
+};
+
+export async function* streamMistral({
+  model,
+  reasoning,
+  grounding,
+  messages,
+  apiKey,
+  onNewTokenOutput,
+  onThinkingNewToken,
+  onComplete,
+  modelDetails,
+  images = [],
+}) {
+  let completed = false;
+  try {
+    // If model supports images and images are present, format like OpenAI
+    let formattedMessages = formatMessagesForMistral({
+      messages,
+      supportsImages: modelDetails.input.includes("image"),
+    });
+
+    const body = {
+      model,
+      messages: formattedMessages,
+      stream: true,
+      max_tokens: modelDetails.max_output_tokens,
+    };
+    const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      let errorText = await response.text();
+      let errorMsg = `${response.status} ${response.statusText}`;
+      if (errorText) errorMsg += `\n${errorText}`;
+      throw new Error(errorMsg);
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop();
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        if (!trimmed.startsWith("data: ")) continue;
+        const data = trimmed.slice(6).trim();
+        if (data === "[DONE]") {
+          if (onComplete && !completed) {
+            onComplete(true);
+            completed = true;
+          }
+          return;
+        }
+        try {
+          const json = JSON.parse(data);
+          const content = json.choices?.[0]?.delta?.content;
+          if (content) {
+            if (onNewTokenOutput) onNewTokenOutput(content);
+            yield content;
+          }
+        } catch (e) {
+          // ignore parse errors
+        }
+      }
+    }
+    if (onComplete && !completed) {
+      onComplete(true);
+      completed = true;
+    }
+  } catch (err) {
+    let errorMsg = err?.message || String(err);
+    if (err?.stack) errorMsg += `\n${err.stack}`;
+    if (onComplete && !completed) {
+      onComplete(false, errorMsg);
+      completed = true;
+    }
+    throw err;
   }
 }
