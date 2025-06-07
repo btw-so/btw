@@ -2285,7 +2285,7 @@ input[type="number"]::-webkit-inner-spin-button,
 }
 
 .antialiased {
-  -webkit-font-smoothing: antialiased;
+/*  -webkit-font-smoothing: antialiased; */
   -moz-osx-font-smoothing: grayscale;
 }
 
@@ -2451,7 +2451,7 @@ div:focus-visible {
 
 html,
 body {
-  font-family: "Circular", "Satoshi", sans-serif;
+  font-family: "Satoshi", "Circular", sans-serif;
 }
 
 .tiptap-editor li p {
