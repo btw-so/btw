@@ -542,7 +542,7 @@ const Node = ({
         }}
       >
         <ContentEditable
-          classes={`leading-6 max-w-2xl text-black ${
+          classes={`leading-6 max-w-2xl text-black text-base ${
             node.checked ? "text-gray-500 " : ""
           }`}
           id={node.id}

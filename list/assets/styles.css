@@ -21,7 +21,7 @@ div:focus-visible {
 
 html,
 body {
-  font-family: "Circular", "Satoshi", sans-serif;
+  font-family: "Satoshi", "Circular", "Satoshi", sans-serif;
 }
 
 .tiptap-editor li p {
@@ -446,7 +446,7 @@ hr.ProseMirror-selectednode {
 .uppy-parent .uppy-Dashboard-inner {
   height: 100% !important;
   min-height: unset !important;
-  font-family: "Circular", "Satoshi", sans-serif;
+  font-family: "Satoshi", "Circular", "Satoshi", sans-serif;
 }
 
 

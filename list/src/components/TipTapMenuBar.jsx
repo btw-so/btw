@@ -23,7 +23,7 @@ const MenuItem = ({ icon, title, action, isActive = null }) => {
       }
     : {};
   const iconStyle = isActive && isActive()
-    ? { fontSize: 15, color: '#F7f7f7' }
+    ? { fontSize: 15, color: '#FBFBFB' }
     : { fontSize: 15, color: '#040402' };
   return (
     <button

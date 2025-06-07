@@ -5,7 +5,7 @@ function Login() {
   return (
     <div
       className="w-full h-full min-h-screen"
-      style={{ backgroundColor: "#F7F7F7" }}
+      style={{ backgroundColor: "#FBFBFB" }}
     >
       <LoginContainer />
     </div>

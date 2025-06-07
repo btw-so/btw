@@ -769,7 +769,7 @@ input[type="number"]::-webkit-inner-spin-button,
 .prose :where(p):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
   margin-top: 1.25em;
   margin-bottom: 1.25em;
-  color: #363636;
+  color: #333333;
 }
 
 .prose :where([class~="lead"]):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
@@ -781,13 +781,13 @@ input[type="number"]::-webkit-inner-spin-button,
 }
 
 .prose :where(a):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  color: #363636;
+  color: #333333;
   text-decoration: underline;
   font-weight: 500;
 }
 
 .prose :where(strong):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  color: #363636;
+  color: #333333;
   font-weight: 600;
 }
 
@@ -1121,24 +1121,24 @@ input[type="number"]::-webkit-inner-spin-button,
 }
 
 .prose {
-  --tw-prose-body: #363636;
+  --tw-prose-body: #333333;
   --tw-prose-headings: #040402;
   --tw-prose-lead: #4b5563;
-  --tw-prose-links: #363636;
-  --tw-prose-bold: #363636;
-  --tw-prose-counters: #363636;
-  --tw-prose-bullets: #363636;
+  --tw-prose-links: #333333;
+  --tw-prose-bold: #333333;
+  --tw-prose-counters: #333333;
+  --tw-prose-bullets: #333333;
   --tw-prose-hr: #E5E7EB;
-  --tw-prose-quotes: #363636;
-  --tw-prose-quote-borders: #363636;
-  --tw-prose-captions: #363636;
+  --tw-prose-quotes: #333333;
+  --tw-prose-quote-borders: #333333;
+  --tw-prose-captions: #333333;
   --tw-prose-kbd: #111827;
   --tw-prose-kbd-shadows: 17 24 39;
   --tw-prose-code: #ec5c5c;
   --tw-prose-pre-code: #ec5c5c;
-  --tw-prose-pre-bg: #363636;
-  --tw-prose-th-borders: #363636;
-  --tw-prose-td-borders: #363636;
+  --tw-prose-pre-bg: #333333;
+  --tw-prose-th-borders: #333333;
+  --tw-prose-td-borders: #333333;
   --tw-prose-invert-body: #d1d5db;
   --tw-prose-invert-headings: #fff;
   --tw-prose-invert-lead: #9ca3af;
@@ -1268,7 +1268,7 @@ input[type="number"]::-webkit-inner-spin-button,
 }
 
 .prose :where(div):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  color: #363636;
+  color: #333333;
 }
 
 .prose-sm {
@@ -1604,6 +1604,10 @@ input[type="number"]::-webkit-inner-spin-button,
   right: 0.25rem;
 }
 
+.right-2 {
+  right: 0.5rem;
+}
+
 .top-0 {
   top: 0px;
 }
@@ -1612,16 +1616,12 @@ input[type="number"]::-webkit-inner-spin-button,
   top: 0.25rem;
 }
 
-.top-4 {
-  top: 1rem;
-}
-
-.right-2 {
-  right: 0.5rem;
-}
-
 .top-2 {
   top: 0.5rem;
+}
+
+.top-4 {
+  top: 1rem;
 }
 
 .-z-50 {
@@ -1784,10 +1784,6 @@ input[type="number"]::-webkit-inner-spin-button,
   margin-top: 1rem;
 }
 
-.mr-0\.5 {
-  margin-right: 0.125rem;
-}
-
 .block {
   display: block;
 }
@@ -1884,12 +1880,12 @@ input[type="number"]::-webkit-inner-spin-button,
   height: 100vh;
 }
 
-.max-h-screen {
-  max-height: 100vh;
-}
-
 .max-h-\[90vh\] {
   max-height: 90vh;
+}
+
+.max-h-screen {
+  max-height: 100vh;
 }
 
 .min-h-0 {
@@ -2000,6 +1996,10 @@ input[type="number"]::-webkit-inner-spin-button,
   max-width: 24rem;
 }
 
+.max-w-\[90vw\] {
+  max-width: 90vw;
+}
+
 .max-w-full {
   max-width: 100%;
 }
@@ -2014,10 +2014,6 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .max-w-screen-md {
   max-width: 768px;
-}
-
-.max-w-\[90vw\] {
-  max-width: 90vw;
 }
 
 .flex-1 {
@@ -2631,6 +2627,11 @@ input[type="number"]::-webkit-inner-spin-button,
   font-size: 10px;
 }
 
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
 .text-lg {
   font-size: 1.125rem;
   line-height: 1.75rem;
@@ -2910,7 +2911,7 @@ div:focus-visible {
 
 html,
 body {
-  font-family: "Circular", "Satoshi", sans-serif;
+  font-family: "Satoshi", "Circular", "Satoshi", sans-serif;
 }
 
 .tiptap-editor li p {
@@ -3358,7 +3359,7 @@ hr.ProseMirror-selectednode {
 .uppy-parent .uppy-Dashboard-inner {
   height: 100% !important;
   min-height: unset !important;
-  font-family: "Circular", "Satoshi", sans-serif;
+  font-family: "Satoshi", "Circular", "Satoshi", sans-serif;
 }
 
 /* Circular fonts */
@@ -4147,10 +4148,6 @@ hr.ProseMirror-selectednode {
 
 .group:hover .group-hover\:opacity-100 {
   opacity: 1;
-}
-
-.prose-p\:leading-normal :is(:where(p):not(:where([class~="not-prose"],[class~="not-prose"] *))) {
-  line-height: 1.5;
 }
 
 @media (min-width: 640px) {
