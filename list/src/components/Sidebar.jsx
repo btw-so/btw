@@ -260,7 +260,7 @@ function Sidebar(props) {
                       onDragEnd={handleDragEnd}
                       onDrop={(e) => handleDrop(e, node)}
                     >
-                      <span className="mr-2">
+                      <span className="mr-2 mb-1">
                         <i className="ri-checkbox-blank-circle-fill ri-xxs text-gray-400"></i>
                       </span>
                       <span
@@ -288,7 +288,7 @@ function Sidebar(props) {
                   navigate("/4000");
                 }}
               >
-                <span className="mr-2">
+                <span className="mr-2 mb-1">
                   <i className="ri-checkbox-blank-circle-fill ri-xxs text-gray-400"></i>
                 </span>
                 <span
@@ -306,7 +306,7 @@ function Sidebar(props) {
                   navigate("/intelligence");
                 }}
               >
-                <span className="mr-2">
+                <span className="mr-2 mb-1">
                   <i className="ri-checkbox-blank-circle-fill ri-xxs text-gray-400"></i>
                 </span>
                 <span

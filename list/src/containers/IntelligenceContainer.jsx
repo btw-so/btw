@@ -1178,7 +1178,7 @@ function IntelligenceContainer(props) {
             {sessions.map((session, idx) => (
               <li
                 key={session.id}
-                className={`px-6 py-3 md:px-4 md:py-1.5 border-b border-gray-100 flex items-center justify-between group ${
+                className={`px-6 py-3 md:px-4 md:py-1.5 cursor-pointer border-b border-gray-100 flex items-center justify-between group ${
                   selectedSessionId === session.id
                     ? "bg-gray-200 font-bold"
                     : "hover:bg-gray-50"
