@@ -2911,7 +2911,7 @@ div:focus-visible {
 
 html,
 body {
-  font-family: "Satoshi", "Circular", sans-serif;
+  font-family: "SF Pro Text", "SF Pro", -apple-system, "system-ui", "Satoshi", "Circular", sans-serif;
 }
 
 .tiptap-editor li p {
@@ -3359,7 +3359,7 @@ hr.ProseMirror-selectednode {
 .uppy-parent .uppy-Dashboard-inner {
   height: 100% !important;
   min-height: unset !important;
-  font-family: "Satoshi", "Circular", sans-serif;
+  font-family: "SF Pro Text", "SF Pro", -apple-system, "system-ui", "Satoshi", "Circular", sans-serif;
 }
 
 /* Basic editor styles */
