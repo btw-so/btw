@@ -59,7 +59,7 @@ function highlightCodeBlocks(html) {
 function PublicTextNote({ heading, html }) {
   return (
     <div className="container w-auto md:w-full max-w-5xl tiptap-editor flex-grow flex-shrink-0">
-      <div className="text-3xl font-bold mb-3 leading-tight tracking-tight text-black">
+      <div className="text-3xl font-bold mb-3 leading-tight text-black">
         {heading}
       </div>
       <div className="text-sm w-full text-gray-500">

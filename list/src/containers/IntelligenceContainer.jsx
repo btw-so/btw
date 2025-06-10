@@ -4,7 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAppSelector } from "modules/hooks";
 import toast from "react-hot-toast";
 import AppWrapper from "./AppWraper";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Modality } from "@google/genai";
+import Replicate from "replicate";
 import { selectIntelligence } from "selectors";
 import {
   saveIntelligenceApiKeys,
@@ -31,6 +32,14 @@ const providers = [
   {
     name: "Mistral",
     icon: "ri-mixtral-fill",
+  },
+  {
+    name: "Replicate",
+    icon: "ri-brain-line", // Placeholder icon, replace with a better one if available
+  },
+  {
+    name: "DeepSeek",
+    icon: "ri-robot-2-line", // Placeholder icon
   },
 ];
 
@@ -353,8 +362,8 @@ const availableModels = [
     output: "image",
     input: ["text", "image"],
     reasoning: false,
-    model: "imagen-4.0-generate-preview-05-20",
-    displayName: "Imagen 4.0 (Gemini Image)",
+    model: "imagen-3.0-generate-002",
+    displayName: "Imagen 3.0",
     max_input_tokens: 1048576,
     max_output_tokens: 8192,
     max_total_tokens: 1048576 + 8192,
@@ -365,7 +374,7 @@ const availableModels = [
     provider: "Mistral",
     output: "text",
     input: ["text"],
-    reasoning: true,
+    reasoning: false,
     model: "mistral-large-latest",
     displayName: "Mistral Large",
     max_input_tokens: 128000,
@@ -378,7 +387,7 @@ const availableModels = [
     provider: "Mistral",
     output: "text",
     input: ["text", "image"],
-    reasoning: true,
+    reasoning: false,
     model: "mistral-medium-latest",
     displayName: "Mistral Medium",
     max_input_tokens: 128000,
@@ -391,7 +400,7 @@ const availableModels = [
     provider: "Mistral",
     output: "text",
     input: ["text", "image"],
-    reasoning: true,
+    reasoning: false,
     model: "mistral-small-latest",
     displayName: "Mistral Small",
     max_input_tokens: 128000,
@@ -404,7 +413,7 @@ const availableModels = [
     provider: "Mistral",
     output: "text",
     input: ["text", "image"],
-    reasoning: true,
+    reasoning: false,
     model: "pixtral-large-latest",
     displayName: "Pixtral Large",
     max_input_tokens: 128000,
@@ -413,6 +422,72 @@ const availableModels = [
     input_token_price: 2,
     output_token_price: 6,
   },
+  {
+    provider: "Mistral",
+    output: "text",
+    input: ["text"],
+    reasoning: true,
+    model: "magistral-medium-2506",
+    displayName: "Magistral Medium (Reasoning)",
+    max_input_tokens: 128000,
+    max_output_tokens: 32000,
+    max_total_tokens: 128000 + 32000,
+    input_token_price: 0.4,
+    output_token_price: 2.0,
+  },
+  {
+    provider: "Mistral",
+    output: "text",
+    input: ["text"],
+    reasoning: true,
+    model: "magistral-small-2506",
+    displayName: "Magistral Small (Reasoning)",
+    max_input_tokens: 128000,
+    max_output_tokens: 32000,
+    max_total_tokens: 128000 + 32000,
+    input_token_price: 0.4,
+    output_token_price: 2.0,
+  },
+  {
+    provider: "DeepSeek",
+    output: "text",
+    input: ["text"],
+    reasoning: false,
+    model: "deepseek-chat",
+    displayName: "DeepSeek Chat",
+    max_input_tokens: 64000,
+    max_output_tokens: 8000,
+    max_total_tokens: 64000 + 8000,
+    input_token_price: 0.07, // cache hit, per 1M tokens
+    output_token_price: 1.1, // per 1M tokens
+  },
+  {
+    provider: "DeepSeek",
+    output: "text",
+    input: ["text"],
+    reasoning: true,
+    model: "deepseek-reasoner",
+    displayName: "DeepSeek Reasoner",
+    max_input_tokens: 64000,
+    max_output_tokens: 64000,
+    max_total_tokens: 64000 + 64000,
+    input_token_price: 0.14, // cache hit, per 1M tokens
+    output_token_price: 2.19, // per 1M tokens
+  },
+  // {
+  //   provider: "Replicate",
+  //   output: "image",
+  //   input: ["text", "image"],
+  //   reasoning: false,
+  //   subprovider: "black-forest-labs",
+  //   model: "flux-kontext-pro",
+  //   displayName: "Flux Kontext Pro",
+  //   max_input_tokens: 128000,
+  //   max_output_tokens: 32000,
+  //   max_total_tokens: 128000 + 32000,
+  //   input_token_price: 2,
+  //   output_token_price: 6,
+  // }, ---> has a CORS issue
 ];
 
 function IntelligenceTab({
@@ -431,11 +506,11 @@ function IntelligenceTab({
   const modelDetails = availableModels.find(
     (m) => m.displayName === modelDisplayName
   );
-  const provider = providers.find((p) => p.name === modelDetails.provider);
+  const provider = providers.find((p) => p.name === modelDetails?.provider);
   const [apiKey, setApiKey] = useState("");
   const [showApiKeyForm, setShowApiKeyForm] = useState(false);
 
-  const apiKeySaved = !!providerApiKeys[modelDetails.provider];
+  const apiKeySaved = !!providerApiKeys[modelDetails?.provider];
 
   // --- Auto-scroll to bottom on new message ---
   const messagesContainerRef = useRef(null);
@@ -462,19 +537,19 @@ function IntelligenceTab({
     <div className={cardClasses}>
       <div className="flex flex-col gap-2 h-full">
         <div className="flex items-center gap-2">
-          <i className={`${provider.icon} text-sm text-gray-500`}></i>
-          <div className="text-md text-gray-700 font-bold flex items-center gap-2">
-            {modelDetails.displayName}
+          <i className={`${provider?.icon} text-sm text-gray-500`}></i>
+          <div className="text-md text-gray-700 font-semibold flex items-center gap-2">
+            {modelDetails?.displayName}
           </div>
           <div className="text-xs text-gray-400 hidden md:block">
-            {modelDetails.model}
+            {modelDetails?.model}
           </div>
           {apiKeySaved && !showApiKeyForm && (
             <>
               <button
                 className="text-xs px-0.5 py-0.5 text-xs text-gray-400 hover:text-gray-900 transition"
                 onClick={() => {
-                  setApiKey(providerApiKeys[modelDetails.provider]);
+                  setApiKey(providerApiKeys[modelDetails?.provider]);
                   setShowApiKeyForm(true);
                 }}
               >
@@ -494,14 +569,14 @@ function IntelligenceTab({
           <div>
             <div className="flex flex-col gap-2">
               <div className="text-sm text-gray-500">
-                Please enter your {modelDetails.provider} API key to continue.
+                Please enter your {modelDetails?.provider} API key to continue.
                 The key will be saved in your browser.
               </div>
               <div className="flex flex-col gap-2">
                 <input
                   type="password"
                   className="grow px-3 bg-transparent py-1.5 text-sm rounded-md border border-gray-200 focus:border-gray-200 focus:ring-0 focus:outline-none transition"
-                  placeholder={`${modelDetails.provider} API Key`}
+                  placeholder={`${modelDetails?.provider} API Key`}
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                 />
@@ -513,10 +588,10 @@ function IntelligenceTab({
                         return;
                       }
                       const newKeys = { ...providerApiKeys };
-                      newKeys[modelDetails.provider] = apiKey;
+                      newKeys[modelDetails?.provider] = apiKey;
                       setProviderApiKeys(newKeys);
                       setShowApiKeyForm(false);
-                      toast.success(`${modelDetails.provider} API key saved`);
+                      toast.success(`${modelDetails?.provider} API key saved`);
                     }}
                     className="px-3 w-fit bg-gray-900 text-white py-1 text-sm rounded-md border border-gray-200 focus:border-gray-900 focus:outline-none transition"
                   >
@@ -587,7 +662,9 @@ function IntelligenceTab({
             </div>
           )}
           {thinking && (
-            <div className="text-xs italic text-purple-700">{thinking}</div>
+            <div className="text-xs italic text-purple-700 whitespace-pre-line">
+              <Markdown>{thinking}</Markdown>
+            </div>
           )}
           {error && (
             <div className="text-xs text-red-600 font-semibold">{error}</div>
@@ -614,7 +691,7 @@ const ModelSelector = ({ onSelect }) => {
 
   return (
     <div className={cardClasses} style={{ maxHeight: "100%" }}>
-      <h1 className="text-md font-bold mb-4">
+      <h1 className="text-md font-semibold mb-4">
         Select the models you want to use.
       </h1>
       <div className="mb-4">
@@ -635,7 +712,7 @@ const ModelSelector = ({ onSelect }) => {
               onClick={() => onSelect(model)}
             >
               <div className="grow shrink-0">
-                <div className="font-bold text-md mb-1">
+                <div className="font-semibold text-md mb-1">
                   {model.displayName}
                 </div>
                 <div className="text-sm text-gray-500">
@@ -770,6 +847,7 @@ function IntelligenceContainer(props) {
       else if (provider === "Gemini") streamFn = streamGemini;
       else if (provider === "Claude") streamFn = streamClaude;
       else if (provider === "Mistral") streamFn = streamMistral;
+      else if (provider === "DeepSeek") streamFn = streamDeepSeek;
       else return;
       setGeneratingTitle(true);
       let title = "";
@@ -831,64 +909,6 @@ function IntelligenceContainer(props) {
       reader.readAsDataURL(file);
     });
   };
-
-  // --- OpenAI Image Generation (gpt-image-1) ---
-  async function generateOpenAIImage({
-    prompt,
-    images = [],
-    apiKey,
-    onComplete,
-    onError,
-    model = "gpt-image-1",
-  }) {
-    try {
-      let response;
-      // If images are attached, use the edits endpoint (multipart/form-data)
-      if (images.length > 0) {
-        const formData = new FormData();
-        formData.append("model", model);
-        images.forEach((img, idx) => {
-          // img.file is a File object
-          formData.append("image[]", img.file, img.name || `image-${idx}.png`);
-        });
-        formData.append("prompt", prompt);
-        response = await fetch("https://api.openai.com/v1/images/edits", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: formData,
-        });
-      } else {
-        // No images, use generations endpoint (application/json)
-        response = await fetch("https://api.openai.com/v1/images/generations", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model,
-            prompt,
-          }),
-        });
-      }
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || response.statusText);
-      }
-      const data = await response.json();
-      // The result is in data.data[0].b64_json
-      const b64 = data.data?.[0]?.b64_json;
-      if (!b64) throw new Error("No image returned");
-      const dataUrl = `data:image/png;base64,${b64}`;
-      if (onComplete) onComplete(dataUrl);
-      return dataUrl;
-    } catch (err) {
-      if (onError) onError(err.message || String(err));
-      throw err;
-    }
-  }
 
   // Main send handler
   const handleSend = async () => {
@@ -956,15 +976,52 @@ function IntelligenceContainer(props) {
       const baseMessages = [...tab.messages, userMessage];
 
       // If this is an image generation model, use image gen API
-      if (tab.model === "gpt-image-1") {
+      if (modelDetails.output === "image") {
+        const imageGenFn =
+          provider === "OpenAI"
+            ? generateOpenAIImage
+            : provider === "Gemini"
+            ? generateGeminiImage
+            : provider === "Replicate"
+            ? generateReplicateImage
+            : null;
+
+        if (!imageGenFn) {
+          setTabs((prevTabs) =>
+            prevTabs.map((t) =>
+              t.tabId === tabId
+                ? {
+                    ...t,
+                    status: "idle",
+                    thinking: "",
+                    error: "Image generation not supported for this model",
+                  }
+                : t
+            )
+          );
+          return;
+        }
+
         (async () => {
           try {
-            const dataUrl = await generateOpenAIImage({
+            const imageGen = imageGenFn({
               prompt: userInput,
               images: imagesBase64,
+              messages: baseMessages,
+              modelDetails,
               apiKey,
               model: tab.model,
-              onComplete: (imgUrl) => {
+              onNewTokenOutput: (token) => {
+                setTabs((prevTabs) =>
+                  prevTabs.map((t) =>
+                    t.tabId === tabId
+                      ? { ...t, thinking: t.thinking + token }
+                      : t
+                  )
+                );
+              },
+              onComplete: (success, imgUrl) => {
+                if (!success) return;
                 setTabs((prevTabs) =>
                   prevTabs.map((t) =>
                     t.tabId === tabId
@@ -976,11 +1033,11 @@ function IntelligenceContainer(props) {
                             i === t.messages.length - 1
                               ? {
                                   ...m,
-                                  content: "",
                                   images: [
                                     {
-                                      dataUrl: imgUrl,
+                                      mime: imgUrl.split(";")[0].split(":")[1],
                                       name: "Generated Image",
+                                      dataUrl: imgUrl,
                                     },
                                   ],
                                 }
@@ -1011,18 +1068,40 @@ function IntelligenceContainer(props) {
                 );
               },
             });
+
+            for await (const _ of imageGen) {
+              // handled in onNewTokenOutput
+            }
           } catch (err) {
-            // Already handled in onError
+            setTabs((prevTabs) =>
+              prevTabs.map((t) =>
+                t.tabId === tabId
+                  ? {
+                      ...t,
+                      status: "idle",
+                      thinking: "",
+                      error: err.message || String(err),
+                      messages: t.messages.map((m, i) =>
+                        i === t.messages.length - 1
+                          ? { ...m, content: `Error` }
+                          : m
+                      ),
+                    }
+                  : t
+              )
+            );
           }
         })();
         return;
       }
+
       // Streaming function for text models
       let streamFn;
       if (provider === "OpenAI") streamFn = streamOpenAI;
       else if (provider === "Gemini") streamFn = streamGemini;
       else if (provider === "Claude") streamFn = streamClaude;
       else if (provider === "Mistral") streamFn = streamMistral;
+      else if (provider === "DeepSeek") streamFn = streamDeepSeek;
       else return;
       // Start streaming
       (async () => {
@@ -1253,7 +1332,7 @@ function IntelligenceContainer(props) {
                 key={session.id}
                 className={`px-6 py-3 md:px-4 md:py-1.5 cursor-pointer border-b border-gray-100 flex items-center justify-between group ${
                   selectedSessionId === session.id
-                    ? "bg-gray-200 font-bold"
+                    ? "bg-gray-200 font-semibold"
                     : "hover:bg-gray-50"
                 }`}
                 onClick={() => {
@@ -1594,7 +1673,7 @@ const formatMessagesForOpenAI = ({ messages, supportsImages, images }) => {
           type: "text",
           text: content || "",
         },
-        ...(supportsImages && images || []).map((img) => ({
+        ...((supportsImages && images) || []).map((img) => ({
           type: "image_url",
           image_url: { url: img.dataUrl },
         })),
@@ -1603,6 +1682,90 @@ const formatMessagesForOpenAI = ({ messages, supportsImages, images }) => {
   });
   return formatted;
 };
+
+// --- OpenAI Image Generation (gpt-image-1) ---
+async function* generateOpenAIImage({
+  prompt,
+  images = [],
+  apiKey,
+  messages,
+  onComplete,
+  onError,
+  model = "gpt-image-1",
+}) {
+  // if images is empty, check if there are any images in the messages
+  // the last image message becomes the user added image to the images array
+  if (images.length === 0) {
+    // Find the most recent message with images by searching backwards
+    const lastImageMessage = [...messages]
+      .reverse()
+      .find((m) => m.images && m.images.length > 0);
+    if (lastImageMessage) {
+      images = lastImageMessage.images;
+    }
+  }
+
+  try {
+    let response;
+    // If images are attached, use the edits endpoint (multipart/form-data)
+    if (images.length > 0) {
+      const formData = new FormData();
+      formData.append("model", model);
+      images.forEach((img, idx) => {
+        let fileOrBlob = img.file;
+        if (!(fileOrBlob instanceof Blob)) {
+          // Convert base64 to Blob
+          const arr = img.dataUrl.split(",");
+          const mime = arr[0].match(/:(.*?);/)[1];
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+          fileOrBlob = new Blob([u8arr], { type: mime });
+        }
+        formData.append("image[]", fileOrBlob, img.name || `image-${idx}.png`);
+      });
+      formData.append("prompt", prompt);
+      response = await fetch("https://api.openai.com/v1/images/edits", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: formData,
+      });
+    } else {
+      // No images, use generations endpoint (application/json)
+      response = await fetch("https://api.openai.com/v1/images/generations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          prompt,
+        }),
+      });
+    }
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (onError) onError(errorText || response.statusText);
+      return;
+    }
+    const data = await response.json();
+    // The result is in data.data[0].b64_json
+    const b64 = data.data?.[0]?.b64_json;
+    if (!b64) throw new Error("No image returned");
+    const dataUrl = `data:image/png;base64,${b64}`;
+    if (onComplete) onComplete(true, dataUrl);
+    return dataUrl;
+  } catch (err) {
+    if (onError) onError(err.message || String(err));
+    throw err;
+  }
+}
 
 // 1. OpenAI Streaming
 export async function* streamOpenAI({
@@ -1685,7 +1848,6 @@ export async function* streamOpenAI({
   }
 }
 
-
 const formatMessagesForClaude = ({ messages, supportsImages, images }) => {
   let formatted = [];
   messages.forEach(({ images, content, role }) => {
@@ -1696,7 +1858,7 @@ const formatMessagesForClaude = ({ messages, supportsImages, images }) => {
           type: "text",
           text: content || "",
         },
-        ...(supportsImages && images || []).map((img) => ({
+        ...((supportsImages && images) || []).map((img) => ({
           type: "image",
           source: {
             type: "base64",
@@ -1809,10 +1971,10 @@ const formatMessagesForGemini = ({ messages, supportsImages, images }) => {
   let formatted = [];
   messages.forEach(({ images, content, role }) => {
     formatted.push({
-      role,
+      role: role === "user" ? "user" : "model",
       parts: [
         { text: content },
-        ...(supportsImages && images || []).map((img) => ({
+        ...((supportsImages && images) || []).map((img) => ({
           inlineData: {
             data: img.dataUrl.split(",")[1],
             mimeType: img.mime,
@@ -1836,7 +1998,6 @@ export async function* streamGemini({
   modelDetails,
   images = [],
 }) {
-
   try {
     const genai = new GoogleGenAI({
       apiKey: apiKey,
@@ -1889,6 +2050,55 @@ export async function* streamGemini({
   }
 }
 
+async function* generateGeminiImage({
+  prompt,
+  messages,
+  images = [],
+  apiKey,
+  onComplete,
+  onNewTokenOutput,
+  onError,
+  modelDetails,
+  model = "imagen-3.0-generate-002",
+}) {
+  messages = formatMessagesForGemini({
+    messages,
+    supportsImages: modelDetails.input.includes("image"),
+    images,
+  });
+  try {
+    const genai = new GoogleGenAI({
+      apiKey: apiKey,
+    });
+    console.log(
+      "Available models in gemini",
+      await genai.models.list({
+        config: {
+          pageSize: 200,
+        },
+      })
+    );
+    const response = await genai.models.generateImages({
+      model: model,
+      prompt: prompt,
+      config: {
+        numberOfImages: 1,
+        outputMimeType: "image/png",
+      },
+    });
+    const { gcsUri, imageBytes, mimeType } =
+      response.generatedImages?.[0]?.image;
+
+    const base64Image = imageBytes
+      ? `data:${mimeType};base64,${imageBytes}`
+      : null;
+    if (onComplete) onComplete(true, base64Image);
+    yield base64Image;
+  } catch (err) {
+    if (onError) onError(err.message || String(err));
+  }
+}
+
 const formatMessagesForMistral = ({ messages, supportsImages, images }) => {
   let formatted = [];
   messages.forEach(({ images, content, role }) => {
@@ -1899,7 +2109,7 @@ const formatMessagesForMistral = ({ messages, supportsImages, images }) => {
           type: "text",
           text: content || "",
         },
-        ...(supportsImages && images || []).map((img) => ({
+        ...((supportsImages && images) || []).map((img) => ({
           type: "image_url",
           image_url: img.dataUrl,
         })),
@@ -1991,6 +2201,157 @@ export async function* streamMistral({
     if (err?.stack) errorMsg += `\n${err.stack}`;
     if (onComplete && !completed) {
       onComplete(false, errorMsg);
+      completed = true;
+    }
+    throw err;
+  }
+}
+
+// --- Replicate Image Generation (Flux Kontext Pro) ---
+async function* generateReplicateImage({
+  prompt,
+  images = [],
+  apiKey,
+  messages,
+  onComplete,
+  onError,
+  model = "flux-kontext-pro",
+  modelDetails,
+}) {
+  const subprovider = modelDetails.subprovider;
+  try {
+    // Find the last image in the messages if images is empty
+    let inputImageUrl = "";
+    if (images.length === 0 && messages && messages.length > 0) {
+      const lastImageMessage = [...messages]
+        .reverse()
+        .find((m) => m.images && m.images.length > 0);
+      if (lastImageMessage) {
+        // Use the first image in the last message with images
+        inputImageUrl =
+          lastImageMessage.images[0].dataUrl ||
+          lastImageMessage.images[0].url ||
+          "";
+      }
+    } else if (images.length > 0) {
+      inputImageUrl = images[0].dataUrl || images[0].url || "";
+    }
+
+    const replicate = new Replicate({
+      auth: apiKey,
+    });
+
+    const [output] = await replicate.run(`${subprovider}/${model}`, {
+      input: {
+        prompt: prompt,
+        input_image: inputImageUrl,
+        output_format: "jpg",
+      },
+    });
+
+    const imgUrl = output.url();
+    let base64Image = await fetch(imgUrl);
+    const buffer = await base64Image.arrayBuffer();
+    base64Image = Buffer.from(buffer).toString("base64");
+
+    if (onComplete) onComplete(true, base64Image);
+    yield base64Image;
+  } catch (err) {
+    if (onError) onError(err.message || String(err));
+    throw err;
+  }
+}
+
+const formatMessagesForDeepSeek = ({ messages, supportsImages, images }) => {
+  let formatted = [];
+  messages.forEach(({ images, content, role }) => {
+    formatted.push({
+      role,
+      content: content || "",
+    });
+  });
+  return formatted;
+};
+
+// --- DeepSeek Streaming (OpenAI-compatible) ---
+export async function* streamDeepSeek({
+  model,
+  reasoning,
+  grounding,
+  messages,
+  apiKey,
+  onNewTokenOutput,
+  onThinkingNewToken,
+  onComplete,
+  modelDetails,
+  images = [],
+}) {
+  let completed = false;
+  try {
+    let formattedMessages = formatMessagesForDeepSeek({
+      messages,
+      supportsImages: false, // DeepSeek does not support images
+    });
+    const response = await fetch("https://api.deepseek.com/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: formattedMessages,
+        stream: true,
+        response_format: { type: "text" },
+      }),
+    });
+    if (!response.ok)
+      throw new Error("DeepSeek API error: " + response.statusText);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (line.startsWith("data: ")) {
+          const data = line.replace("data: ", "").trim();
+          if (data === "[DONE]") {
+            if (onComplete && !completed) {
+              onComplete(true);
+              completed = true;
+            }
+            return;
+          }
+          try {
+            const json = JSON.parse(data);
+            const content = json.choices?.[0]?.delta?.content;
+            const reasoning_content =
+              json.choices?.[0]?.delta?.reasoning_content;
+            if (content) {
+              if (onNewTokenOutput) onNewTokenOutput(content);
+              yield content;
+            }
+            if (reasoning_content) {
+              if (onThinkingNewToken) onThinkingNewToken(reasoning_content);
+              yield reasoning_content;
+            }
+          } catch (e) {
+            // ignore parse errors
+          }
+        }
+      }
+    }
+    if (onComplete && !completed) {
+      onComplete(true);
+      completed = true;
+    }
+  } catch (err) {
+    if (onComplete && !completed) {
+      onComplete(false, err.message || String(err));
       completed = true;
     }
     throw err;

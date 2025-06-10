@@ -106,7 +106,7 @@ function FourThousandWeeks({ userId, settings, name, email, ...props }) {
       <div className="flex-grow flex flex-col md:flex-row border-t-2 border-gray-200 max-w-screen-2xl overflow-y-auto">
         <div className="flex flex-col h-full md:w-full max-w-screen-md">
           <div className="px-8 py-6 overflow-x-visible">
-            <h1 className="text-xl font-black mb-1">4000 weeks</h1>
+            <h1 className="text-xl font-bold tracking-tight mb-1">4000 weeks</h1>
 
             <div className="mt-0 text-sm text-gray-900">
               <p>

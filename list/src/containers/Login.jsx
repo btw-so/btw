@@ -121,7 +121,7 @@ function Login() {
         </header>
         <div className="container mx-auto my-12">
           <div className="max-w-lg mx-auto px-8 py-6">
-            <h1 className="text-5xl font-black leading-none tracking-tight text-left mb-4">
+            <h1 className="text-5xl font-bold leading-none text-left mb-4">
               Welcome to<br/> Writing Machine
             </h1>
             <p className="text-gray-700 mb-8 text-md">
@@ -130,7 +130,7 @@ function Login() {
             </p>
             {mode === "enter-otp" ? (
               <div className="">
-                <h1 className="text-2xl font-black leading-none tracking-tight mb-4">
+                <h1 className="text-2xl font-bold leading-none tracking-tight mb-4">
                   Check your email for a magic code
                 </h1>
                 <label
