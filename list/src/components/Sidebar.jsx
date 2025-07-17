@@ -21,7 +21,8 @@ function Sidebar(props) {
   const is4000Page = !!props.is4000Page;
   const isListPage = !!props.isListPage;
   const isIntelligencePage = !!props.isIntelligencePage;
-  const showSelectedNode = !is4000Page && !isIntelligencePage && !props.settingsPage;
+  const isTranslationPage = !!props.isTranslationPage;
+  const showSelectedNode = !is4000Page && !isIntelligencePage && !isTranslationPage && !props.settingsPage;
   const [token, setToken] = useCookie(
     process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
     ""
@@ -313,6 +314,24 @@ function Sidebar(props) {
                   className={`overflow-hidden text-ellipsis truncate text-black`}
                 >
                   Intelligence
+                </span>
+              </div>
+              <div
+                className={`w-full cursor-pointer py-0.5 px-2 transition-colors duration-200 rounded-md flex items-center hover:bg-gray-200 ${
+                  isTranslationPage ? "text-gray-900 bg-gray-200" : "text-gray-900"
+                }`}
+                onClick={() => {
+                  props.hideSidebar();
+                  navigate("/translation");
+                }}
+              >
+                <span className="mr-2 mb-1">
+                  <i className="ri-checkbox-blank-circle-fill ri-xxs text-gray-400"></i>
+                </span>
+                <span
+                  className={`overflow-hidden text-ellipsis truncate text-black`}
+                >
+                  Translation
                 </span>
               </div>
             </>

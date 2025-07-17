@@ -26,6 +26,7 @@ import PublicNote from "./routes/PublicNote";
 import PublicList from "./routes/PublicList";
 import FourThousandWeeks from "./routes/FourThousandWeeks";
 import Intelligence from "./routes/Intelligence";
+import Translation from "./routes/Translation";
 
 function Root() {
   const dispatch = useDispatch();
@@ -285,6 +286,30 @@ function Root() {
               </PrivateRoute>
             }
             path="/intelligence"
+          />
+          <Route
+            className="flex flex-grow"
+            element={
+              <PrivateRoute
+                isLoggedIn={isLoggedIn}
+                to="/login"
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+              >
+                <Translation
+                  userId={user && user.data ? user.data.id : null}
+                  name={user && user.data ? user.data.name : null}
+                  email={user && user.data ? user.data.email : null}
+                  settings={user && user.data ? user.data.settings : null}
+                  isTranslationPage={true}
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={toggleSidebar}
+                  hideSidebar={hideSidebar}
+                  showSidebar={showSidebar}
+                />
+              </PrivateRoute>
+            }
+            path="/translation"
           />
           <Route element={<NotFound />} path="*" />
         </Routes>
