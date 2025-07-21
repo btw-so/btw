@@ -268,6 +268,8 @@ END`;
     if (tags) {
         await pool.query(`UPDATE btw.notes SET tags = $1 WHERE id = $2 AND user_id = $3`, [tags, id, user_id]);
     }
+
+    noteCacheHelper(user_id);
 }
 
 async function getNotes({ user_id, page, limit, after = 0 }) {
