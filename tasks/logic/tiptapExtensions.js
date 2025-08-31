@@ -38,10 +38,48 @@ const Embed = Node.create({
     renderHTML({ HTMLAttributes }) { return ["btw-embed", mergeAttributes(HTMLAttributes)]; },
 });
 
+const Excalidraw = Node.create({
+    name: "excalidraw",
+    group: "block",
+    atom: true,
+    draggable: true,
+    selectable: true,
+    
+    addAttributes() {
+        return {
+            data: {
+                default: null,
+                parseHTML: element => element.getAttribute("data-excalidraw"),
+                renderHTML: attributes => {
+                    if (!attributes.data) {
+                        return {};
+                    }
+                    return {
+                        "data-excalidraw": attributes.data,
+                    };
+                },
+            },
+        };
+    },
+    
+    parseHTML() {
+        return [
+            {
+                tag: "div[data-type='excalidraw']",
+            },
+        ];
+    },
+    
+    renderHTML({ HTMLAttributes }) {
+        return ["div", mergeAttributes(HTMLAttributes, { "data-type": "excalidraw" })];
+    },
+});
+
 const CustomDocument = Document.extend({ content: "heading block*" });
 
 const tiptapExtensions = [
     Embed,
+    Excalidraw,
     CustomDocument,
     Paragraph,
     Text,
@@ -74,5 +112,6 @@ const tiptapExtensions = [
 module.exports = {
     tiptapExtensions,
     Embed,
+    Excalidraw,
     CustomDocument,
 }; 

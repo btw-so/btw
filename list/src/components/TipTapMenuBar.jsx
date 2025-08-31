@@ -40,6 +40,7 @@ export default ({
   editor,
   showImageUploader,
   showEmbedUploader,
+  showExcalidrawUploader,
   customMenu,
   disallowH1,
   classes
@@ -163,6 +164,12 @@ export default ({
             icon: "html5-line",
             title: "Embed",
             action: () => showEmbedUploader && showEmbedUploader(),
+            isActive: () => false,
+          },
+          {
+            icon: "artboard-line",
+            title: "Excalidraw",
+            action: () => showExcalidrawUploader && showExcalidrawUploader(),
             isActive: () => false,
           },
         ]),
