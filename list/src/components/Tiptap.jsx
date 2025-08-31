@@ -67,6 +67,7 @@ import { HocuspocusProvider } from "@hocuspocus/provider";
 import genFingerprint from "../fingerprint";
 import MenuBar from "./TipTapMenuBar";
 import Embed from "./TipTapEmbed";
+import ExcalidrawExtension from "./TipTapExcalidraw";
 import toast from "react-hot-toast";
 
 const limit = 1000000;
@@ -136,6 +137,7 @@ class Tiptap extends React.Component {
       // autofocus: true, // commenting this out since it's causing the editor to auto scroll to top when a below the fold checkbox is clicked
       extensions: [
         Embed,
+        ExcalidrawExtension,
         ...(this.props.mandatoryH1 ? [CustomDocument] : [Document]),
         Paragraph,
         Text,
@@ -327,6 +329,13 @@ class Tiptap extends React.Component {
                 )}"></btw-embed>`
               )
               .run(); // add a new embed element
+          }}
+          showExcalidrawUploader={() => {
+            this.editor
+              .chain()
+              .focus()
+              .insertExcalidraw()
+              .run();
           }}
         />
         <div className="tiptap-editor flex flex-col flex-grow overflow-y-auto overflow-x-auto mt-4">

@@ -47,7 +47,16 @@ function getUUID() {
 }
 
 function shortHash(x, key, length = 5) {
-  const hmac = CryptoJS.HmacSHA256(x, key);
+  if (!key) {
+    key = "HelloWorld";
+  }
+
+  // Handle undefined or null input
+  if (!x) {
+    return "";
+  }
+  
+  const hmac = CryptoJS.HmacSHA256(String(x), String(key));
   const base64 = CryptoJS.enc.Base64.stringify(hmac);
 
   // Make it URL-safe and trim padding
@@ -1296,13 +1305,19 @@ function ListContainer(props) {
             <div
               className="character-count text-xs mb-2 md:mb-1 text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
               onClick={async () => {
+                const noteId = nodeDBMap[selectedListId]?.note_id;
+                if (!noteId) {
+                  toast.error("Please save the list first before sharing.");
+                  return;
+                }
+                
                 const listUrl =
                   window.location.origin +
                   "/public/list/" +
                   selectedListId +
                   "/" +
                   shortHash(
-                    `${selectedListId}-${nodeDBMap[selectedListId]?.note_id}-${props.userId}-list`,
+                    `${selectedListId}-${noteId}-${props.userId}-list`,
                     process.env.REACT_APP_ENCRYPTION_KEY,
                     10
                   );
@@ -1341,13 +1356,19 @@ function ListContainer(props) {
               <div
                 className="character-count text-xs mb-2 md:mb-1 text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
                 onClick={async () => {
+                  const noteId = nodeDBMap[selectedListId]?.note_id;
+                  if (!noteId) {
+                    toast.error("Please save the note first before sharing.");
+                    return;
+                  }
+                  
                   const noteUrl =
                     window.location.origin +
                     "/public/note/" +
-                    nodeDBMap[selectedListId]?.note_id +
+                    noteId +
                     "/" +
                     shortHash(
-                      nodeDBMap[selectedListId]?.note_id,
+                      noteId,
                       process.env.REACT_APP_ENCRYPTION_KEY
                     );
 
@@ -1368,13 +1389,19 @@ function ListContainer(props) {
             <div
               className="character-count hidden md:block mr-4 text-xs mb-1 text-gray-400 hover:text-gray-900 transition-colors duration-300 cursor-pointer"
               onClick={async () => {
+                const noteId = nodeDBMap[selectedListId]?.note_id;
+                if (!noteId) {
+                  toast.error("Please save the list first before generating API link.");
+                  return;
+                }
+                
                 const apiUrl =
                   process.env.REACT_APP_TASKS_PUBLIC_URL +
                   "/list/api/child/add/" +
                   selectedListId +
                   "/" +
                   shortHash(
-                    `${nodeDBMap[selectedListId]?.note_id}`,
+                    noteId,
                     process.env.REACT_APP_ENCRYPTION_KEY
                   );
                 try {

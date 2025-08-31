@@ -11,6 +11,9 @@ var {
 } = require("../logic/user");
 var { createLoginToken } = require("../logic/user");
 
+
+console.log("AAA", process.env.CORS_DOMAINS);
+
 // API to fetch user data
 // also tells if user is logged in currently or not
 router.options(

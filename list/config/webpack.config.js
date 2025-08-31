@@ -269,6 +269,15 @@ module.exports = (webpackEnv) => {
         "react-native": "react-native-web",
         assets: paths.appAssets,
         test: paths.test,
+        // Fix for Excalidraw's roughjs import issues
+        "roughjs/bin/rough": require.resolve("roughjs/bin/rough.js"),
+        "roughjs/bin/math": require.resolve("roughjs/bin/math.js"),
+        "roughjs/bin/generator": require.resolve("roughjs/bin/generator.js"),
+        "roughjs/bin/renderer": require.resolve("roughjs/bin/renderer.js"),
+        "roughjs/bin/canvas": require.resolve("roughjs/bin/canvas.js"),
+        "roughjs/bin/svg": require.resolve("roughjs/bin/svg.js"),
+        "roughjs/bin/core": require.resolve("roughjs/bin/core.js"),
+        "roughjs/bin/geometry": require.resolve("roughjs/bin/geometry.js"),
         ...(isEnvProductionProfile && {
           "react-dom$": "react-dom/profiling",
           "scheduler/tracing": "scheduler/tracing-profiling",
