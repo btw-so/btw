@@ -201,7 +201,7 @@ function Sidebar(props) {
                 type="text"
                 name="search"
                 id="search"
-                className="block w-full bg-transparent border-0 py-1 pl-6 text-gray-900 shadow-none placeholder:text-gray-400 ring-0 outline-none focus:ring-0"
+                className="block w-full bg-transparent border-0 py-1 pl-6 pr-8 text-gray-900 shadow-none placeholder:text-gray-400 ring-0 outline-none focus:ring-0"
                 placeholder="Search"
                 value={searchTerm}
                 onChange={(e) => {
@@ -215,6 +215,14 @@ function Sidebar(props) {
               />
             </div>
           </div>
+          {/* Collapse button - only show on desktop */}
+          <button
+            onClick={() => props.onCollapse && props.onCollapse()}
+            className="p-1 hidden sm:block"
+            title="Collapse sidebar"
+          >
+            <i className="ri-side-bar-fill text-gray-400 hover:text-gray-700 transition-colors duration-200"></i>
+          </button>
         </div>
         <div className="flex-grow overflow-y-auto">
           {/* Only show Pinned and Pages sections if not searching */}
