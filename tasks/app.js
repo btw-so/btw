@@ -189,57 +189,82 @@ const yjsServer = Server.configure({
             throw new Error("Not authorized!");
         }
 
-        const userAccordingToUI = documentName.split("note.")[1].split(".")[0];
+        // Check if it's a note or scribble document
+        const isScribble = documentName.startsWith("scribble.");
+        const isNote = documentName.startsWith("note.");
 
-        var userFromDB;
+        if (isNote) {
+            const userAccordingToUI = documentName.split("note.")[1].split(".")[0];
 
-        try {
-            const note = await getNote({
-                id: documentName.split("note.")[1].split(".")[1],
-                user_id: user.id,
-            });
-            if (note) {
-                userFromDB = note.user_id;
+            var userFromDB;
+
+            try {
+                const note = await getNote({
+                    id: documentName.split("note.")[1].split(".")[1],
+                    user_id: user.id,
+                });
+                if (note) {
+                    userFromDB = note.user_id;
+                }
+            } catch (e) {
+                // can be a new note. for now supporting new notes direct authentication
+                console.log(e);
             }
-        } catch (e) {
-            // can be a new note. for now supporting new notes direct authentication
-            console.log(e);
-        }
 
-        // We might have shareable docs later on. For now we only allow the owner
-        if (
-            (userFromDB && user.id !== userFromDB) ||
-            "" + user.id !== userAccordingToUI
-        ) {
-            throw new Error("Not authorized!");
+            // We might have shareable docs later on. For now we only allow the owner
+            if (
+                (userFromDB && user.id !== userFromDB) ||
+                "" + user.id !== userAccordingToUI
+            ) {
+                throw new Error("Not authorized!");
+            }
+        } else if (isScribble) {
+            const userAccordingToUI = documentName.split("scribble.")[1].split(".")[0];
+            
+            // For scribbles, just verify the user ID matches
+            if ("" + user.id !== userAccordingToUI) {
+                throw new Error("Not authorized!");
+            }
+        } else {
+            throw new Error("Unknown document type!");
         }
 
         // You can set contextual data to use it in other hooks
         return {
             user,
+            documentType: isScribble ? "scribble" : "note",
         };
     },
     async onChange(data) {
         const save = () => {
-            // Convert the y-doc to something you can actually use in your views.
-            // In this example we use the TiptapTransformer to get JSON from the given
-            // ydoc.
-            const prosemirrorJSON = MyTipTapTransformer.fromYdoc(
-                data.document,
-                "default"
-            );
-
-            var html = MyTipTapTransformerHTML(prosemirrorJSON);
-
             const user_id = data.context.user.id;
-            const id = data.documentName.split("note.")[1].split(".")[1];
+            
+            if (data.context.documentType === "scribble") {
+                // For scribbles, we don't need to transform the data
+                // Just let the Database extension handle the storage
+                // The data will be stored as ydoc in the database
+                return;
+            } else {
+                // For notes, use the existing logic
+                // Convert the y-doc to something you can actually use in your views.
+                // In this example we use the TiptapTransformer to get JSON from the given
+                // ydoc.
+                const prosemirrorJSON = MyTipTapTransformer.fromYdoc(
+                    data.document,
+                    "default"
+                );
 
-            upsertNote({
-                id,
-                user_id,
-                json: prosemirrorJSON,
-                html,
-            });
+                var html = MyTipTapTransformerHTML(prosemirrorJSON);
+
+                const id = data.documentName.split("note.")[1].split(".")[1];
+
+                upsertNote({
+                    id,
+                    user_id,
+                    json: prosemirrorJSON,
+                    html,
+                });
+            }
 
             // Maybe you want to store the user who changed the document?
             // Guess what, you have access to your custom context from the
@@ -260,79 +285,137 @@ const yjsServer = Server.configure({
             // Return a Promise to retrieve data …
             fetch: async ({ documentName }) => {
                 // console.log("fetching", documentName);
-                const id = documentName.split("note.")[1].split(".")[1];
-                const user_id = documentName.split("note.")[1].split(".")[0];
-                let usecase =
-                    documentName.split("note.")[1].split(".").length > 2
-                        ? documentName.split("note.")[1].split(".")[2]
-                        : null;
-
-                return new Promise((resolve, reject) => {
-                    resolve(
-                        db.getTasksDB().then((db) => {
-                            return db
-                                .query(
-                                    `SELECT ydoc from btw.notes where id = $1 and user_id = $2`,
-                                    [id, Number(user_id)]
-                                )
-                                .then(({ rows }) => {
-                                    // console.log("Found", rows.length);
-                                    if (rows.length > 0) {
-                                        if (rows[0].ydoc) {
-                                            return rows[0]
-                                                ? rows[0].ydoc
-                                                : null;
-                                        } else if (rows[0] && rows[0].html) {
-                                            const json =
-                                                MyTipTapTransformerJSON(
-                                                    rows[0].html
-                                                );
-                                            return MyTipTapTransformer.toYdoc(
-                                                json,
-                                                "default"
-                                            );
+                const isScribble = documentName.startsWith("scribble.");
+                
+                if (isScribble) {
+                    const id = documentName.split("scribble.")[1].split(".")[1];
+                    const user_id = documentName.split("scribble.")[1].split(".")[0];
+                    
+                    return new Promise((resolve, reject) => {
+                        resolve(
+                            db.getTasksDB().then((db) => {
+                                return db
+                                    .query(
+                                        `SELECT ydoc from btw.scribbles where id = $1 and user_id = $2`,
+                                        [id, Number(user_id)]
+                                    )
+                                    .then(({ rows }) => {
+                                        if (rows.length > 0 && rows[0].ydoc) {
+                                            return rows[0].ydoc;
+                                        } else {
+                                            return null;
                                         }
-                                    } else {
-                                        return null;
-                                    }
-                                });
-                        })
-                    );
-                });
+                                    });
+                            })
+                        );
+                    });
+                } else {
+                    // Existing note logic
+                    const id = documentName.split("note.")[1].split(".")[1];
+                    const user_id = documentName.split("note.")[1].split(".")[0];
+                    let usecase =
+                        documentName.split("note.")[1].split(".").length > 2
+                            ? documentName.split("note.")[1].split(".")[2]
+                            : null;
+
+                    return new Promise((resolve, reject) => {
+                        resolve(
+                            db.getTasksDB().then((db) => {
+                                return db
+                                    .query(
+                                        `SELECT ydoc from btw.notes where id = $1 and user_id = $2`,
+                                        [id, Number(user_id)]
+                                    )
+                                    .then(({ rows }) => {
+                                        // console.log("Found", rows.length);
+                                        if (rows.length > 0) {
+                                            if (rows[0].ydoc) {
+                                                return rows[0]
+                                                    ? rows[0].ydoc
+                                                    : null;
+                                            } else if (rows[0] && rows[0].html) {
+                                                const json =
+                                                    MyTipTapTransformerJSON(
+                                                        rows[0].html
+                                                    );
+                                                return MyTipTapTransformer.toYdoc(
+                                                    json,
+                                                    "default"
+                                                );
+                                            }
+                                        } else {
+                                            return null;
+                                        }
+                                    });
+                            })
+                        );
+                    });
+                }
             },
             // … and a Promise to store data:
             store: async ({ documentName, state }) => {
                 // console.log("storing", documentName);
-                const id = documentName.split("note.")[1].split(".")[1];
-                const user_id = documentName.split("note.")[1].split(".")[0];
-                let usecase =
-                    documentName.split("note.")[1].split(".").length > 2
-                        ? documentName.split("note.")[1].split(".")[2]
-                        : null;
+                const isScribble = documentName.startsWith("scribble.");
+                
+                if (isScribble) {
+                    const id = documentName.split("scribble.")[1].split(".")[1];
+                    const user_id = documentName.split("scribble.")[1].split(".")[0];
+                    
+                    return new Promise((resolve, reject) => {
+                        resolve(
+                            db.getTasksDB().then((db) => {
+                                return db.query(
+                                    `INSERT INTO btw.scribbles (id, user_id, ydoc, created_at, updated_at) VALUES($1, $2, $3, $4, $5) ON CONFLICT(id, user_id) DO UPDATE SET ydoc = $3, updated_at = CASE WHEN
+                                    scribbles.ydoc <> EXCLUDED.ydoc
+                                    OR FALSE THEN
+                                    EXCLUDED.updated_at
+                                    ELSE
+                                    scribbles.updated_at
+                                END RETURNING ydoc`,
+                                    [
+                                        id,
+                                        Number(user_id),
+                                        state,
+                                        new Date(),
+                                        new Date(),
+                                    ]
+                                );
+                            })
+                        );
+                    });
+                } else {
+                    // Existing note logic
+                    const id = documentName.split("note.")[1].split(".")[1];
+                    const user_id = documentName.split("note.")[1].split(".")[0];
+                    let usecase =
+                        documentName.split("note.")[1].split(".").length > 2
+                            ? documentName.split("note.")[1].split(".")[2]
+                            : null;
 
-                return new Promise((resolve, reject) => {
-                    resolve(
-                        db.getTasksDB().then((db) => {
-                            return db.query(
-                                `INSERT INTO btw.notes (id, user_id, ydoc, created_at, updated_at, tags) VALUES($1, $2, $3, $4, $5, $6) ON CONFLICT(id, user_id) DO UPDATE SET ydoc = $3, updated_at = CASE WHEN
-                                notes.ydoc <> EXCLUDED.ydoc
-                                OR FALSE THEN
-                                EXCLUDED.updated_at
-                                ELSE
-                                notes.updated_at
-                            END RETURNING ydoc`,
-                                [
-                                    id,
-                                    Number(user_id),
-                                    state,
-                                    new Date(),
-                                    new Date(),
-                                    usecase || "",
-                                ]
-                            );
-                        })
-                    );
-                });
+                    return new Promise((resolve, reject) => {
+                        resolve(
+                            db.getTasksDB().then((db) => {
+                                return db.query(
+                                    `INSERT INTO btw.notes (id, user_id, ydoc, created_at, updated_at, tags) VALUES($1, $2, $3, $4, $5, $6) ON CONFLICT(id, user_id) DO UPDATE SET ydoc = $3, updated_at = CASE WHEN
+                                    notes.ydoc <> EXCLUDED.ydoc
+                                    OR FALSE THEN
+                                    EXCLUDED.updated_at
+                                    ELSE
+                                    notes.updated_at
+                                END RETURNING ydoc`,
+                                    [
+                                        id,
+                                        Number(user_id),
+                                        state,
+                                        new Date(),
+                                        new Date(),
+                                        usecase || "",
+                                    ]
+                                );
+                            })
+                        );
+                    });
+                }
             },
         }),
     ],

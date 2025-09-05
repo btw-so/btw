@@ -1486,6 +1486,10 @@ input[type="number"]::-webkit-inner-spin-button,
   top: 1rem;
 }
 
+.-left-1 {
+  left: -0.25rem;
+}
+
 .-z-50 {
   z-index: -50;
 }
@@ -1650,6 +1654,14 @@ input[type="number"]::-webkit-inner-spin-button,
   margin-top: 1rem;
 }
 
+.ml-0\.5 {
+  margin-left: 0.125rem;
+}
+
+.-mt-1 {
+  margin-top: -0.25rem;
+}
+
 .block {
   display: block;
 }
@@ -1791,6 +1803,10 @@ input[type="number"]::-webkit-inner-spin-button,
   width: 4rem;
 }
 
+.w-2 {
+  width: 0.5rem;
+}
+
 .w-3 {
   width: 0.75rem;
 }
@@ -1915,6 +1931,12 @@ input[type="number"]::-webkit-inner-spin-button,
 
 .-rotate-90 {
   --tw-rotate: -90deg;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.scale-75 {
+  --tw-scale-x: .75;
+  --tw-scale-y: .75;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
@@ -2133,6 +2155,10 @@ input[type="number"]::-webkit-inner-spin-button,
   border-bottom-width: 0px;
 }
 
+.border-b-2 {
+  border-bottom-width: 2px;
+}
+
 .border-r {
   border-right-width: 1px;
 }
@@ -2153,8 +2179,17 @@ input[type="number"]::-webkit-inner-spin-button,
   border-style: solid;
 }
 
+.border-dashed {
+  border-style: dashed;
+}
+
 .border-none {
   border-style: none;
+}
+
+.border-black {
+  --tw-border-opacity: 1;
+  border-color: rgb(4 4 2 / var(--tw-border-opacity));
 }
 
 .border-gray-100 {
@@ -2175,6 +2210,10 @@ input[type="number"]::-webkit-inner-spin-button,
 .border-gray-500 {
   --tw-border-opacity: 1;
   border-color: rgb(107 114 128 / var(--tw-border-opacity));
+}
+
+.border-transparent {
+  border-color: transparent;
 }
 
 .border-t-gray-700 {
@@ -2210,6 +2249,11 @@ input[type="number"]::-webkit-inner-spin-button,
 .bg-gray-900 {
   --tw-bg-opacity: 1;
   background-color: rgb(17 24 39 / var(--tw-bg-opacity));
+}
+
+.bg-green-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(74 222 128 / var(--tw-bg-opacity));
 }
 
 .bg-red-600 {
@@ -3893,6 +3937,16 @@ hr.ProseMirror-selectednode {
 
   .sm\:w-64 {
     width: 16rem;
+  }
+
+  .sm\:px-0 {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
+  .sm\:py-0 {
+    padding-top: 0px;
+    padding-bottom: 0px;
   }
 
   .sm\:pt-4 {

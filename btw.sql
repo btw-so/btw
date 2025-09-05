@@ -133,6 +133,17 @@ CREATE TABLE "btw"."files" (
 );
 
 -- Table Definition
+CREATE TABLE "btw"."scribbles" (
+    "id" uuid NOT NULL,
+    "user_id" int4 NOT NULL,
+    "data" text,
+    "created_at" timestamptz,
+    "updated_at" timestamptz,
+    "ydoc" bytea,
+    PRIMARY KEY ("id","user_id")
+);
+
+-- Table Definition
 CREATE TABLE "btw"."reminders" (
     "user_id" int4 NOT NULL,
     "duedate" timestamptz,

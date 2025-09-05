@@ -23,6 +23,7 @@ import {
 } from "../actions";
 import useTreeChanges from "tree-changes-hook";
 import Tiptap from "../components/Tiptap";
+import ExcalidrawYjs from "../components/ExcalidrawYjs";
 import { Switch } from "@headlessui/react";
 import { debounce } from "lodash";
 import RamsNeumorphicToggle from "../components/DieterToggle";
@@ -481,13 +482,22 @@ const Node = ({
           >
             <i
               className={`ri-checkbox-blank-circle-fill ${
-                node.note_exists || node.file_id ? "hidden" : ""
+                node.note_exists || node.scribble_exists || node.file_id ? "hidden" : ""
               } ${node.checked ? "text-gray-500" : "text-gray-900"} ri-xxs`}
             ></i>
 
+            {/* Show different icons based on what exists */}
             <i
-              className={`ri-quill-pen-fill ${
-                node.note_exists ? "" : "hidden"
+              className={`${
+                node.note_exists && node.scribble_exists
+                  ? "ri-quill-pen-ai-fill"  // Both note and scribble
+                  : node.scribble_exists
+                  ? "ri-brush-fill"  // Only scribble
+                  : node.note_exists
+                  ? "ri-quill-pen-fill"  // Only note
+                  : ""
+              } ${
+                node.note_exists || node.scribble_exists ? "" : "hidden"
               } ${
                 node.checked ? "text-gray-500" : "text-gray-900"
               } ri-sm absolute`}
@@ -941,6 +951,7 @@ function ListContainer(props) {
   const navigate = useNavigate();
 
   const [showList, setShowList] = useState(true);
+  const [activeTab, setActiveTab] = useState("note"); // "note" or "scribble"
 
   const fileLoading =
     filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status ===
@@ -953,6 +964,22 @@ function ListContainer(props) {
     STATUS.SUCCESS;
 
   const tiptapRef = useRef(null);
+
+  // Set appropriate tab when switching nodes based on content
+  useEffect(() => {
+    if (selectedListId && !nodeDBMap[selectedListId]?.file_id) {
+      const node = nodeDBMap[selectedListId];
+      
+      // If only scribble exists, show scribble tab
+      if (node?.scribble_exists && !node?.note_exists) {
+        setActiveTab("scribble");
+      }
+      // If only note exists OR both exist OR neither exists, show note tab
+      else {
+        setActiveTab("note");
+      }
+    }
+  }, [selectedListId]); // Only trigger when selectedListId changes
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -1547,7 +1574,7 @@ function ListContainer(props) {
               </div>
             </div>
 
-            {/* Playground tab content: file view or Tiptap */}
+            {/* Playground tab content: file view, Tiptap or Excalidraw */}
             <div
               className={`flex flex-col h-full overflow-y-auto md:flex-grow text-black md:p-4 ${
                 showList ? "hidden" : ""
@@ -1566,49 +1593,99 @@ function ListContainer(props) {
                   />
                 </div>
               ) : (
-                <Tiptap
-                  ref={tiptapRef}
-                  menuBarClasses="opacity-50 hover:opacity-100 transition-opacity duration-300 !px-2 md:!px-0"
-                  reviewerMode={false}
-                  usecase="list"
-                  className="h-full flex-grow p-6"
-                  note={
-                    notesState.notesMap[
-                      nodeDBMap[selectedListId]?.note_id || ""
-                    ]
-                  }
-                  key={nodeDBMap[selectedListId]?.note_id}
-                  token={token}
-                  userId={props.userId}
-                  email={props.email}
-                  name={props.name}
-                  docId={nodeDBMap[selectedListId]?.note_id}
-                  savedContent={
-                    notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
-                      ?.content || ""
-                  }
-                  enableServerSync={true}
-                  mandatoryH1={false}
-                  disallowH1={true}
-                  onChange={(html) => {
-                    const isEmpty = (content) =>
-                      !content || content == "<h1></h1>";
-                    if (
-                      (isEmpty(html) &&
-                        isEmpty(
+                <div className="h-full flex flex-col">
+                  {/* Tab bar for Note and Scribble */}
+                  <div className="flex gap-2 mb-4 py-2 px-2 sm:py-0 sm:px-0 border-b border-gray-200">
+                    <button
+                      className={`px-4 py-2 font-medium transition-all duration-200 border-b-2 ${
+                        activeTab === "note"
+                          ? "text-black border-black"
+                          : "text-gray-500 border-transparent hover:text-gray-700"
+                      }`}
+                      onClick={() => setActiveTab("note")}
+                    >
+                      Note
+                      {nodeDBMap[selectedListId]?.note_exists && (
+                        <i className="ri-gemini-fill ri-xs scale-75 -mt-1 absolute -ml-1"></i>
+                      )}
+                    </button>
+                    <button
+                      className={`px-4 py-2 font-medium transition-all duration-200 border-b-2 ${
+                        activeTab === "scribble"
+                          ? "text-black border-black"
+                          : "text-gray-500 border-transparent hover:text-gray-700"
+                      }`}
+                      onClick={() => setActiveTab("scribble")}
+                    >
+                      Scribble
+                      {nodeDBMap[selectedListId]?.scribble_exists && (
+                        <i className="ri-gemini-fill ri-xs scale-75 -mt-1 absolute -ml-1"></i>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Tab content */}
+                  <div className="flex-grow h-full">
+                    {activeTab === "note" ? (
+                      <Tiptap
+                        ref={tiptapRef}
+                        menuBarClasses="opacity-50 hover:opacity-100 transition-opacity duration-300 !px-2 md:!px-0"
+                        reviewerMode={false}
+                        usecase="list"
+                        className="h-full flex-grow p-6"
+                        note={
                           notesState.notesMap[
-                            nodeDBMap[selectedListId]?.note_id
-                          ]?.content || ""
-                        )) ||
-                      html ===
-                        notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
-                          ?.content ||
-                      ""
-                    ) {
-                      return;
-                    }
-                  }}
-                />
+                            nodeDBMap[selectedListId]?.note_id || ""
+                          ]
+                        }
+                        key={nodeDBMap[selectedListId]?.note_id}
+                        token={token}
+                        userId={props.userId}
+                        email={props.email}
+                        name={props.name}
+                        docId={nodeDBMap[selectedListId]?.note_id}
+                        savedContent={
+                          notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
+                            ?.content || ""
+                        }
+                        enableServerSync={true}
+                        mandatoryH1={false}
+                        disallowH1={true}
+                        onChange={(html) => {
+                          const isEmpty = (content) =>
+                            !content || content == "<h1></h1>";
+                          if (
+                            (isEmpty(html) &&
+                              isEmpty(
+                                notesState.notesMap[
+                                  nodeDBMap[selectedListId]?.note_id
+                                ]?.content || ""
+                              )) ||
+                            html ===
+                              notesState.notesMap[nodeDBMap[selectedListId]?.note_id]
+                                ?.content ||
+                            ""
+                          ) {
+                            return;
+                          }
+                        }}
+                      />
+                    ) : (
+                      <ExcalidrawYjs
+                        height="100%"
+                        scribbleId={nodeDBMap[selectedListId]?.note_id}
+                        userId={props.userId}
+                        token={token}
+                        userName={props.name || props.email || "Anonymous"}
+                        initialData={null} // Will be loaded from Y.js server
+                        onChange={(data) => {
+                          // Data is automatically synced via Y.js
+                          console.log("Scribble updated");
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           </div>
