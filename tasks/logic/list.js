@@ -66,11 +66,17 @@ SELECT
     CASE 
         WHEN notes.id IS NOT NULL AND notes.html IS NOT NULL AND notes.html <> '' AND notes.html <> '<p></p>' THEN TRUE
         ELSE FALSE
-    END AS note_exists
+    END AS note_exists,
+    CASE 
+        WHEN scribbles.id IS NOT NULL AND scribbles.ydoc IS NOT NULL THEN TRUE
+        ELSE FALSE
+    END AS scribble_exists
 FROM 
     node_cte nct
 LEFT JOIN 
     btw.notes ON nct.note_id = notes.id AND notes.user_id = nct.user_id
+LEFT JOIN 
+    btw.scribbles ON nct.note_id = scribbles.id AND scribbles.user_id = nct.user_id
 ORDER BY 
     nct.depth ASC, nct.pos DESC
 LIMIT $4 OFFSET $5;
