@@ -1595,12 +1595,12 @@ function ListContainer(props) {
               ) : (
                 <div className="h-full flex flex-col">
                   {/* Tab bar for Note and Scribble */}
-                  <div className="flex gap-2 mb-4 py-2 px-2 sm:py-0 sm:px-0 border-b border-gray-200">
+                  <div className="flex gap-2 mb-1 pb-1 px-2 sm:py-0 sm:px-0">
                     <button
-                      className={`px-4 py-2 font-medium transition-all duration-200 border-b-2 ${
+                      className={`px-4 pb-1 text-sm font-medium transition-all duration-200 border-b-2 ${
                         activeTab === "note"
                           ? "text-black border-black"
-                          : "text-gray-500 border-transparent hover:text-gray-700"
+                          : "text-gray-400 border-transparent hover:text-gray-700"
                       }`}
                       onClick={() => setActiveTab("note")}
                     >
@@ -1610,10 +1610,10 @@ function ListContainer(props) {
                       )}
                     </button>
                     <button
-                      className={`px-4 py-2 font-medium transition-all duration-200 border-b-2 ${
+                      className={`px-4 pb-1 font-medium text-sm transition-all duration-200 border-b-2 ${
                         activeTab === "scribble"
                           ? "text-black border-black"
-                          : "text-gray-500 border-transparent hover:text-gray-700"
+                          : "text-gray-400 border-transparent hover:text-gray-700"
                       }`}
                       onClick={() => setActiveTab("scribble")}
                     >
@@ -1625,11 +1625,11 @@ function ListContainer(props) {
                   </div>
 
                   {/* Tab content */}
-                  <div className="flex-grow h-full">
+                  <div className="flex-grow" style={{ height: "calc(100% - 25px)" }}>
                     {activeTab === "note" ? (
                       <Tiptap
                         ref={tiptapRef}
-                        menuBarClasses="opacity-50 hover:opacity-100 transition-opacity duration-300 !px-2 md:!px-0"
+                        menuBarClasses="opacity-20 hover:opacity-100 transition-opacity duration-300 !px-2 md:!px-0"
                         reviewerMode={false}
                         usecase="list"
                         className="h-full flex-grow p-6"
