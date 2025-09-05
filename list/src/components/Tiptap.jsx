@@ -305,7 +305,7 @@ class Tiptap extends React.Component {
   render() {
     return (
       <div
-        className="p-2 h-full flex flex-grow flex-col"
+        className="px-2 pb-2 pt-0 h-full flex flex-grow flex-col"
         style={{ minHeight: 0 }}
       >
         <MenuBar
