@@ -308,27 +308,29 @@ class Tiptap extends React.Component {
         className="px-2 pb-2 pt-0 h-full flex flex-grow flex-col"
         style={{ minHeight: 0 }}
       >
-        <MenuBar
-          classes={this.props.menuBarClasses || ""}
-          disallowH1={this.props.disallowH1}
-          customMenu={this.props.customMenu}
-          editor={this.editor}
-          showImageUploader={() => {
-            this.setState({ showImageUpload: !this.state.showImageUpload });
-          }}
-          showEmbedUploader={() => {
-            this.editor
-              .chain()
-              .focus()
-              .insertContent(
-                `<btw-embed code="${(this.state.embed || "").replace(
-                  /"/g,
-                  "&quot;"
-                )}"></btw-embed>`
-              )
-              .run(); // add a new embed element
-          }}
-        />
+        {this.props.showMenuBar !== false && (
+          <MenuBar
+            classes={this.props.menuBarClasses || ""}
+            disallowH1={this.props.disallowH1}
+            customMenu={this.props.customMenu}
+            editor={this.editor}
+            showImageUploader={() => {
+              this.setState({ showImageUpload: !this.state.showImageUpload });
+            }}
+            showEmbedUploader={() => {
+              this.editor
+                .chain()
+                .focus()
+                .insertContent(
+                  `<btw-embed code="${(this.state.embed || "").replace(
+                    /"/g,
+                    "&quot;"
+                  )}"></btw-embed>`
+                )
+                .run(); // add a new embed element
+            }}
+          />
+        )}
         <div className="tiptap-editor flex flex-col flex-grow overflow-y-auto overflow-x-auto mt-4">
           <EditorContent
             editor={this.editor}

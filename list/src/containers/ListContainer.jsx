@@ -952,6 +952,7 @@ function ListContainer(props) {
 
   const [showList, setShowList] = useState(true);
   const [activeTab, setActiveTab] = useState("note"); // "note" or "scribble"
+  const [showMenuBar, setShowMenuBar] = useState(false); // Hide menu bar by default
 
   const fileLoading =
     filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status ===
@@ -1449,7 +1450,7 @@ function ListContainer(props) {
           <div className="flex flex-grow overflow-y-hidden flex-col md:flex-row border-t-2 border-gray-100 pb-3 md:pb-0">
             {/* Main tab content: nodes + Uppy */}
             <div
-              className={`flex flex-shrink-0 flex-col h-full overflow-y-hidden md:w-1/3 md:min-w-96 border-b-0 border-gray-100 md:border-b-0 md:border-r-2 md:border-gray-100 ${
+              className={`flex flex-shrink-0 flex-col h-full overflow-y-hidden md:w-96 md:min-w-96 border-b-0 border-gray-100 md:border-b-0 md:border-r-2 md:border-gray-100 ${
                 !showList ? "hidden" : ""
               } md:flex`}
             >
@@ -1595,33 +1596,52 @@ function ListContainer(props) {
               ) : (
                 <div className="h-full flex flex-col">
                   {/* Tab bar for Note and Scribble */}
-                  <div className="flex gap-2 mb-1 pb-1 px-2 sm:py-0 sm:px-0">
-                    <button
-                      className={`px-4 pb-1 text-sm font-medium transition-all duration-200 border-b-2 ${
-                        activeTab === "note"
-                          ? "text-black border-black"
-                          : "text-gray-400 border-transparent hover:text-gray-700"
-                      }`}
-                      onClick={() => setActiveTab("note")}
-                    >
-                      Note
-                      {nodeDBMap[selectedListId]?.note_exists && (
-                        <i className="ri-gemini-fill ri-xs scale-75 -mt-1 absolute -ml-1"></i>
-                      )}
-                    </button>
-                    <button
-                      className={`px-4 pb-1 font-medium text-sm transition-all duration-200 border-b-2 ${
-                        activeTab === "scribble"
-                          ? "text-black border-black"
-                          : "text-gray-400 border-transparent hover:text-gray-700"
-                      }`}
-                      onClick={() => setActiveTab("scribble")}
-                    >
-                      Scribble
-                      {nodeDBMap[selectedListId]?.scribble_exists && (
-                        <i className="ri-gemini-fill ri-xs scale-75 -mt-1 absolute -ml-1"></i>
-                      )}
-                    </button>
+                  <div className="flex gap-2 mb-1 pb-1 px-2 sm:py-0 sm:px-0 justify-between items-center">
+                    <div className="flex gap-2">
+                      <button
+                        className={`px-4 pb-1 text-sm transition-all duration-200 border-b-2 ${
+                          activeTab === "note"
+                            ? "text-gray-600"
+                            : "text-gray-400 border-transparent hover:text-gray-700"
+                        }`}
+                        onClick={() => setActiveTab("note")}
+                      >
+                        Note
+                        {nodeDBMap[selectedListId]?.note_exists && (
+                          <i className="ri-gemini-fill ri-xs scale-75 -mt-1 absolute -ml-1"></i>
+                        )}
+                      </button>
+                      <button
+                        className={`px-4 pb-1 text-sm transition-all duration-200 border-b-2 ${
+                          activeTab === "scribble"
+                            ? "text-gray-600"
+                            : "text-gray-400 border-transparent hover:text-gray-700"
+                        }`}
+                        onClick={() => setActiveTab("scribble")}
+                      >
+                        Scribble
+                        {nodeDBMap[selectedListId]?.scribble_exists && (
+                          <i className="ri-gemini-fill ri-xs scale-75 -mt-1 absolute -ml-1"></i>
+                        )}
+                      </button>
+                    </div>
+                    
+                    {/* B/I/U Toggle button - only show for note tab */}
+                    {activeTab === "note" && (
+                      <button
+                        onClick={() => setShowMenuBar(!showMenuBar)}
+                        className={`flex items-center gap-0.5 px-2 py-1 transition-all duration-200 rounded ${
+                          showMenuBar 
+                            ? "bg-gray-200" 
+                            : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                        title="Toggle formatting toolbar"
+                      >
+                        <i className={`ri-bold ri-sm ${showMenuBar ? "text-gray-700" : "text-gray-500"}`}></i>
+                        <i className={`ri-italic ri-sm ${showMenuBar ? "text-gray-700" : "text-gray-500"}`}></i>
+                        <i className={`ri-underline ri-sm ${showMenuBar ? "text-gray-700" : "text-gray-500"}`}></i>
+                      </button>
+                    )}
                   </div>
 
                   {/* Tab content */}
@@ -1630,6 +1650,7 @@ function ListContainer(props) {
                       <Tiptap
                         ref={tiptapRef}
                         menuBarClasses="opacity-20 hover:opacity-100 transition-opacity duration-300 !px-2 md:!px-0"
+                        showMenuBar={showMenuBar}
                         reviewerMode={false}
                         usecase="list"
                         className="h-full flex-grow p-6"
