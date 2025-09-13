@@ -10,25 +10,25 @@ process.on('unhandledRejection', error => {
 });
 
 // Ensure environment variables are read.
-require('../config/env');
+import '../config/env';
 
-const path = require('path');
-const fs = require('fs-extra');
-const chalk = require('react-dev-utils/chalk');
-const webpack = require('webpack');
-const bfj = require('bfj');
-const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles');
-const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages');
-const printHostingInstructions = require('react-dev-utils/printHostingInstructions');
-const {
+import path from 'path';
+import fs from 'fs-extra';
+import chalk from 'react-dev-utils/chalk';
+import webpack from 'webpack';
+import bfj from 'bfj';
+import checkRequiredFiles from 'react-dev-utils/checkRequiredFiles';
+import formatWebpackMessages from 'react-dev-utils/formatWebpackMessages';
+import printHostingInstructions from 'react-dev-utils/printHostingInstructions';
+import {
   measureFileSizesBeforeBuild,
   printFileSizesAfterBuild,
-} = require('react-dev-utils/FileSizeReporter');
-const printBuildError = require('react-dev-utils/printBuildError');
-const { checkBrowsers } = require('react-dev-utils/browsersHelper');
+} from 'react-dev-utils/FileSizeReporter';
+import printBuildError from 'react-dev-utils/printBuildError';
+import { checkBrowsers } from 'react-dev-utils/browsersHelper';
 
-const configFactory = require('../config/webpack.config');
-const paths = require('../config/paths');
+import { configFactory } from '../config/webpack.config';
+import { paths } from '../config/paths';
 
 // These sizes are pretty large. We'll warn for bundles exceeding them.
 const WARN_AFTER_BUNDLE_GZIP_SIZE = 512 * 1024;
