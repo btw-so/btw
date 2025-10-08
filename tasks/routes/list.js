@@ -600,4 +600,242 @@ router.post(
     }
 );
 
+// Create a new node with note from title and markdown
+router.options(
+    "/api/note/create",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/api/note/create",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, title, md, parentId = "home" } = req.body || {};
+
+        if (!title && !md) {
+            res.json({
+                success: false,
+                error: "Either title or markdown is required",
+            });
+            return;
+        }
+
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
+            // Markdown to HTML
+            let html = "";
+            if (md) {
+                html = showdownConverter.makeHtml(md);
+            }
+
+            // HTML to tiptap JSON
+            let tiptapJSON = null;
+            try {
+                tiptapJSON = generateJSON(html, tiptapExtensions);
+            } catch (e) {
+                tiptapJSON = null;
+            }
+
+            // Convert tiptap JSON to ydoc
+            let ydoc = null;
+            try {
+                const transformer = TiptapTransformer.extensions(tiptapExtensions);
+                ydoc = transformer.toYdoc(tiptapJSON, "default");
+            } catch (e) {
+                ydoc = null;
+            }
+
+            // Generate new note and node IDs
+            const note_id = uuidv4();
+            const node_id = uuidv4();
+
+            // Verify parent node exists
+            const pool = await db.getTasksDB();
+            const { rows: parentRows } = await pool.query(
+                "SELECT id FROM btw.nodes WHERE id = $1 AND user_id = $2",
+                [parentId, user.id]
+            );
+
+            if (parentRows.length === 0) {
+                res.json({
+                    success: false,
+                    error: "Parent node not found",
+                });
+                return;
+            }
+
+            // Find the max pos among children
+            let pos = 1;
+            try {
+                const { rows } = await pool.query(
+                    "SELECT MAX(pos) as max_pos FROM btw.nodes WHERE parent_id = $1 AND user_id = $2",
+                    [parentId, user.id]
+                );
+                if (rows.length > 0 && rows[0].max_pos !== null)
+                    pos = rows[0].max_pos + 1;
+            } catch (e) {}
+
+            // Insert note
+            await upsertNote({
+                id: note_id,
+                user_id: user.id,
+                json: tiptapJSON,
+                html,
+                title,
+                ydoc,
+                tags: "list,auto",
+            });
+
+            // Insert node
+            await upsertNode({
+                id: node_id,
+                user_id: user.id,
+                text: title || "",
+                parent_id: parentId,
+                pos,
+                note_id,
+            });
+
+            // Return the public note URL
+            const publicHash = shortHash(note_id, process.env.ENCRYPTION_KEY);
+            const url = `${
+                process.env.LIST_DOMAIN || ""
+            }/public/note/${note_id}/${publicHash}`;
+
+            res.json({
+                success: true,
+                data: {
+                    url,
+                    node_id,
+                    note_id,
+                },
+            });
+        } catch (e) {
+            console.log("error", e);
+            res.json({
+                success: false,
+                error: e.message || e.toString(),
+            });
+        }
+    }
+);
+
+// Get node details with note content by node_id
+router.options(
+    "/api/node/:nodeId",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.get(
+    "/api/node/:nodeId",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { nodeId } = req.params || {};
+        const { fingerprint } = req.query || {};
+
+        if (!nodeId) {
+            res.json({ success: false, error: "Missing nodeId" });
+            return;
+        }
+
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
+            // Fetch the node
+            const pool = await db.getTasksDB();
+            const { rows: nodeRows } = await pool.query(
+                "SELECT * FROM btw.nodes WHERE id = $1 AND user_id = $2",
+                [nodeId, user.id]
+            );
+
+            if (nodeRows.length === 0) {
+                res.json({ success: false, error: "Node not found" });
+                return;
+            }
+
+            const node = nodeRows[0];
+            let note = null;
+            let file = null;
+
+            // Fetch the note if note_id exists
+            if (node.note_id) {
+                const { rows: noteRows } = await pool.query(
+                    "SELECT id, title, md, html, created_at, updated_at FROM btw.notes WHERE id = $1 AND user_id = $2",
+                    [node.note_id, user.id]
+                );
+
+                if (noteRows.length > 0) {
+                    note = noteRows[0];
+                }
+            }
+
+            // Fetch the file if file_id exists
+            if (node.file_id) {
+                const { rows: fileRows } = await pool.query(
+                    "SELECT id, name, url, created_at FROM btw.files WHERE id = $1 AND user_id = $2",
+                    [node.file_id, user.id]
+                );
+
+                if (fileRows.length > 0) {
+                    file = fileRows[0];
+                }
+            }
+
+            res.json({
+                success: true,
+                data: {
+                    node: {
+                        id: node.id,
+                        text: node.text,
+                        checked: node.checked,
+                        collapsed: node.collapsed,
+                        parent_id: node.parent_id,
+                        pos: node.pos,
+                        pinned_pos: node.pinned_pos,
+                        created_at: node.created_at,
+                        updated_at: node.updated_at,
+                    },
+                    note,
+                    file,
+                },
+            });
+        } catch (e) {
+            console.log("error", e);
+            res.json({
+                success: false,
+                error: e.message || e.toString(),
+            });
+        }
+    }
+);
+
 module.exports = router;
