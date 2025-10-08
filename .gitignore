@@ -35,4 +35,43 @@ publisher/.DS_Store
 deployment/
 deployment/.DS_Store
 
+# listgo (React Native iOS)
+listgo/node_modules/
+listgo/.DS_Store
+listgo/ios/Pods/
+listgo/ios/build/
+listgo/ios/.xcode.env.local
+listgo/ios/Podfile.lock
+listgo/android/
+listgo/.bundle/
+listgo/vendor/
+
+# Metro bundler
+listgo/.metro-health-check*
+listgo/metro.config.js
+
+# React Native
+listgo/*.jsbundle
+
+# CocoaPods
+listgo/ios/Pods/
+listgo/ios/**/*.xcworkspace/xcuserdata/
+listgo/ios/**/*.xcodeproj/xcuserdata/
+listgo/ios/**/*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Xcode
+listgo/ios/**/*.mode1v3
+listgo/ios/**/*.mode2v3
+listgo/ios/**/*.perspectivev3
+listgo/ios/**/*.pbxuser
+listgo/ios/**/*.xccheckout
+listgo/ios/**/*.xcscmblueprint
+listgo/ios/**/*.hmap
+listgo/ios/**/*.ipa
+listgo/ios/**/*.dSYM.zip
+listgo/ios/**/*.dSYM
+
+# Build folders
+listgo/ios/DerivedData/
+
 .DS_Store
