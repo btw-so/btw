@@ -11,6 +11,7 @@ var {
     searchNodes,
 } = require("../logic/list");
 var crypto = require("crypto");
+var { generateWidgetToken, verifyWidgetToken } = require("../logic/widgetAuth");
 const { parse } = require("@postlight/parser");
 const TurndownService = require("turndown");
 const showdown = require("showdown");
@@ -90,6 +91,7 @@ router.post(
             limit = 200,
             after,
             id,
+            widgetToken,
         } = req.body || {};
 
         // get loginToken as btw_uuid cookie
@@ -98,37 +100,55 @@ router.post(
         let user;
 
         try {
-            user = await getUserFromToken({
-                token: loginToken,
-                fingerprint,
-            });
+            // Try widget token first if provided
+            if (widgetToken && id && fingerprint) {
+                user = await verifyWidgetToken({
+                    widgetToken,
+                    nodeId: id,
+                    fingerprint,
+                });
 
+                if (user) {
+                    console.log("Authenticated via widget token for node:", id);
+                }
+            }
+
+            // Fall back to regular auth if widget token didn't work
             if (!user) {
-                throw new Error("User not found");
+                user = await getUserFromToken({
+                    token: loginToken,
+                    fingerprint,
+                });
+
+                if (!user) {
+                    throw new Error("User not found");
+                }
             }
 
             if (!Number(process.env.TURN_OFF_SINGLE_USER_MODE)) {
-                // single user mode.
-                if (!loginToken || !user) {
-                    res.json({
-                        success: true,
-                        data: { nodes: [] },
-                        isLoggedIn: false,
-                    });
-                    return;
-                } else {
-                    const exists = await doesLoginTokenExist({
-                        token: loginToken,
-                        fingerprint,
-                    });
-
-                    if (!exists) {
+                // single user mode - skip check if using widget token
+                if (!widgetToken) {
+                    if (!loginToken || !user) {
                         res.json({
                             success: true,
                             data: { nodes: [] },
                             isLoggedIn: false,
                         });
                         return;
+                    } else {
+                        const exists = await doesLoginTokenExist({
+                            token: loginToken,
+                            fingerprint,
+                        });
+
+                        if (!exists) {
+                            res.json({
+                                success: true,
+                                data: { nodes: [] },
+                                isLoggedIn: false,
+                            });
+                            return;
+                        }
                     }
                 }
             }
@@ -751,7 +771,7 @@ router.get(
     }),
     async (req, res) => {
         const { nodeId } = req.params || {};
-        const { fingerprint } = req.query || {};
+        const { fingerprint, widgetToken } = req.query || {};
 
         if (!nodeId) {
             res.json({ success: false, error: "Missing nodeId" });
@@ -761,13 +781,31 @@ router.get(
         const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
 
         try {
-            const user = await getUserFromToken({
-                token: loginToken,
-                fingerprint,
-            });
+            let user;
 
+            // Try widget token first if provided
+            if (widgetToken && nodeId && fingerprint) {
+                user = await verifyWidgetToken({
+                    widgetToken,
+                    nodeId,
+                    fingerprint,
+                });
+
+                if (user) {
+                    console.log("Authenticated via widget token for node detail:", nodeId);
+                }
+            }
+
+            // Fall back to regular auth if widget token didn't work
             if (!user) {
-                throw new Error("User not found");
+                user = await getUserFromToken({
+                    token: loginToken,
+                    fingerprint,
+                });
+
+                if (!user) {
+                    throw new Error("User not found");
+                }
             }
 
             // Fetch the node
@@ -830,6 +868,92 @@ router.get(
             });
         } catch (e) {
             console.log("error", e);
+            res.json({
+                success: false,
+                error: e.message || e.toString(),
+            });
+        }
+    }
+);
+
+// Widget token generation endpoint
+router.options(
+    "/widget/generate-token",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/widget/generate-token",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, nodeId } = req.body || {};
+
+        if (!fingerprint || !nodeId) {
+            res.json({
+                success: false,
+                error: "fingerprint and nodeId are required",
+            });
+            return;
+        }
+
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!user) {
+                res.json({
+                    success: false,
+                    error: "User not authenticated",
+                });
+                return;
+            }
+
+            // Verify the node belongs to this user
+            const nodeResult = await db.query(
+                "SELECT user_id FROM nodes WHERE id = $1",
+                [nodeId]
+            );
+
+            if (nodeResult.rows.length === 0) {
+                res.json({
+                    success: false,
+                    error: "Node not found",
+                });
+                return;
+            }
+
+            if (nodeResult.rows[0].user_id !== user.id) {
+                res.json({
+                    success: false,
+                    error: "Node does not belong to user",
+                });
+                return;
+            }
+
+            // Generate widget token
+            const widgetToken = generateWidgetToken({
+                nodeId,
+                userId: user.id,
+                fingerprint,
+            });
+
+            res.json({
+                success: true,
+                data: {
+                    widgetToken,
+                },
+            });
+        } catch (e) {
+            console.log("Error generating widget token:", e);
             res.json({
                 success: false,
                 error: e.message || e.toString(),
