@@ -21,9 +21,11 @@ async function verifyWidgetToken({ widgetToken, nodeId, fingerprint }) {
     }
 
     try {
+        const pool = await db.getTasksDB();
+
         // Get the node to find its user_id
-        const nodeResult = await db.query(
-            "SELECT user_id FROM nodes WHERE id = $1",
+        const nodeResult = await pool.query(
+            "SELECT user_id FROM btw.nodes WHERE id = $1",
             [nodeId]
         );
 
@@ -46,8 +48,8 @@ async function verifyWidgetToken({ widgetToken, nodeId, fingerprint }) {
         }
 
         // Return user info
-        const userResult = await db.query(
-            "SELECT id, email FROM users WHERE id = $1",
+        const userResult = await pool.query(
+            "SELECT id, email FROM btw.users WHERE id = $1",
             [userId]
         );
 

@@ -918,8 +918,9 @@ router.post(
             }
 
             // Verify the node belongs to this user
-            const nodeResult = await db.query(
-                "SELECT user_id FROM nodes WHERE id = $1",
+            const pool = await db.getTasksDB();
+            const nodeResult = await pool.query(
+                "SELECT user_id FROM btw.nodes WHERE id = $1",
                 [nodeId]
             );
 
