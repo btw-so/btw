@@ -11,7 +11,7 @@ var {
     searchNodes,
 } = require("../logic/list");
 var crypto = require("crypto");
-var { generateWidgetToken, verifyWidgetToken } = require("../logic/widgetAuth");
+var { generateWidgetToken, verifyWidgetToken, verifyWidgetTokenForUser } = require("../logic/widgetAuth");
 const { parse } = require("@postlight/parser");
 const TurndownService = require("turndown");
 const showdown = require("showdown");
@@ -771,7 +771,7 @@ router.get(
     }),
     async (req, res) => {
         const { nodeId } = req.params || {};
-        const { fingerprint, widgetToken } = req.query || {};
+        const { fingerprint, widgetToken, parentNodeId } = req.query || {};
 
         if (!nodeId) {
             res.json({ success: false, error: "Missing nodeId" });
@@ -785,14 +785,30 @@ router.get(
 
             // Try widget token first if provided
             if (widgetToken && nodeId && fingerprint) {
-                user = await verifyWidgetToken({
-                    widgetToken,
-                    nodeId,
-                    fingerprint,
-                });
+                // If parentNodeId is provided, use the more flexible verification
+                // that allows accessing child nodes with the parent's token
+                if (parentNodeId) {
+                    user = await verifyWidgetTokenForUser({
+                        widgetToken,
+                        parentNodeId,
+                        nodeId,
+                        fingerprint,
+                    });
 
-                if (user) {
-                    console.log("Authenticated via widget token for node detail:", nodeId);
+                    if (user) {
+                        console.log("Authenticated via widget token (parent-based) for node detail:", nodeId);
+                    }
+                } else {
+                    // Otherwise use exact match verification
+                    user = await verifyWidgetToken({
+                        widgetToken,
+                        nodeId,
+                        fingerprint,
+                    });
+
+                    if (user) {
+                        console.log("Authenticated via widget token for node detail:", nodeId);
+                    }
                 }
             }
 
