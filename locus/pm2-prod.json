@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "locus",
+      "script": "npm",
+      "args": ["run", "build:serve"]
+    }
+  ]
+}
