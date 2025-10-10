@@ -1,16 +1,16 @@
-list/.tmp
-list/.sass-cache
-list/.publish
-list/coverage/
-list/build/
-list/dist/
-list/node_modules/
-list/reports/
-list/webpack.stats.json
-list/src/enterprise
-list/.DS_Store
+locus/.tmp
+locus/.sass-cache
+locus/.publish
+locus/coverage/
+locus/build/
+locus/dist/
+locus/node_modules/
+locus/reports/
+locus/webpack.stats.json
+locus/src/enterprise
+locus/.DS_Store
 
-list/out/
+locus/out/
 
 writer/.tmp
 writer/.sass-cache
@@ -35,43 +35,43 @@ publisher/.DS_Store
 deployment/
 deployment/.DS_Store
 
-# listgo (React Native iOS)
-listgo/node_modules/
-listgo/.DS_Store
-listgo/ios/Pods/
-listgo/ios/build/
-listgo/ios/.xcode.env.local
-listgo/ios/Podfile.lock
-listgo/android/
-listgo/.bundle/
-listgo/vendor/
+# locus-mobile (React Native iOS)
+locus-mobile/node_modules/
+locus-mobile/.DS_Store
+locus-mobile/ios/Pods/
+locus-mobile/ios/build/
+locus-mobile/ios/.xcode.env.local
+locus-mobile/ios/Podfile.lock
+locus-mobile/android/
+locus-mobile/.bundle/
+locus-mobile/vendor/
 
 # Metro bundler
-listgo/.metro-health-check*
-listgo/metro.config.js
+locus-mobile/.metro-health-check*
+locus-mobile/metro.config.js
 
 # React Native
-listgo/*.jsbundle
+locus-mobile/*.jsbundle
 
 # CocoaPods
-listgo/ios/Pods/
-listgo/ios/**/*.xcworkspace/xcuserdata/
-listgo/ios/**/*.xcodeproj/xcuserdata/
-listgo/ios/**/*.xcodeproj/project.xcworkspace/xcuserdata/
+locus-mobile/ios/Pods/
+locus-mobile/ios/**/*.xcworkspace/xcuserdata/
+locus-mobile/ios/**/*.xcodeproj/xcuserdata/
+locus-mobile/ios/**/*.xcodeproj/project.xcworkspace/xcuserdata/
 
 # Xcode
-listgo/ios/**/*.mode1v3
-listgo/ios/**/*.mode2v3
-listgo/ios/**/*.perspectivev3
-listgo/ios/**/*.pbxuser
-listgo/ios/**/*.xccheckout
-listgo/ios/**/*.xcscmblueprint
-listgo/ios/**/*.hmap
-listgo/ios/**/*.ipa
-listgo/ios/**/*.dSYM.zip
-listgo/ios/**/*.dSYM
+locus-mobile/ios/**/*.mode1v3
+locus-mobile/ios/**/*.mode2v3
+locus-mobile/ios/**/*.perspectivev3
+locus-mobile/ios/**/*.pbxuser
+locus-mobile/ios/**/*.xccheckout
+locus-mobile/ios/**/*.xcscmblueprint
+locus-mobile/ios/**/*.hmap
+locus-mobile/ios/**/*.ipa
+locus-mobile/ios/**/*.dSYM.zip
+locus-mobile/ios/**/*.dSYM
 
 # Build folders
-listgo/ios/DerivedData/
+locus-mobile/ios/DerivedData/
 
 .DS_Store
