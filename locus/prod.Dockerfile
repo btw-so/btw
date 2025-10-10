@@ -2,13 +2,13 @@ FROM --platform=linux/amd64 node:16
 # FROM node:11.12.0-alpine
 
 # create an app directory and use it as working directory
-RUN mkdir -p /list
-WORKDIR /list
+RUN mkdir -p /locus
+WORKDIR /locus
 
 # setting up directory for node_modules to bin path so that containers folder can be used
-ENV PATH /list/node_modules/.bin:$PATH
+ENV PATH /locus/node_modules/.bin:$PATH
 
-COPY package.json /list/package.json
+COPY package.json /locus/package.json
 COPY package.json /tmp/package.json
 RUN npm config set unsafe-perm true
 RUN cd /tmp && npm install --force
@@ -32,8 +32,8 @@ RUN npm install pm2@6.0.5 -g
 RUN npm install db-migrate -g
 RUN npm install cross-env -g
 
-COPY . /list
-RUN cp -a /tmp/node_modules /list/node_modules
+COPY . /locus
+RUN cp -a /tmp/node_modules /locus/node_modules
 
 # allow port 3006 to be publicly available
 EXPOSE 9300
