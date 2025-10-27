@@ -428,10 +428,13 @@ async function publishNote({ user_id, id }) {
 
     const note = rows[0];
 
-    const slug = note.title
-        .toLowerCase()
-        .replace(/ /g, "-")
-        .replace(/[^\w-]+/g, "");
+    let slug = note.slug;
+    if (!slug) {
+        slug = note.title
+            .toLowerCase()
+            .replace(/ /g, "-")
+            .replace(/[^\w-]+/g, "");
+    }
 
     const html = note.html || "";
     let image = "";
