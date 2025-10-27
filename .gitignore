@@ -7,7 +7,6 @@ list/dist/
 list/node_modules/
 list/reports/
 list/webpack.stats.json
-list/src/enterprise
 list/.DS_Store
 
 list/out/
@@ -21,7 +20,6 @@ writer/dist/
 writer/node_modules/
 writer/reports/
 writer/webpack.stats.json
-writer/src/enterprise
 writer/.DS_Store
 
 writer/out/
