@@ -114,18 +114,18 @@ export function* getNotesSaga({ payload }) {
     }
 
     // Why show connection failed toast here? because hocuspocus websocket connection failed event is not trustable sometimes
-    if (window.connectionStatusToastId) {
+    if (window.yjsConnectionToastId) {
       toast.success(`Connected`);
-      toast.dismiss(window.connectionStatusToastId);
-      window.connectionStatusToastId = null;
+      toast.dismiss(window.yjsConnectionToastId);
+      window.yjsConnectionToastId = null;
     }
 
     window.notesInitialFetchDone = true;
 
     yield put(getNotesSuccess({ notes }));
   } catch (e) {
-    if (!window.connectionStatusToastId) {
-      window.connectionStatusToastId = toast.loading(`Trying to reconnect`);
+    if (!window.yjsConnectionToastId) {
+      window.yjsConnectionToastId = toast.loading(`Trying to reconnect`);
     }
 
     yield put(getNotesFailure({ error: "Something went wrong" }));
