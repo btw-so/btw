@@ -117,15 +117,15 @@ class Tiptap extends React.Component {
         document: ydoc,
         token: `${props.token}:::${genFingerprint()}`,
         onDisconnect: () => {
-          if (!this.toastId) {
-            this.toastId = toast.loading(`Trying to reconnect`);
+          if (!window.yjsConnectionToastId) {
+            window.yjsConnectionToastId = toast.loading(`Trying to reconnect`);
           }
         },
         onConnect: () => {
-          if (this.toastId) {
+          if (window.yjsConnectionToastId) {
             toast.success(`Connected`);
-            toast.dismiss(this.toastId);
-            this.toastId = null;
+            toast.dismiss(window.yjsConnectionToastId);
+            window.yjsConnectionToastId = null;
           }
         },
       });
@@ -276,6 +276,23 @@ class Tiptap extends React.Component {
 
   componentWillUnmount() {
     clearInterval(this.interval);
+
+    // Dismiss any active reconnection toast
+    if (window.yjsConnectionToastId) {
+      toast.dismiss(window.yjsConnectionToastId);
+      window.yjsConnectionToastId = null;
+    }
+
+    // Destroy the HocuspocusProvider to stop reconnection attempts
+    if (this.provider) {
+      this.provider.destroy();
+      this.provider = null;
+    }
+
+    // Destroy the editor to prevent memory leaks
+    if (this.editor) {
+      this.editor.destroy();
+    }
   }
 
   moveTo(from, to) {
