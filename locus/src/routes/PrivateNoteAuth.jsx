@@ -39,6 +39,10 @@ function PrivateNoteAuth() {
         if (res.success && res.data && res.data.loginToken) {
           // The saga will fetch user details using the cookie we just set
           await new Promise((resolve) => setTimeout(resolve, 40));
+
+          // get user details
+          dispatch(getUser());
+
           // Redirect to edit page
           navigate(`/private/note/${id}/edit`);
         } else {
