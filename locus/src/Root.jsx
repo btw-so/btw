@@ -26,6 +26,8 @@ import PublicNote from "./routes/PublicNote";
 import PublicList from "./routes/PublicList";
 import FourThousandWeeks from "./routes/FourThousandWeeks";
 import Intelligence from "./routes/Intelligence";
+import PrivateNoteAuth from "./routes/PrivateNoteAuth";
+import PrivateNoteEdit from "./routes/PrivateNoteEdit";
 
 function Root() {
   const dispatch = useDispatch();
@@ -124,6 +126,23 @@ function Root() {
                 hideSidebar={hideSidebar}
                 showSidebar={showSidebar}
               />
+            }
+          />
+          <Route
+            path="/private/note/:id/:hash"
+            element={<PrivateNoteAuth />}
+          />
+          <Route
+            path="/private/note/:id/edit"
+            element={
+              <PrivateRoute
+                isLoggedIn={isLoggedIn}
+                to="/login"
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+              >
+                <PrivateNoteEdit />
+              </PrivateRoute>
             }
           />
           <Route

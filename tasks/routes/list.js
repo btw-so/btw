@@ -979,4 +979,186 @@ router.post(
     }
 );
 
+// Create temporary login request endpoint
+const redisClient = require("../services/redis");
+
+function hashSecret(secret) {
+    const hmac = crypto.createHmac("sha256", process.env.ENCRYPTION_KEY);
+    hmac.update(secret);
+    const digest = hmac.digest("base64");
+
+    // Make it URL-safe and trim padding
+    const safe = digest
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+
+    return safe; // Return full hash for security
+}
+
+router.options(
+    "/create-temporary-login-request",
+    cors({
+        credentials: true,
+        origin: true, // Allow any origin (including file:// protocol)
+    })
+);
+router.post(
+    "/create-temporary-login-request",
+    cors({
+        credentials: true,
+        origin: true, // Allow any origin (including file:// protocol)
+    }),
+    async (req, res) => {
+        const { fingerprint, noteId } = req.body || {};
+
+        if (!noteId) {
+            res.json({
+                success: false,
+                error: "noteId is required",
+            });
+            return;
+        }
+
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!user) {
+                res.json({
+                    success: false,
+                    error: "User not authenticated",
+                });
+                return;
+            }
+
+            // Verify the note belongs to this user
+            const pool = await db.getTasksDB();
+            const noteResult = await pool.query(
+                "SELECT user_id FROM btw.notes WHERE id = $1",
+                [noteId]
+            );
+
+            if (noteResult.rows.length === 0) {
+                res.json({
+                    success: false,
+                    error: "Note not found",
+                });
+                return;
+            }
+
+            if (noteResult.rows[0].user_id !== user.id) {
+                res.json({
+                    success: false,
+                    error: "Note does not belong to user",
+                });
+                return;
+            }
+
+            // Generate random secret token
+            const secret = uuidv4();
+
+            // Hash the secret
+            const hashedSecret = hashSecret(secret);
+
+            // Store in Redis: temp-login:{hashedSecret} → {noteId}:{loginToken}
+            // Expires in 10 minutes (600 seconds)
+            const redisKey = `temp-login:${hashedSecret}`;
+            const redisValue = `${noteId}:${loginToken}`;
+
+            await redisClient.set(redisKey, redisValue, 600);
+
+            console.log(`Created temporary login request for note ${noteId}, expires in 10 minutes`);
+
+            res.json({
+                success: true,
+                data: {
+                    secret: hashedSecret,
+                },
+            });
+        } catch (e) {
+            console.log("Error creating temporary login request:", e);
+            res.json({
+                success: false,
+                error: e.message || e.toString(),
+            });
+        }
+    }
+);
+
+// Get login token endpoint
+router.options(
+    "/get-login-token",
+    cors({
+        credentials: true,
+        origin: true, // Allow any origin (including file:// protocol)
+    })
+);
+router.post(
+    "/get-login-token",
+    cors({
+        credentials: true,
+        origin: true, // Allow any origin (including file:// protocol)
+    }),
+    async (req, res) => {
+        const { noteId, hashedSecret } = req.body || {};
+
+        if (!noteId || !hashedSecret) {
+            res.json({
+                success: false,
+                error: "noteId and hashedSecret are required",
+            });
+            return;
+        }
+
+        try {
+            // Lookup Redis with key
+            const redisKey = `temp-login:${hashedSecret}`;
+            const redisValue = await redisClient.get(redisKey);
+
+            if (!redisValue) {
+                res.json({
+                    success: false,
+                    error: "Invalid or expired secret",
+                });
+                return;
+            }
+
+            // Parse the stored value
+            const [storedNoteId, loginToken] = redisValue.split(":");
+
+            // Verify noteId matches
+            if (storedNoteId !== noteId) {
+                res.json({
+                    success: false,
+                    error: "Note ID mismatch",
+                });
+                return;
+            }
+
+            // Delete the Redis key (one-time use)
+            await redisClient.del(redisKey);
+
+            console.log(`Successfully validated temporary login for note ${noteId}`);
+
+            res.json({
+                success: true,
+                data: {
+                    loginToken,
+                },
+            });
+        } catch (e) {
+            console.log("Error getting login token:", e);
+            res.json({
+                success: false,
+                error: e.message || e.toString(),
+            });
+        }
+    }
+);
+
 module.exports = router;
