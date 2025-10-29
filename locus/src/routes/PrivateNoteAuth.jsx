@@ -21,6 +21,8 @@ function PrivateNoteAuth() {
 
   useEffect(() => {
     const validateAndLogin = async () => {
+
+      console.log("validateAndLogin");
       try {
         // Call API to validate secret and get login token
         const { data: res } = await axiosInstance.request({
@@ -33,17 +35,8 @@ function PrivateNoteAuth() {
         });
 
         if (res.success && res.data && res.data.loginToken) {
-          // Save login token in cookie
-          // setCookie(res.data.loginToken, 30); // 30 days expiry
-
-          // Dispatch getUser to update Redux store with isLoggedIn = true
-          // This is crucial for PrivateRoute to allow access to /private/note/:id/edit
-          dispatch(getUser());
-
-          // Small delay to allow Redux state to update before navigation
           // The saga will fetch user details using the cookie we just set
-          await new Promise(resolve => setTimeout(resolve, 500));
-
+          await new Promise(resolve => setTimeout(resolve, 40));
           // Redirect to edit page
           navigate(`/private/note/${id}/edit`);
         } else {
@@ -63,7 +56,8 @@ function PrivateNoteAuth() {
       setStatus("error");
       setErrorMessage("Missing note ID or secret");
     }
-  }, [id, hash, navigate, setCookie, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (status === "loading") {
     return (
