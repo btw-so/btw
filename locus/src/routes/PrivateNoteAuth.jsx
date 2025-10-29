@@ -34,7 +34,7 @@ function PrivateNoteAuth() {
 
         if (res.success && res.data && res.data.loginToken) {
           // Save login token in cookie
-          setCookie(res.data.loginToken, 30); // 30 days expiry
+          // setCookie(res.data.loginToken, 30); // 30 days expiry
 
           // Dispatch getUser to update Redux store with isLoggedIn = true
           // This is crucial for PrivateRoute to allow access to /private/note/:id/edit
