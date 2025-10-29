@@ -15,13 +15,15 @@ function PrivateNoteAuth() {
   const { id, hash } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [, setCookie] = useCookie(process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid", "");
+  const [, setCookie] = useCookie(
+    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
+    ""
+  );
   const [status, setStatus] = useState("loading"); // 'loading' | 'success' | 'error'
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const validateAndLogin = async () => {
-
       console.log("validateAndLogin");
       try {
         // Call API to validate secret and get login token
@@ -36,7 +38,7 @@ function PrivateNoteAuth() {
 
         if (res.success && res.data && res.data.loginToken) {
           // The saga will fetch user details using the cookie we just set
-          await new Promise(resolve => setTimeout(resolve, 40));
+          await new Promise((resolve) => setTimeout(resolve, 40));
           // Redirect to edit page
           navigate(`/private/note/${id}/edit`);
         } else {
@@ -46,12 +48,16 @@ function PrivateNoteAuth() {
       } catch (error) {
         console.error("Authentication error:", error);
         setStatus("error");
-        setErrorMessage(error.message || "An error occurred during authentication");
+        setErrorMessage(
+          error.message || "An error occurred during authentication"
+        );
       }
     };
 
     if (id && hash) {
-      validateAndLogin();
+      setTimeout(() => {
+        validateAndLogin();
+      }, 100);
     } else {
       setStatus("error");
       setErrorMessage("Missing note ID or secret");
@@ -72,7 +78,9 @@ function PrivateNoteAuth() {
       <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
         <div className="text-center">
           <div className="text-red-500 text-5xl mb-4">✗</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Authentication Failed</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Authentication Failed
+          </h2>
           <p className="text-gray-600">{errorMessage}</p>
         </div>
       </div>
