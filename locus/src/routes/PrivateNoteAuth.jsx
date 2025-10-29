@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import axios from "axios";
 import useCookie from "../hooks/useCookie";
 import Loader from "../components/Loader";
+import { getUser } from "../actions";
 
 const axiosInstance = axios.create({
   timeout: 20000,
@@ -12,6 +14,7 @@ const axiosInstance = axios.create({
 function PrivateNoteAuth() {
   const { id, hash } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [, setCookie] = useCookie(process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid", "");
   const [status, setStatus] = useState("loading"); // 'loading' | 'success' | 'error'
   const [errorMessage, setErrorMessage] = useState("");
@@ -33,7 +36,15 @@ function PrivateNoteAuth() {
           // Save login token in cookie
           setCookie(res.data.loginToken, 30); // 30 days expiry
 
-          // Redirect to edit page immediately
+          // Dispatch getUser to update Redux store with isLoggedIn = true
+          // This is crucial for PrivateRoute to allow access to /private/note/:id/edit
+          dispatch(getUser());
+
+          // Small delay to allow Redux state to update before navigation
+          // The saga will fetch user details using the cookie we just set
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          // Redirect to edit page
           navigate(`/private/note/${id}/edit`);
         } else {
           setStatus("error");
@@ -52,7 +63,7 @@ function PrivateNoteAuth() {
       setStatus("error");
       setErrorMessage("Missing note ID or secret");
     }
-  }, [id, hash, navigate, setCookie]);
+  }, [id, hash, navigate, setCookie, dispatch]);
 
   if (status === "loading") {
     return (
