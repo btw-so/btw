@@ -1145,6 +1145,17 @@ router.post(
 
             console.log(`Successfully validated temporary login for note ${noteId}`);
 
+            // Set the login token in the cookie (same as OTP validate)
+            res.cookie(process.env.BTW_UUID_KEY || "btw_uuid", loginToken, {
+                maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+                ...(process.env.NODE_ENV === "production"
+                    ? {
+                          domain: `.${process.env.ROOT_DOMAIN}`,
+                          secure: true,
+                      }
+                    : {}),
+            });
+
             res.json({
                 success: true,
                 data: {
