@@ -1065,14 +1065,14 @@ router.post(
             // Hash the secret
             const hashedSecret = hashSecret(secret);
 
-            // Store in Redis: temp-login:{hashedSecret} → {noteId}:{loginToken}
+            // Store in Redis: temp-login:{hashedSecret} → {noteId}:{loginToken}:{fingerprint}
             // Expires in 10 minutes (600 seconds)
             const redisKey = `temp-login:${hashedSecret}`;
-            const redisValue = `${noteId}:${loginToken}`;
+            const redisValue = `${noteId}:${loginToken}:${fingerprint}`;
 
             await redisClient.set(redisKey, redisValue, 600);
 
-            console.log(`Created temporary login request for note ${noteId}, and login token ${loginToken}, expires in 10 minutes`);
+            console.log(`Created temporary login request for note ${noteId}, loginToken ${loginToken}, fingerprint ${fingerprint}, expires in 10 minutes`);
 
             res.json({
                 success: true,
@@ -1128,12 +1128,13 @@ router.post(
                 return;
             }
 
-            // Parse the stored value
+            // Parse the stored value: {noteId}:{loginToken}:{fingerprint}
             const parts = redisValue.split(":");
             const storedNoteId = parts[0];
-            const loginToken = parts.slice(1).join(":"); // Handle if loginToken contains colons
+            const loginToken = parts[1];
+            const storedFingerprint = parts[2];
 
-            console.log(`Retrieved from Redis - noteId: ${storedNoteId}, loginToken: ${loginToken}`);
+            console.log(`Retrieved from Redis - noteId: ${storedNoteId}, loginToken: ${loginToken}, fingerprint: ${storedFingerprint}`);
 
             // Verify noteId matches
             if (storedNoteId !== noteId) {
@@ -1166,6 +1167,7 @@ router.post(
                 success: true,
                 data: {
                     loginToken,
+                    fingerprint: storedFingerprint,
                 },
             });
         } catch (e) {
