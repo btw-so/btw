@@ -45,11 +45,9 @@ function Root() {
       : null;
 
   useEffect(() => {
-    // get user details if it is the first time BUT the route must not be /private/note/:id/:hash
-    if (
-      !window.location.pathname.includes("/private/note/") ||
-      window.location.pathname.includes("/edit")
-    ) {
+    // get user details if it is the first time
+    // Skip if on private note routes - PrivateNoteAuth will handle authentication
+    if (!window.location.pathname.includes("/private/note/")) {
       dispatch(getUser());
     }
   }, []);
@@ -136,16 +134,7 @@ function Root() {
           <Route path="/private/note/:id/:hash" element={<PrivateNoteAuth />} />
           <Route
             path="/private/note/:id/edit"
-            element={
-              <PrivateRoute
-                isLoggedIn={isLoggedIn}
-                to="/login"
-                isSidebarOpen={isSidebarOpen}
-                toggleSidebar={toggleSidebar}
-              >
-                <PrivateNoteEdit />
-              </PrivateRoute>
-            }
+            element={<PrivateNoteEdit />}
           />
           <Route
             element={
