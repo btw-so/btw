@@ -298,6 +298,29 @@ router.get("/about", async (req, res, next) => {
   });
 });
 
+router.get("/places", async (req, res, next) => {
+  const user = await getUserBySlug({
+    slug: res.locals.domainSlug,
+    customDomain: res.locals.customDomain,
+  });
+
+  if (!user) {
+    res.status(404).render("notfound", { user: true });
+    return;
+  }
+
+  res.render("places", {
+    placesPage: true,
+    userId: user.id,
+    tasksUrl: process.env.TASKS_URL || 'http://localhost:9210',
+    ...getCommonDeets(req, res, "/places", user, {
+      title: `Places I've Been`,
+      meta_title: `Places I've Been`,
+      meta_description: `Interactive map showing all the places I've visited`,
+    }),
+  });
+});
+
 function extractFirstImageSrc(html) {
   const imgRegex = /<img[^>]+src="([^">]+)"/;
   const match = html.match(imgRegex);

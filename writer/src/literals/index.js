@@ -71,6 +71,9 @@ export const ActionTypes = keyMirror({
   MAKE_NOTE_PRIVATE: undefined,
   MAKE_NOTE_PRIVATE_SUCCESS: undefined,
   MAKE_NOTE_PRIVATE_FAILURE: undefined,
+  GET_PLACES: undefined,
+  GET_PLACES_SUCCESS: undefined,
+  GET_PLACES_FAILURE: undefined,
 });
 
 export const STATUS = {
