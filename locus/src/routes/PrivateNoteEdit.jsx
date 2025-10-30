@@ -62,7 +62,7 @@ function PrivateNoteEdit() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white">
+    <div className="h-screen flex flex-col">
       <div className="flex-grow overflow-hidden relative">
         <div className="flex px-2 py-2 hidden md:flex absolute top-0 right-0" style={{
           justifyContent: "end",
