@@ -11,6 +11,25 @@ var {
     deleteScribblePage,
 } = require("../logic/scribbles");
 
+// CORS configuration that allows both web and native iOS/iPad apps
+const corsOptions = {
+    credentials: true,
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like native mobile apps, Postman, curl)
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        // Allow configured domains
+        const allowedOrigins = process.env.CORS_DOMAINS.split(",");
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    }
+};
+
 router.options(
     "/get",
     cors({
