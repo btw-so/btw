@@ -156,7 +156,8 @@ async function getScribblePage(user, scribble_id, page_number) {
         return null;
     }
 
-    const pages = JSON.parse(scribble.pages);
+    // Handle both JSONB (already parsed) and JSON string formats
+    const pages = typeof scribble.pages === 'string' ? JSON.parse(scribble.pages) : scribble.pages;
     const page = pages.find(p => p.page_number === page_number);
     return page || null;
 }
@@ -172,7 +173,11 @@ async function getScribblePage(user, scribble_id, page_number) {
  */
 async function upsertScribblePage(user, scribble_id, page_number, drawing_data, thumbnail = null) {
     const scribble = await getScribble(user, scribble_id);
-    let pages = scribble && scribble.pages ? JSON.parse(scribble.pages) : [];
+    let pages = [];
+    if (scribble && scribble.pages) {
+        // Handle both JSONB (already parsed) and JSON string formats
+        pages = typeof scribble.pages === 'string' ? JSON.parse(scribble.pages) : scribble.pages;
+    }
 
     const pageIndex = pages.findIndex(p => p.page_number === page_number);
     const pageData = {
@@ -208,7 +213,8 @@ async function deleteScribblePage(user, scribble_id, page_number) {
         return null;
     }
 
-    let pages = JSON.parse(scribble.pages);
+    // Handle both JSONB (already parsed) and JSON string formats
+    let pages = typeof scribble.pages === 'string' ? JSON.parse(scribble.pages) : scribble.pages;
     pages = pages.filter(p => p.page_number !== page_number);
 
     // Reindex remaining pages
