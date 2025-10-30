@@ -30,10 +30,13 @@ router.post(
         origin: process.env.CORS_DOMAINS.split(","),
     }),
     async (req, res) => {
-        const { fingerprint } = req.body || {};
+        const { fingerprint, privateNoteUrl } = req.body || {};
 
         // get loginToken as btw_uuid cookie
         const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+        let fullFingerprint = fingerprint;
+
+        console.log(`[/user/details] fingerprint: ${fingerprint}, loginToken: ${loginToken}, privateNoteUrl: ${privateNoteUrl}`);
 
         try {
             let user = await getUserFromToken({
@@ -106,6 +109,123 @@ router.post(
                     return;
                 } else {
                     // we are sorted. login token exists
+                }
+            }
+
+            // CASE 2: Private note authentication via URL (if no valid user yet)
+            if (!user && privateNoteUrl && !loginToken) {
+                console.log('[/user/details] Attempting private note URL authentication');
+
+                const match = privateNoteUrl.match(/\/private\/note\/([^/]+)\/([^/?]+)/);
+                if (match) {
+                    const [_, noteId, urlHash] = match;
+                    console.log(`[/user/details] Extracted noteId: ${noteId}, urlHash: ${urlHash}`);
+
+                    try {
+                        // Decode and split to get encrypted part and F2
+                        const decoded = Buffer.from(urlHash, 'base64').toString('utf-8');
+                        const [encrypted, F2] = decoded.split(':::');
+
+                        if (!encrypted || !F2) {
+                            throw new Error('Invalid URL format');
+                        }
+
+                        console.log(`[/user/details] F2: ${F2}`);
+
+                        // Find login tokens with fingerprints ending with F2
+                        const db = require('../services/db');
+                        const pool = await db.getTasksDB();
+
+                        const { rows } = await pool.query(
+                            `SELECT DISTINCT lt.fingerprint, lt.token as login_token, lt.user_id
+                             FROM btw.login_tokens lt
+                             INNER JOIN btw.notes n ON n.user_id = lt.user_id
+                             WHERE n.id = $1 AND lt.fingerprint LIKE $2
+                             LIMIT 10`,
+                            [noteId, `%${F2}`]
+                        );
+
+                        console.log(`[/user/details] Found ${rows.length} candidate fingerprints`);
+
+                        // Try each candidate fingerprint
+                        const crypto = require('crypto');
+                        for (const candidate of rows) {
+                            const fullFingerprint = candidate.fingerprint;
+                            const F1 = fullFingerprint.slice(0, Math.floor(fullFingerprint.length / 2));
+
+                            try {
+                                // Decrypt using F1 as key
+                                const decipher = crypto.createDecipher('aes-256-cbc', F1);
+                                let decrypted = decipher.update(encrypted, 'base64', 'utf8');
+                                decrypted += decipher.final('utf8');
+
+                                const [timestamp, extractedLoginToken] = decrypted.split(':');
+
+                                console.log(`[/user/details] Decrypted timestamp: ${timestamp}, loginToken matches: ${extractedLoginToken === candidate.login_token}`);
+
+                                // Validate timestamp (3 min expiry = 180000ms)
+                                const timestampAge = Date.now() - parseInt(timestamp);
+                                if (timestampAge > 180000) {
+                                    console.log(`[/user/details] Timestamp too old: ${timestampAge}ms`);
+                                    continue;
+                                }
+
+                                // Validate loginToken matches
+                                if (extractedLoginToken === candidate.login_token) {
+                                    console.log('[/user/details] SUCCESS! Valid private note authentication');
+
+                                    // Set cookie with the loginToken
+                                    res.cookie(process.env.BTW_UUID_KEY || "btw_uuid", extractedLoginToken, {
+                                        maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+                                        ...(process.env.NODE_ENV === "production"
+                                            ? {
+                                                  domain: `.${process.env.ROOT_DOMAIN}`,
+                                                  secure: true,
+                                                  //   httpOnly: true,
+                                              }
+                                            : {}),
+                                    });
+
+                                    // Get user with the valid token
+                                    user = await getUserFromToken({
+                                        token: extractedLoginToken,
+                                        fingerprint: fullFingerprint,
+                                    });
+
+                                    if (user) {
+                                        // Get user domains
+                                        const { domains, success } = await getDomains({
+                                            user_id: user.id,
+                                        });
+                                        if (success) {
+                                            user.domains = domains;
+                                        } else {
+                                            user.domains = [];
+                                        }
+
+                                        // Return user with the complete fingerprint so frontend can save it
+                                        return res.json({
+                                            success: true,
+                                            data: {
+                                                user,
+                                                isLoggedIn: true,
+                                                fingerprint: fullFingerprint
+                                            }
+                                        });
+                                    }
+                                    return;
+                                }
+                            } catch (decryptError) {
+                                // Try next candidate
+                                console.log(`[/user/details] Decrypt failed for candidate: ${decryptError.message}`);
+                                continue;
+                            }
+                        }
+
+                        console.log('[/user/details] No valid candidates found');
+                    } catch (urlError) {
+                        console.log(`[/user/details] Private note URL processing error: ${urlError.message}`);
+                    }
                 }
             }
 

@@ -49,6 +49,11 @@ export function* getUserSaga() {
 
   const fingerprint = yield call(getFingerPrint);
 
+  // Check if we're on a private note page and include the URL
+  const privateNoteUrl = window.location.pathname.includes('/private/note/')
+    ? window.location.href
+    : null;
+
   try {
     const { data: res } = yield call(() =>
       axiosInstance.request({
@@ -56,6 +61,7 @@ export function* getUserSaga() {
         method: "POST",
         data: {
           fingerprint,
+          privateNoteUrl,
         },
       })
     );
@@ -63,6 +69,12 @@ export function* getUserSaga() {
     const { success, data, error } = res;
 
     if (success && data.user && data.isLoggedIn) {
+      // If backend sent new fingerprint (from private note auth), save it
+      if (data.fingerprint && data.fingerprint !== fingerprint) {
+        localStorage.setItem('fingerprint_uuid', data.fingerprint);
+        console.log('[getUserSaga] Updated fingerprint to:', data.fingerprint);
+      }
+
       yield put(getUserSuccess(data.user));
     } else {
       yield put(getUserFailure({ error: error || "Something went wrong" }));
