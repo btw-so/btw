@@ -3,16 +3,10 @@ import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "modules/hooks";
 import { selectUser } from "selectors";
-import axios from "axios";
 import Tiptap from "../components/Tiptap";
 import Loader from "../components/Loader";
 import { getUser } from "../actions";
 import useCookie from "../hooks/useCookie";
-
-const axiosInstance = axios.create({
-  timeout: 20000,
-  withCredentials: true,
-});
 
 function PrivateNoteAuth() {
   const { id, hash } = useParams();
@@ -33,67 +27,29 @@ function PrivateNoteAuth() {
   const { isLoggedIn } = user;
 
   useEffect(() => {
-    const validateAndLogin = async () => {
-      try {
-        // Call API to validate secret and get login token
-        const { data: res } = await axiosInstance.request({
-          url: `${process.env.REACT_APP_TASKS_PUBLIC_URL}/list/get-login-token`,
-          method: "POST",
-          data: {
-            noteId: id,
-            hashedSecret: hash,
-          },
-        });
-
-        if (res.success && res.data && res.data.loginToken) {
-          // Save the fingerprint to localStorage so subsequent requests use the correct fingerprint
-          // This is critical because the login token is tied to the fingerprint
-          if (res.data.fingerprint) {
-            localStorage.setItem('fingerprint_uuid', res.data.fingerprint);
-            console.log('Saved fingerprint to localStorage:', res.data.fingerprint);
-          }
-
-          // Small delay to ensure cookie and localStorage are updated
-          await new Promise((resolve) => setTimeout(resolve, 100));
-
-          // Dispatch getUser to fetch user details and set isLoggedIn = true
-          dispatch(getUser());
-
-          // Don't set authenticated yet - wait for getUser to complete
-        } else {
-          setStatus("error");
-          setErrorMessage(res.error || "Failed to authenticate");
-        }
-      } catch (error) {
-        console.error("Authentication error:", error);
-        setStatus("error");
-        setErrorMessage(
-          error.message || "An error occurred during authentication"
-        );
-      }
-    };
-
-    if (id && hash) {
-      validateAndLogin();
-    } else {
-      setStatus("error");
-      setErrorMessage("Missing note ID or secret");
-    }
-
     // Check screen width for menu bar
     if (window.innerWidth < 768) {
       setShowMenuBar(true);
     }
+
+    // Simply dispatch getUser - it will handle all private note authentication
+    // by reading the URL and doing the fingerprint-split decryption in /user/details
+    console.log('[PrivateNoteAuth] Dispatching getUser for private note authentication');
+    dispatch(getUser());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Wait for user data to be loaded before showing editor
   useEffect(() => {
     if (isLoggedIn && user.data && status === "authenticating") {
-      console.log('User logged in, showing editor');
+      console.log('[PrivateNoteAuth] User logged in, showing editor');
       setStatus("authenticated");
+    } else if (user.error && status === "authenticating") {
+      console.log('[PrivateNoteAuth] Authentication failed:', user.error);
+      setStatus("error");
+      setErrorMessage(user.error || "Failed to authenticate");
     }
-  }, [isLoggedIn, user.data, status]);
+  }, [isLoggedIn, user.data, user.error, status]);
 
   if (status === "error") {
     return (
