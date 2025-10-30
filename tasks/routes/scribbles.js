@@ -50,7 +50,7 @@ router.post(
         let loginTokenStr = req.cookies.btw_uuid;
 
         // check if loginToken exists and fingerprint exists
-        let exists = await doesLoginTokenExist(loginTokenStr, fingerprint);
+        let exists = await doesLoginTokenExist({ token: loginTokenStr, fingerprint });
         if (!exists) {
             return res
                 .status(400)
@@ -58,7 +58,7 @@ router.post(
         }
 
         // get user from loginToken
-        let user = await getUserFromToken(loginTokenStr, fingerprint);
+        let user = await getUserFromToken({ token: loginTokenStr, fingerprint });
         if (!user) {
             return res
                 .status(400)
@@ -92,7 +92,7 @@ router.post(
         let loginTokenStr = req.cookies.btw_uuid;
 
         // check if loginToken exists and fingerprint exists
-        let exists = await doesLoginTokenExist(loginTokenStr, fingerprint);
+        let exists = await doesLoginTokenExist({ token: loginTokenStr, fingerprint });
         if (!exists) {
             return res
                 .status(400)
@@ -100,7 +100,7 @@ router.post(
         }
 
         // get user from loginToken
-        let user = await getUserFromToken(loginTokenStr, fingerprint);
+        let user = await getUserFromToken({ token: loginTokenStr, fingerprint });
         if (!user) {
             return res
                 .status(400)
@@ -134,7 +134,7 @@ router.post(
         let loginTokenStr = req.cookies.btw_uuid;
 
         // check if loginToken exists and fingerprint exists
-        let exists = await doesLoginTokenExist(loginTokenStr, fingerprint);
+        let exists = await doesLoginTokenExist({ token: loginTokenStr, fingerprint });
         if (!exists) {
             return res
                 .status(400)
@@ -142,7 +142,7 @@ router.post(
         }
 
         // get user from loginToken
-        let user = await getUserFromToken(loginTokenStr, fingerprint);
+        let user = await getUserFromToken({ token: loginTokenStr, fingerprint });
         if (!user) {
             return res
                 .status(400)
@@ -174,14 +174,14 @@ router.post(
         let { fingerprint, scribble_id, page_number } = req.body || {};
 
         let loginTokenStr = req.cookies.btw_uuid;
-        let exists = await doesLoginTokenExist(loginTokenStr, fingerprint);
+        let exists = await doesLoginTokenExist({ token: loginTokenStr, fingerprint });
         if (!exists) {
             return res
                 .status(400)
                 .json({ success: false, error: "Invalid login token" });
         }
 
-        let user = await getUserFromToken(loginTokenStr, fingerprint);
+        let user = await getUserFromToken({ token: loginTokenStr, fingerprint });
         if (!user) {
             return res
                 .status(400)
@@ -211,14 +211,14 @@ router.post(
         let { fingerprint, scribble_id, page_number, drawing_data, thumbnail } = req.body || {};
 
         let loginTokenStr = req.cookies.btw_uuid;
-        let exists = await doesLoginTokenExist(loginTokenStr, fingerprint);
+        let exists = await doesLoginTokenExist({ token: loginTokenStr, fingerprint });
         if (!exists) {
             return res
                 .status(400)
                 .json({ success: false, error: "Invalid login token" });
         }
 
-        let user = await getUserFromToken(loginTokenStr, fingerprint);
+        let user = await getUserFromToken({ token: loginTokenStr, fingerprint });
         if (!user) {
             return res
                 .status(400)
@@ -254,14 +254,14 @@ router.post(
         let { fingerprint, scribble_id, page_number } = req.body || {};
 
         let loginTokenStr = req.cookies.btw_uuid;
-        let exists = await doesLoginTokenExist(loginTokenStr, fingerprint);
+        let exists = await doesLoginTokenExist({ token: loginTokenStr, fingerprint });
         if (!exists) {
             return res
                 .status(400)
                 .json({ success: false, error: "Invalid login token" });
         }
 
-        let user = await getUserFromToken(loginTokenStr, fingerprint);
+        let user = await getUserFromToken({ token: loginTokenStr, fingerprint });
         if (!user) {
             return res
                 .status(400)
