@@ -23,7 +23,8 @@ import {
 } from "../actions";
 import useTreeChanges from "tree-changes-hook";
 import Tiptap from "../components/Tiptap";
-import ExcalidrawYjs from "../components/ExcalidrawYjs";
+// import ExcalidrawYjs from "../components/ExcalidrawYjs"; // Removed - switching to PencilKit
+import ScribbleViewer from "../components/ScribbleViewer";
 import { Switch } from "@headlessui/react";
 import { debounce } from "lodash";
 import RamsNeumorphicToggle from "../components/DieterToggle";
@@ -951,8 +952,9 @@ function ListContainer(props) {
   const navigate = useNavigate();
 
   const [showList, setShowList] = useState(true);
-  const [activeTab, setActiveTab] = useState("note"); // "note" or "scribble"
+  const [activeTab, setActiveTab] = useState("note"); // "note", "scribble", or "list"
   const [showMenuBar, setShowMenuBar] = useState(false); // Hide menu bar by default
+  const [isListCollapsed, setIsListCollapsed] = useState(false); // Toggle for list panel
 
   const fileLoading =
     filesState.filesMap[nodeDBMap[selectedListId]?.file_id]?.status ===
@@ -970,9 +972,13 @@ function ListContainer(props) {
   useEffect(() => {
     if (selectedListId && !nodeDBMap[selectedListId]?.file_id) {
       const node = nodeDBMap[selectedListId];
-      
+
+      // If list is collapsed, show list tab
+      if (isListCollapsed) {
+        setActiveTab("list");
+      }
       // If only scribble exists, show scribble tab
-      if (node?.scribble_exists && !node?.note_exists) {
+      else if (node?.scribble_exists && !node?.note_exists) {
         setActiveTab("scribble");
       }
       // If only note exists OR both exist OR neither exists, show note tab
@@ -980,7 +986,7 @@ function ListContainer(props) {
         setActiveTab("note");
       }
     }
-  }, [selectedListId]); // Only trigger when selectedListId changes
+  }, [selectedListId, isListCollapsed, nodeUIMap]); // Trigger when selectedListId or collapse state changes
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -1452,7 +1458,7 @@ function ListContainer(props) {
             <div
               className={`flex flex-shrink-0 flex-col h-full overflow-y-hidden md:w-96 md:min-w-96 border-b-0 border-gray-100 md:border-b-0 md:border-r-2 md:border-gray-100 ${
                 !showList ? "hidden" : ""
-              } md:flex`}
+              } ${isListCollapsed ? "md:hidden" : "md:flex"}`}
             >
               <div
                 className="pl-6 list-parent pt-6 md:pr-6 overflow-y-auto pb-6"
@@ -1595,9 +1601,25 @@ function ListContainer(props) {
                 </div>
               ) : (
                 <div className="h-full flex flex-col">
-                  {/* Tab bar for Note and Scribble */}
+                  {/* Tab bar for List, Note and Scribble */}
                   <div className="flex gap-2 mb-1 pb-1 px-2 sm:py-0 sm:px-0 justify-between items-center">
                     <div className="flex gap-2">
+                      {/* List tab - only show when list is collapsed */}
+                      {isListCollapsed && (
+                        <button
+                          className={`px-4 pb-1 text-sm transition-all duration-200 border-b-2 ${
+                            activeTab === "list"
+                              ? "text-gray-600"
+                              : "text-gray-400 border-transparent hover:text-gray-700"
+                          }`}
+                          onClick={() => setActiveTab("list")}
+                        >
+                          List
+                          {nodeUIMap[selectedListId]?.children?.length > 0 && (
+                            <i className="ri-gemini-fill ri-xs scale-75 -mt-1 absolute -ml-1"></i>
+                          )}
+                        </button>
+                      )}
                       <button
                         className={`px-4 pb-1 text-sm transition-all duration-200 border-b-2 ${
                           activeTab === "note"
@@ -1625,28 +1647,107 @@ function ListContainer(props) {
                         )}
                       </button>
                     </div>
-                    
-                    {/* B/I/U Toggle button - only show for note tab */}
-                    {activeTab === "note" && (
+
+                    <div className="flex items-center gap-2">
+                      {/* B/I/U Toggle button - only show for note tab */}
+                      {activeTab === "note" && (
+                        <button
+                          onClick={() => setShowMenuBar(!showMenuBar)}
+                          className={`flex items-center gap-0.5 px-2 py-1 transition-all duration-200 rounded ${
+                            showMenuBar
+                              ? "bg-gray-200"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
+                          title="Toggle formatting toolbar"
+                        >
+                          <i className={`ri-bold ri-sm ${showMenuBar ? "text-gray-700" : "text-gray-500"}`}></i>
+                          <i className={`ri-italic ri-sm ${showMenuBar ? "text-gray-700" : "text-gray-500"}`}></i>
+                          <i className={`ri-underline ri-sm ${showMenuBar ? "text-gray-700" : "text-gray-500"}`}></i>
+                        </button>
+                      )}
+
+                      {/* List panel toggle button - hidden on mobile */}
                       <button
-                        onClick={() => setShowMenuBar(!showMenuBar)}
-                        className={`flex items-center gap-0.5 px-2 py-1 transition-all duration-200 rounded ${
-                          showMenuBar 
-                            ? "bg-gray-200" 
-                            : "bg-gray-100 hover:bg-gray-200"
-                        }`}
-                        title="Toggle formatting toolbar"
+                        onClick={() => {
+                          setIsListCollapsed(!isListCollapsed);
+                          if (!isListCollapsed) {
+                            // Collapsing: switch to list tab if available
+                            setActiveTab("list");
+                          } else {
+                            // Expanding: switch to note or scribble tab
+                            const node = nodeDBMap[selectedListId];
+                            if (node?.scribble_exists && !node?.note_exists) {
+                              setActiveTab("scribble");
+                            } else {
+                              setActiveTab("note");
+                            }
+                          }
+                        }}
+                        className="hidden md:flex items-center px-2 py-1 transition-all duration-200 hover:bg-gray-100 rounded"
+                        title={isListCollapsed ? "Show list panel" : "Hide list panel"}
                       >
-                        <i className={`ri-bold ri-sm ${showMenuBar ? "text-gray-700" : "text-gray-500"}`}></i>
-                        <i className={`ri-italic ri-sm ${showMenuBar ? "text-gray-700" : "text-gray-500"}`}></i>
-                        <i className={`ri-underline ri-sm ${showMenuBar ? "text-gray-700" : "text-gray-500"}`}></i>
+                        <i className="ri-side-bar-fill text-gray-400 hover:text-gray-700 transition-colors duration-200"></i>
                       </button>
-                    )}
+                    </div>
                   </div>
 
                   {/* Tab content */}
                   <div className="flex-grow" style={{ height: "calc(100% - 25px)" }}>
-                    {activeTab === "note" ? (
+                    {activeTab === "list" ? (
+                      <div className="h-full flex flex-col overflow-y-auto">
+                        <div
+                          className="pl-6 list-parent pt-6 md:pr-6 overflow-y-auto pb-6"
+                          style={{ height: "100%" }}
+                        >
+                          <Parent
+                            nodeUIMap={nodeUIMap}
+                            nodeDBMap={nodeDBMap}
+                            id={selectedListId}
+                            onTextChange={({ id, text }) => {
+                              upsertHelper({
+                                id,
+                                text,
+                              });
+                            }}
+                            onlyRenderChildren={true}
+                            onNewNode={(d) => {
+                              upsertHelper(d);
+                              setTimeout(() => {
+                                focusOnNode({ id: d.id });
+                              }, 50);
+                            }}
+                            selectedListId={selectedListId}
+                            focusOnNode={(d) => {
+                              focusOnNode(d);
+                            }}
+                            level={0}
+                            toggleChecked={(d) => {
+                              upsertHelper(d);
+                            }}
+                            toggleCollapsed={(d) => {
+                              upsertHelper(d);
+                            }}
+                            deleteNode={(d) => {
+                              upsertHelper({
+                                id: d.id,
+                                parent_id: "limbo",
+                                posChange: true,
+                              });
+                            }}
+                            zoomIntoNode={(d) => {
+                              dispatch(
+                                changeSelectedNode({
+                                  id: d.id,
+                                })
+                              );
+                            }}
+                            onDragStart={handleDragStart}
+                            onDragOver={handleDragOver}
+                            onDrop={handleDrop}
+                          />
+                        </div>
+                      </div>
+                    ) : activeTab === "note" ? (
                       <Tiptap
                         ref={tiptapRef}
                         menuBarClasses="opacity-20 hover:opacity-100 transition-opacity duration-300 !px-2 md:!px-0"
@@ -1692,17 +1793,9 @@ function ListContainer(props) {
                         }}
                       />
                     ) : (
-                      <ExcalidrawYjs
-                        height="100%"
-                        scribbleId={nodeDBMap[selectedListId]?.note_id}
+                      <ScribbleViewer
+                        scribbleId={selectedListId}
                         userId={props.userId}
-                        token={token}
-                        userName={props.name || props.email || "Anonymous"}
-                        initialData={null} // Will be loaded from Y.js server
-                        onChange={(data) => {
-                          // Data is automatically synced via Y.js
-                          console.log("Scribble updated");
-                        }}
                       />
                     )}
                   </div>

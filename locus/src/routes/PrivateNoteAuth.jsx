@@ -14,10 +14,12 @@ function PrivateNoteAuth() {
   const userState = useAppSelector(selectUser);
   const tiptapRef = useRef(null);
 
-  const [token] = useCookie(
-    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
-    ""
-  );
+  const getCookie = () => {
+    return document.cookie.split("; ").reduce((acc, cookie) => {
+      const [name, value] = cookie.split("=");
+      return name === process.env.REACT_APP_BTW_UUID_KEY ? value : acc;
+    }, "");
+  };
 
   const [status, setStatus] = useState("authenticating"); // 'authenticating' | 'authenticated' | 'error'
   const [errorMessage, setErrorMessage] = useState("");
@@ -121,7 +123,7 @@ function PrivateNoteAuth() {
             usecase="list"
             className="h-full flex-grow p-6"
             key={id}
-            token={token}
+            token={getCookie()}
             userId={user?.data?.id}
             email={user?.data?.email}
             name={user?.data?.name}
