@@ -68,7 +68,7 @@ SELECT
         ELSE FALSE
     END AS note_exists,
     CASE 
-        WHEN scribbles.id IS NOT NULL AND scribbles.ydoc IS NOT NULL THEN TRUE
+        WHEN scribbles.id IS NOT NULL AND scribbles.pages IS NOT NULL THEN TRUE
         ELSE FALSE
     END AS scribble_exists
 FROM 
