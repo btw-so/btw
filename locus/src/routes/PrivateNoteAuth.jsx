@@ -17,7 +17,7 @@ function PrivateNoteAuth() {
   const getCookie = () => {
     return document.cookie.split("; ").reduce((acc, cookie) => {
       const [name, value] = cookie.split("=");
-      return name === process.env.REACT_APP_BTW_UUID_KEY ? value : acc;
+      return name === (process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid") ? value : acc;
     }, "");
   };
 
