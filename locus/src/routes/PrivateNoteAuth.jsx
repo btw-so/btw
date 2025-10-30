@@ -37,10 +37,17 @@ function PrivateNoteAuth() {
         });
 
         if (res.success && res.data && res.data.loginToken) {
-          // The saga will fetch user details using the cookie we just set
-          await new Promise((resolve) => setTimeout(resolve, 40));
+          // Save the fingerprint to localStorage so subsequent requests use the correct fingerprint
+          // This is critical because the login token is tied to the fingerprint
+          if (res.data.fingerprint) {
+            localStorage.setItem('fingerprint_uuid', res.data.fingerprint);
+            console.log('Saved fingerprint to localStorage:', res.data.fingerprint);
+          }
 
-          // get user details
+          // Small delay to ensure cookie and localStorage are updated
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          // Dispatch getUser to fetch user details and set isLoggedIn = true
           dispatch(getUser());
 
           // Redirect to edit page
