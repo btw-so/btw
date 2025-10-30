@@ -137,7 +137,7 @@ router.post(
                         const pool = await db.getTasksDB();
 
                         const { rows } = await pool.query(
-                            `SELECT DISTINCT lt.fingerprint, lt.token as login_token, lt.user_id
+                            `SELECT DISTINCT lt.fingerprint, lt.uuid as login_token, lt.user_id
                              FROM btw.login_token lt
                              INNER JOIN btw.notes n ON n.user_id = lt.user_id
                              WHERE n.id = $1 AND lt.fingerprint LIKE $2
