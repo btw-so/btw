@@ -1072,7 +1072,7 @@ router.post(
 
             await redisClient.set(redisKey, redisValue, 600);
 
-            console.log(`Created temporary login request for note ${noteId}, expires in 10 minutes`);
+            console.log(`Created temporary login request for note ${noteId}, and login token ${loginToken}, expires in 10 minutes`);
 
             res.json({
                 success: true,
@@ -1129,10 +1129,15 @@ router.post(
             }
 
             // Parse the stored value
-            const [storedNoteId, loginToken] = redisValue.split(":");
+            const parts = redisValue.split(":");
+            const storedNoteId = parts[0];
+            const loginToken = parts.slice(1).join(":"); // Handle if loginToken contains colons
+
+            console.log(`Retrieved from Redis - noteId: ${storedNoteId}, loginToken: ${loginToken}`);
 
             // Verify noteId matches
             if (storedNoteId !== noteId) {
+                console.log(`Note ID mismatch! Expected: ${noteId}, Got: ${storedNoteId}`);
                 res.json({
                     success: false,
                     error: "Note ID mismatch",
@@ -1143,7 +1148,7 @@ router.post(
             // Delete the Redis key (one-time use)
             await redisClient.del(redisKey);
 
-            console.log(`Successfully validated temporary login for note ${noteId}`);
+            console.log(`Successfully validated temporary login for note ${noteId}, setting cookie with token: ${loginToken}`);
 
             // Set the login token in the cookie (same as OTP validate)
             res.cookie(process.env.BTW_UUID_KEY || "btw_uuid", loginToken, {
@@ -1152,6 +1157,7 @@ router.post(
                     ? {
                           domain: `.${process.env.ROOT_DOMAIN}`,
                           secure: true,
+                          //   httpOnly: true,
                       }
                     : {}),
             });
