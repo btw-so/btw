@@ -3,6 +3,9 @@
 		<div><p class="text-xl font-bold">{{siteTitle}}</p></div>
 		<div><a href="{{site_url}}" class="{{#if mainPage}}{{/if}}">Articles</a></div>
 		<div><a href="{{aboutUrl}}" class="{{#if aboutPage}}{{/if}}">About</a></div>
+		{{#if hasMemories}}
+		<div><a href="{{memoriesUrl}}" class="{{#if memoriesPage}}{{/if}}">Memories</a></div>
+		{{/if}}
 		{{#if settings.links}}
 			{{#each settings.links}}
 				<div><a href="{{url}}">{{name}}</a></div>

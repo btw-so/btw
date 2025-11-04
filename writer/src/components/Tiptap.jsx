@@ -37,7 +37,7 @@ const CustomDocument = Document.extend({
 });
 
 let TipTapTeacher = null;
-const requireCustomFile = require.context("../enterprise", false, /E.*$/);
+const requireCustomFile = require.context("../plugins", false, /E.*$/);
 if (requireCustomFile.keys()?.length > 0) {
   if (requireCustomFile.keys()?.includes("./E.TipTapTeacher.jsx")) {
     const fileName = "E.TipTapTeacher.jsx";

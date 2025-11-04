@@ -1,0 +1,710 @@
+{{#content "custom-meta-block"}}
+  <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    /* Full-screen map styling */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    #btw-app {
+      height: 100vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    #btw-app-inner {
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      min-height: 0;
+    }
+
+    #map-container {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      min-height: 500px;
+    }
+
+    /* Map controls overlay */
+    .map-controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 8px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .map-control-btn {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .map-control-btn:hover {
+      background: #f3f4f6;
+    }
+
+    .map-control-btn.active {
+      background: #3b82f6;
+      color: white;
+    }
+
+    /* Info bar */
+    .map-info {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 12px 24px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Legend */
+    .map-legend {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 12px 16px;
+      font-size: 13px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .legend-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #14b8a6;
+    }
+
+    /* Tooltip */
+    .map-tooltip {
+      position: absolute;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 4px 10px -2px rgba(0, 0, 0, 0.1);
+      font-size: 13px;
+      pointer-events: none;
+      z-index: 10000;
+      max-width: 280px;
+      overflow: hidden;
+      transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      transform: translateY(-4px);
+      display: block;
+      visibility: hidden;
+    }
+
+    .map-tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+      visibility: visible;
+    }
+
+    .map-tooltip.simple {
+      padding: 6px 10px;
+    }
+
+    .map-tooltip.memory-card {
+      padding: 0;
+    }
+
+    .tooltip-image {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .tooltip-content {
+      padding: 8px 10px;
+    }
+
+    .tooltip-name {
+      font-weight: 700;
+      margin-bottom: 1px;
+      font-size: 14px;
+      color: #111827;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .tooltip-place {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 4px;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    .tooltip-date {
+      font-size: 10px;
+      color: #6b7280;
+      margin-bottom: 0;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    .tooltip-description {
+      font-size: 11px;
+      color: #374151;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-top: 2px;
+    }
+
+    .tooltip-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+      color: white;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-weight: 600;
+      margin-top: 2px;
+      box-shadow: 0 2px 4px rgba(20, 184, 166, 0.2);
+    }
+
+    /* Loading state */
+    .map-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 999;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 640px) {
+      .map-controls {
+        top: 10px;
+        left: 10px;
+        padding: 6px;
+      }
+
+      .map-control-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+
+      .map-info {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        transform: none;
+        padding: 10px 16px;
+        font-size: 13px;
+      }
+
+      .map-legend {
+        top: 10px;
+        right: 10px;
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      .map-controls, .map-info, .map-legend, .map-tooltip {
+        background: #1a1a1a;
+        color: white;
+      }
+
+      .map-control-btn:hover {
+        background: #2a2a2a;
+      }
+
+      .tooltip-date {
+        color: #a0a0a0;
+      }
+    }
+  </style>
+{{/content}}
+
+{{#content "body"}}
+  <div id="map-container">
+    <!-- Loading indicator -->
+    <div class="map-loading" id="map-loading">
+      <div class="spinner"></div>
+      <div>Loading map...</div>
+    </div>
+
+    <!-- Mode toggle controls -->
+    <div class="map-controls">
+      <button class="map-control-btn active" data-mode="cities">Memories</button>
+      <button class="map-control-btn" data-mode="countries">Countries</button>
+    </div>
+
+    <!-- Info bar -->
+    <div class="map-info" id="map-info">
+      Loading places...
+    </div>
+
+    <!-- Tooltip -->
+    <div class="map-tooltip simple" id="map-tooltip">
+      <img class="tooltip-image" id="tooltip-image" style="display: none;" />
+      <div class="tooltip-content" id="tooltip-content">
+        <div class="tooltip-name"></div>
+        <div class="tooltip-place"></div>
+        <div class="tooltip-date"></div>
+        <div class="tooltip-description"></div>
+        <div class="tooltip-badge" id="tooltip-badge" style="display: none;"></div>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div id="map"></div>
+  </div>
+{{/content}}
+
+{{#content "eob-block"}}
+  <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/deck.gl@8.9.35/dist.min.js"></script>
+  <script>
+    const userId = {{userId}};
+    const tasksUrl = '{{tasksUrl}}';
+
+    // Initialize memories map
+    (async function() {
+      try {
+        // Fetch memories data
+        const memoriesResponse = await fetch(`${tasksUrl}/memories/public/${userId}`);
+        const memoriesData = await memoriesResponse.json();
+
+        if (!memoriesData.success || !memoriesData.data || !memoriesData.data.memories) {
+          throw new Error('Failed to load memories');
+        }
+
+        const memories = memoriesData.data.memories;
+
+        // Extract places (cities) from memories
+        const placesMap = new Map();
+        memories.forEach(memory => {
+          if (memory.city && memory.country_code && memory.latitude && memory.longitude) {
+            const key = `${memory.city}-${memory.country_code}`;
+            if (!placesMap.has(key)) {
+              placesMap.set(key, {
+                type: 'city',
+                name: memory.city,
+                country_code: memory.country_code,
+                latitude: memory.latitude,
+                longitude: memory.longitude,
+                visited_date: memory.visited_date
+              });
+            }
+          }
+        });
+        const places = Array.from(placesMap.values());
+
+        // Hide loading
+        document.getElementById('map-loading').style.display = 'none';
+
+        // Update info bar - auto-calculate countries from cities
+        const cities = places.filter(p => p.type === 'city');
+        const countries = [...new Set(cities.map(c => c.country_code).filter(Boolean))];
+        const memoriesCount = memories.length;
+        const infoText = memoriesCount > 0
+          ? `${cities.length} cities • ${countries.length} countries • ${memoriesCount} memories`
+          : `${cities.length} cities visited across ${countries.length} countries`;
+        document.getElementById('map-info').textContent = infoText;
+
+        // Calculate map center (centroid of all places, or default to world view)
+        let avgLat = 20;
+        let avgLon = 0;
+        let initialZoom = 2;
+
+        if (places.length > 0) {
+          avgLat = places.reduce((sum, p) => sum + parseFloat(p.latitude), 0) / places.length;
+          avgLon = places.reduce((sum, p) => sum + parseFloat(p.longitude), 0) / places.length;
+        } else if (memories.length > 0) {
+          // If no places but have memories, center on memories
+          const validMemories = memories.filter(m => m.latitude && m.longitude);
+          if (validMemories.length > 0) {
+            avgLat = validMemories.reduce((sum, m) => sum + parseFloat(m.latitude), 0) / validMemories.length;
+            avgLon = validMemories.reduce((sum, m) => sum + parseFloat(m.longitude), 0) / validMemories.length;
+          }
+        }
+
+        // Initialize MapLibre map with Voyager style (soft colors, minimal but alive)
+        const map = new maplibregl.Map({
+          container: 'map',
+          style: {
+            version: 8,
+            sources: {
+              'raster-tiles': {
+                type: 'raster',
+                tiles: [
+                  'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                  'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                  'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
+                ],
+                tileSize: 256,
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>'
+              }
+            },
+            layers: [
+              {
+                id: 'simple-tiles',
+                type: 'raster',
+                source: 'raster-tiles',
+                minzoom: 0,
+                maxzoom: 22
+              }
+            ]
+          },
+          center: [avgLon, avgLat],
+          zoom: initialZoom,
+          attributionControl: true
+        });
+
+        // Add navigation controls
+        map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+        map.addControl(new maplibregl.FullscreenControl(), 'bottom-right');
+
+        // Store current mode
+        let currentMode = 'cities';
+
+        // Create deck.gl overlay
+        const deckOverlay = new deck.MapboxOverlay({
+          layers: []
+        });
+
+        map.addControl(deckOverlay);
+
+        // Load country boundaries GeoJSON
+        let countriesGeoJSON = null;
+        async function loadCountriesGeoJSON() {
+          try {
+            const response = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
+            countriesGeoJSON = await response.json();
+            // Update layers if we're already in country mode
+            if (currentMode === 'countries') {
+              updateLayers('countries');
+            }
+          } catch (e) {
+            console.error('Failed to load countries GeoJSON:', e);
+          }
+        }
+
+        // Function to update layers based on mode
+        function updateLayers(mode) {
+          const layers = [];
+
+          if (mode === 'cities') {
+            // Memory markers layer (camera icons only)
+            if (memories.length > 0) {
+              layers.push(new deck.IconLayer({
+                id: 'memory-markers',
+                data: memories,
+                getPosition: d => [parseFloat(d.longitude), parseFloat(d.latitude)],
+                getIcon: d => ({
+                  url: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`
+                    <svg width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <filter id="shadow-memory">
+                          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.5"/>
+                        </filter>
+                      </defs>
+                      <!-- Camera emoji -->
+                      <text x="18" y="26" font-size="24" text-anchor="middle" filter="url(#shadow-memory)">📸</text>
+                    </svg>
+                  `),
+                  width: 36,
+                  height: 36,
+                  anchorY: 36
+                }),
+                getSize: 36,
+                sizeScale: 1,
+                pickable: true,
+                onHover: ({object, x, y}) => {
+                  if (object) {
+                    showMemoryCard(object, x, y);
+                  } else {
+                    hideTooltip();
+                  }
+                }
+              }));
+            }
+          } else {
+            // Country fills layer with actual country polygons
+            if (countriesGeoJSON) {
+              // Auto-calculate visited countries from cities
+              const visitedCountryCodes = [...new Set(places.filter(p => p.type === 'city').map(p => p.country_code).filter(Boolean))];
+
+              // Create a mapping of country codes to country names for fallback matching
+              const countryCodeToName = {
+                'FR': 'France',
+                'IT': 'Italy',
+                'SG': 'Singapore',
+                'IN': 'India',
+                'US': 'United States of America',
+                'GB': 'United Kingdom',
+                'DE': 'Germany',
+                'ES': 'Spain',
+                'JP': 'Japan',
+                'CN': 'China',
+                'AU': 'Australia',
+                'CA': 'Canada',
+                'BR': 'Brazil',
+                'MX': 'Mexico',
+                'KR': 'South Korea',
+                'TH': 'Thailand',
+                'VN': 'Vietnam',
+                'ID': 'Indonesia',
+                'MY': 'Malaysia',
+                'PH': 'Philippines',
+                'NL': 'Netherlands',
+                'BE': 'Belgium',
+                'CH': 'Switzerland',
+                'AT': 'Austria',
+                'SE': 'Sweden',
+                'NO': 'Norway',
+                'DK': 'Denmark',
+                'FI': 'Finland',
+                'PL': 'Poland',
+                'CZ': 'Czech Republic',
+                'PT': 'Portugal',
+                'GR': 'Greece',
+                'TR': 'Turkey',
+                'RU': 'Russia',
+                'UA': 'Ukraine',
+                'EG': 'Egypt',
+                'ZA': 'South Africa',
+                'AE': 'United Arab Emirates',
+                'SA': 'Saudi Arabia',
+                'IL': 'Israel',
+                'AR': 'Argentina',
+                'CL': 'Chile',
+                'CO': 'Colombia',
+                'PE': 'Peru',
+                'NZ': 'New Zealand',
+              };
+
+              // Get country names for visited codes
+              const visitedCountryNames = visitedCountryCodes.map(code => countryCodeToName[code]).filter(Boolean);
+
+              // Filter GeoJSON to only visited countries (match by ISO code OR country name)
+              const visitedCountries = {
+                type: 'FeatureCollection',
+                features: countriesGeoJSON.features.filter(feature => {
+                  const iso2 = feature.properties['ISO3166-1-Alpha-2'];
+                  const name = feature.properties.name;
+
+                  // Match by ISO code first, then fallback to name matching
+                  const matchedByCode = visitedCountryCodes.includes(iso2);
+                  const matchedByName = visitedCountryNames.includes(name);
+
+                  return matchedByCode || matchedByName;
+                })
+              };
+
+              layers.push(new deck.GeoJsonLayer({
+                id: 'country-fills',
+                data: visitedCountries,
+                filled: true,
+                stroked: true,
+                getFillColor: [20, 184, 166, 100], // Teal with transparency
+                getLineColor: [20, 184, 166, 200], // Darker teal border
+                getLineWidth: 2,
+                lineWidthMinPixels: 1,
+                pickable: true,
+                onClick: ({object}) => {
+                  if (object) {
+                    // Get bounding box and zoom to country
+                    const coordinates = object.geometry.coordinates;
+                    // Simple center calculation (can be improved)
+                    map.flyTo({
+                      zoom: 4,
+                      duration: 1500
+                    });
+                  }
+                },
+                onHover: ({object, x, y}) => {
+                  if (object) {
+                    const countryName = object.properties.name || object.properties.ADMIN || object.properties.NAME;
+                    showSimpleTooltip(countryName, '', x, y);
+                  } else {
+                    hideTooltip();
+                  }
+                },
+                updateTriggers: {
+                  getFillColor: visitedCountryCodes
+                }
+              }));
+            }
+          }
+
+          deckOverlay.setProps({ layers });
+        }
+
+        // Helper functions for tooltips
+        function showSimpleTooltip(name, date, x, y) {
+          const tooltip = document.getElementById('map-tooltip');
+          const tooltipImage = document.getElementById('tooltip-image');
+          const tooltipDescription = tooltip.querySelector('.tooltip-description');
+          const tooltipBadge = document.getElementById('tooltip-badge');
+
+          // Reset to simple mode
+          tooltip.classList.remove('memory-card');
+          tooltip.classList.add('simple');
+          tooltipImage.style.display = 'none';
+          tooltipDescription.style.display = 'none';
+          tooltipBadge.style.display = 'none';
+
+          tooltip.querySelector('.tooltip-name').textContent = name;
+          tooltip.querySelector('.tooltip-date').textContent = date;
+          tooltip.style.left = x + 'px';
+          tooltip.style.top = y + 'px';
+          tooltip.classList.add('visible');
+        }
+
+        function showMemoryCard(memory, x, y) {
+          const tooltip = document.getElementById('map-tooltip');
+          const tooltipImage = document.getElementById('tooltip-image');
+          const tooltipDescription = tooltip.querySelector('.tooltip-description');
+          const tooltipBadge = document.getElementById('tooltip-badge');
+
+          // Switch to memory card mode
+          tooltip.classList.remove('simple');
+          tooltip.classList.add('memory-card');
+
+          // Fix image URL (remove duplicate bucket name)
+          const fixImageUrl = (url) => {
+            if (!url) return url;
+            return url.replace('https://nyc3.digitaloceanspaces.com/nyc3.digitaloceanspaces.com/', 'https://nyc3.digitaloceanspaces.com/');
+          };
+
+          // Show and set image
+          if (memory.photo_urls && memory.photo_urls.length > 0) {
+            tooltipImage.src = fixImageUrl(memory.photo_urls[0]);
+            tooltipImage.style.display = 'block';
+          } else {
+            tooltipImage.style.display = 'none';
+          }
+
+          // Set content
+          tooltip.querySelector('.tooltip-name').textContent = memory.name || memory.place_name || 'Untitled Memory';
+          tooltip.querySelector('.tooltip-place').textContent = memory.place_address || memory.place_name || '';
+
+          const date = memory.visited_date ?
+            new Date(memory.visited_date).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            }) : '';
+          tooltip.querySelector('.tooltip-date').textContent = date;
+
+          tooltipDescription.textContent = memory.description;
+          tooltipDescription.style.display = 'block';
+
+          // Hide badge
+          tooltipBadge.style.display = 'none';
+
+          tooltip.style.left = x + 'px';
+          tooltip.style.top = (y - 10) + 'px'; // Offset up a bit
+          tooltip.classList.add('visible');
+        }
+
+        function hideTooltip() {
+          const tooltip = document.getElementById('map-tooltip');
+          tooltip.classList.remove('visible');
+        }
+
+        // Load country boundaries GeoJSON data
+        loadCountriesGeoJSON();
+
+        // Initial layer setup
+        updateLayers(currentMode);
+
+        // Mode toggle buttons
+        document.querySelectorAll('.map-control-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const mode = btn.dataset.mode;
+            currentMode = mode;
+
+            // Update button states
+            document.querySelectorAll('.map-control-btn').forEach(b => {
+              b.classList.remove('active');
+            });
+            btn.classList.add('active');
+
+            // Update layers
+            updateLayers(mode);
+
+            // Reset view
+            map.flyTo({
+              center: [avgLon, avgLat],
+              zoom: 2,
+              duration: 1500
+            });
+          });
+        });
+
+      } catch (error) {
+        console.error('Error loading map:', error);
+        document.getElementById('map-loading').innerHTML =
+          '<div style="color: #ef4444;">Failed to load map. Please try again later.</div>';
+      }
+    })();
+  </script>
+{{/content}}
