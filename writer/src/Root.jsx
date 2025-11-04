@@ -23,6 +23,7 @@ import PublicRoute from "./components/PublicRoute";
 import PrivateRoute from "./components/PrivateRoute";
 import Settings from "./routes/Settings";
 import List from "./routes/List";
+import Memories from "./routes/Memories";
 
 function Root() {
   const dispatch = useDispatch();
@@ -181,6 +182,20 @@ function Root() {
               </PrivateRoute>
             }
             path="/settings"
+          />
+          <Route
+            className="flex flex-grow"
+            element={
+              <PrivateRoute isLoggedIn={isLoggedIn} to="/login">
+                <Memories
+                  userId={user && user.data ? user.data.id : null}
+                  name={user && user.data ? user.data.name : null}
+                  email={user && user.data ? user.data.email : null}
+                  slug={user && user.data ? user.data.slug : null}
+                />
+              </PrivateRoute>
+            }
+            path="/memories"
           />
           <Route
             element={
