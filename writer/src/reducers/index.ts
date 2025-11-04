@@ -5,7 +5,7 @@ import user, { userState } from './user';
 import otp, { otpState } from './user';
 import notes, { notesState } from './notes';
 import list, { listState } from './list';
-import places, { placesState } from './places';
+import memories, { memoriesState } from './memories';
 
 export const initialState = {
   alerts: alertsState,
@@ -15,7 +15,7 @@ export const initialState = {
   notes: notesState,
   otp: otpState,
   list: listState,
-  places: placesState
+  memories: memoriesState
 };
 
 export default {
@@ -26,5 +26,5 @@ export default {
   ...notes,
   ...otp,
   ...list,
-  ...places
+  ...memories
 };

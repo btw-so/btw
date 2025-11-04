@@ -1,26 +1,26 @@
 import React from "react";
 import AppWrapper from "../containers/AppWraper";
 
-// Dynamically import the Places plugin
-let PlacesPlugin = null;
+// Dynamically import the Memories plugin
+let MemoriesPlugin = null;
 const requireCustomFile = require.context("../plugins", false, /E.*$/);
 if (requireCustomFile.keys()?.length > 0) {
-  if (requireCustomFile.keys()?.includes("./E.PlacesPlugin.jsx")) {
-    PlacesPlugin = requireCustomFile("./E.PlacesPlugin.jsx").default;
+  if (requireCustomFile.keys()?.includes("./E.MemoriesPlugin.jsx")) {
+    MemoriesPlugin = requireCustomFile("./E.MemoriesPlugin.jsx").default;
   }
 }
 
-function Places(props) {
+function Memories(props) {
   return (
     <AppWrapper>
       <div className="w-full h-full overflow-auto bg-white">
-        {PlacesPlugin ? (
-          <PlacesPlugin />
+        {MemoriesPlugin ? (
+          <MemoriesPlugin />
         ) : (
           <div className="p-6 max-w-4xl mx-auto">
             <div className="bg-yellow-50 border border-yellow-200 rounded p-4">
               <p className="text-yellow-800">
-                Places plugin not found. Please ensure E.PlacesPlugin.jsx exists in the plugins directory.
+                Memories plugin not found. Please ensure E.MemoriesPlugin.jsx exists in the plugins directory.
               </p>
             </div>
           </div>
@@ -30,4 +30,4 @@ function Places(props) {
   );
 }
 
-export default Places;
+export default Memories;

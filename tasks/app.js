@@ -61,7 +61,7 @@ var whatsappRouter = require("./routes/whatsapp");
 var telegramRouter = require("./routes/telegram");
 var userRouter = require("./routes/user");
 var a1Router = require("./routes/a1");
-var placesRouter = require("./routes/places");
+var memoriesRouter = require("./routes/memories");
 var { baseQueue, alertsQueue, uxQueue } = require("./services/queue");
 var { upsertNote, getNote } = require("./logic/notes");
 
@@ -105,7 +105,7 @@ app.use("/telegram", telegramRouter);
 app.use("/a1", a1Router);
 app.use("/user", userRouter);
 app.use("/jobs", jobsRouter);
-app.use("/places", placesRouter);
+app.use("/memories", memoriesRouter);
 
 // Queue monitor
 const serverAdapter = new ExpressAdapter();

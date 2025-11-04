@@ -58,8 +58,8 @@ services:
             S3_BUCKET:
             S3_KEY:
             S3_SECRET:
-            ADMIN_EMAIL: deepti.vchopra@gmail.com
-            ADMIN_SLUG: dc
+            ADMIN_EMAIL:
+            ADMIN_SLUG:
         links:
             - redis
     list:

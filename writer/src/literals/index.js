@@ -71,9 +71,18 @@ export const ActionTypes = keyMirror({
   MAKE_NOTE_PRIVATE: undefined,
   MAKE_NOTE_PRIVATE_SUCCESS: undefined,
   MAKE_NOTE_PRIVATE_FAILURE: undefined,
-  GET_PLACES: undefined,
-  GET_PLACES_SUCCESS: undefined,
-  GET_PLACES_FAILURE: undefined,
+  GET_MEMORIES: undefined,
+  GET_MEMORIES_SUCCESS: undefined,
+  GET_MEMORIES_FAILURE: undefined,
+  ADD_MEMORY: undefined,
+  ADD_MEMORY_SUCCESS: undefined,
+  ADD_MEMORY_FAILURE: undefined,
+  UPDATE_MEMORY: undefined,
+  UPDATE_MEMORY_SUCCESS: undefined,
+  UPDATE_MEMORY_FAILURE: undefined,
+  DELETE_MEMORY: undefined,
+  DELETE_MEMORY_SUCCESS: undefined,
+  DELETE_MEMORY_FAILURE: undefined,
 });
 
 export const STATUS = {

@@ -4,11 +4,11 @@ import github from './github';
 import user from './user';
 import notes from './notes';
 import list from './list';
-import places from './places';
+import memories from './memories';
 
 /**
  * rootSaga
  */
 export default function* root() {
-  yield all([fork(github), fork(user), fork(notes), fork(list), fork(places)]);
+  yield all([fork(github), fork(user), fork(notes), fork(list), fork(memories)]);
 }

@@ -34,3 +34,6 @@ deployment/
 deployment/.DS_Store
 
 .DS_Store
+
+cors-config.json
+migration_*.sql
