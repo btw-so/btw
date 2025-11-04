@@ -36,13 +36,24 @@ const createSubUrlWithPath = (res, path) => {
   }.${process.env.ROOT_DOMAIN}${path}`;
 };
 
-const getCommonDeets = (
+const getCommonDeets = async (
   req,
   res,
   path,
   user,
   { meta_title, meta_description, meta_image, title } = {}
 ) => {
+  // Check if user has memories
+  const { getPublicMemories } = require("../logic/memories");
+  let hasMemories = false;
+  try {
+    const memories = await getPublicMemories(user.id);
+    hasMemories = memories && memories.length > 0;
+  } catch (e) {
+    console.error("Error checking memories:", e);
+    console.error(e.stack);
+  }
+
   return {
     site_title: meta_title
       ? `${meta_title} | ${user.name || user.email}`
@@ -52,6 +63,8 @@ const getCommonDeets = (
     originalUrl: createSubUrlWithPath(res, path),
     canonicalUrl: createSubUrlWithPath(res, path),
     aboutUrl: createSubUrlWithPath(res, "/about"),
+    memoriesUrl: createSubUrlWithPath(res, "/memories"),
+    hasMemories,
     site_logo:
       user.pic ||
       "https://res.cloudinary.com/adaface/image/upload/f_auto,q_auto/btw-app-icon.png",
@@ -256,7 +269,7 @@ router.get("/", async (req, res, next) => {
         };
       }),
     mainPage: true,
-    ...getCommonDeets(req, res, "/", user),
+    ...(await getCommonDeets(req, res, "/", user)),
   });
 });
 
@@ -291,10 +304,33 @@ router.get("/about", async (req, res, next) => {
     notes,
     bio: user.bio,
     pic: user.pic,
-    ...getCommonDeets(req, res, "/about", user, {
+    ...(await getCommonDeets(req, res, "/about", user, {
       title: `About`,
       meta_title: `About`,
-    }),
+    })),
+  });
+});
+
+router.get("/memories", async (req, res, next) => {
+  const user = await getUserBySlug({
+    slug: res.locals.domainSlug,
+    customDomain: res.locals.customDomain,
+  });
+
+  if (!user) {
+    res.status(404).render("notfound", { user: true });
+    return;
+  }
+
+  res.render("memories", {
+    memoriesPage: true,
+    userId: user.id,
+    tasksUrl: process.env.TASKS_URL || 'http://localhost:9210',
+    ...(await getCommonDeets(req, res, "/memories", user, {
+      title: `Memories`,
+      meta_title: `Memories`,
+      meta_description: `Interactive map showing my special memories and moments`,
+    })),
   });
 });
 
@@ -341,12 +377,12 @@ router.get("/:slug", async (req, res, next) => {
   const meta_description = pMatch ? pMatch[1] : null;
 
   res.render("post", {
-    ...getCommonDeets(req, res, `/${note.slug}`, user, {
+    ...(await getCommonDeets(req, res, `/${note.slug}`, user, {
       title: note.title,
       meta_title: note.title,
       meta_image,
       meta_description,
-    }),
+    })),
     note,
     published_at: new Date(note.published_at).getTime(),
   });

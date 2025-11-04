@@ -235,3 +235,24 @@ CREATE TABLE "btw"."family_users" (
     "id2" int4 NOT NULL,
     PRIMARY KEY ("id1","id2")
 );
+
+-- Table Definition
+CREATE TABLE "btw"."memories" (
+    "id" uuid NOT NULL,
+    "user_id" int4 NOT NULL,
+    "name" text NOT NULL,
+    "place_name" text NOT NULL,
+    "place_address" text,
+    "latitude" float8 NOT NULL,
+    "longitude" float8 NOT NULL,
+    "place_type" text,
+    "city" text NOT NULL,
+    "country_code" text NOT NULL,
+    "description" text,
+    "photo_urls" jsonb,
+    "visited_date" timestamptz,
+    "private" boolean NOT NULL DEFAULT false,
+    "created_at" timestamptz NOT NULL DEFAULT NOW(),
+    "updated_at" timestamptz NOT NULL DEFAULT NOW(),
+    PRIMARY KEY ("id","user_id")
+);

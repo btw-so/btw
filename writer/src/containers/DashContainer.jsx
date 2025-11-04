@@ -22,7 +22,7 @@ import useTreeChanges from "tree-changes-hook";
 import toast from "react-hot-toast";
 
 let TipTapTeacherSummary = null;
-const requireCustomFile = require.context("../enterprise", false, /E.*$/);
+const requireCustomFile = require.context("../plugins", false, /E.*$/);
 if (requireCustomFile.keys()?.length > 0) {
   if (requireCustomFile.keys()?.includes("./E.TipTapTeacherSummary.jsx")) {
     const fileName = "E.TipTapTeacherSummary.jsx";
