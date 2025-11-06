@@ -91,8 +91,8 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "hbs");
 
 app.use(logger("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '10mb' })); // Increased from default 100kb to 10mb for scribble data
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -157,7 +157,19 @@ console.log("process.env.COMPANION_AWS_ACL", process.env.COMPANION_AWS_ACL);
 app.use(
     "/companion",
     cors({
-        origin: process.env.COMPANION_CLIENT_ORIGINS.split(","),
+        origin: (origin, callback) => {
+            // Allow requests from configured origins
+            const allowedOrigins = process.env.COMPANION_CLIENT_ORIGINS.split(",");
+
+            // Also allow WebView requests (null origin or file:// protocol)
+            // and requests with no origin (same-origin or Postman/curl)
+            if (!origin || origin === 'null' || origin.startsWith('file://') || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        credentials: true, // Important for cookies to work in WebView
     }),
     companionApp
 );
