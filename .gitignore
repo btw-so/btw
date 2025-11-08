@@ -1,16 +1,17 @@
-list/.tmp
-list/.sass-cache
-list/.publish
-list/coverage/
-list/build/
-list/dist/
-list/node_modules/
-list/reports/
-list/webpack.stats.json
-list/src/enterprise
-list/.DS_Store
+locus/.tmp
+locus/.sass-cache
+locus/.publish
+locus/coverage/
+locus/build/
+locus/dist/
+locus/node_modules/
+locus/reports/
+locus/webpack.stats.json
+locus/src/enterprise
+locus/.DS_Store
 
-list/out/
+locus/out/
+
 
 writer/.tmp
 writer/.sass-cache
@@ -34,5 +35,15 @@ publisher/.DS_Store
 
 deployment/
 deployment/.DS_Store
+
+locus-apps/build/
+locus-apps/DerivedData/
+locus-apps/*.xcuserstate
+locus-apps/xcuserdata/
+locus-apps/*.xcworkspace
+locus-apps/Pods/
+locus-apps/.DS_Store
+locus-apps/*.swp
+locus-apps/*.swo
 
 .DS_Store
