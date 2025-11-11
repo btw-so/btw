@@ -101,5 +101,81 @@ router.post(
     }
 );
 
+router.options(
+    "/backup/files",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/backup/files",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, page = 1, limit = 100 } = req.body || {};
+
+        // get loginToken as btw_uuid cookie
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
+            const pageNum = Number(page);
+            const limitNum = limit && limit <= 100 ? Number(limit) : 100;
+            const pool = await db.getTasksDB();
+
+            // Get all files for user
+            const query = `
+                SELECT *
+                FROM btw.files
+                WHERE user_id = $1
+                ORDER BY created_at DESC
+                LIMIT $2 OFFSET $3
+            `;
+
+            const rows = await pool.query(query, [
+                user.id,
+                limitNum,
+                (pageNum - 1) * limitNum,
+            ]);
+
+            // Count total files
+            const countQuery = `
+                SELECT COUNT(*) as count
+                FROM btw.files
+                WHERE user_id = $1
+            `;
+
+            const totalRows = await pool.query(countQuery, [user.id]);
+
+            res.json({
+                success: true,
+                data: {
+                    files: rows.rows,
+                    page: pageNum,
+                    total: Number(totalRows.rows[0].count),
+                    limit: limitNum,
+                },
+                isLoggedIn: true,
+            });
+        } catch (e) {
+            res.json({
+                success: false,
+                error: e.message,
+                isLoggedIn: false,
+            });
+        }
+    }
+);
 
 module.exports = router;

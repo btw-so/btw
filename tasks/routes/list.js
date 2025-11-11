@@ -991,4 +991,84 @@ router.post(
 // 4. Base64 encode to get urlHash
 // 5. Generate URL: /private/note/{noteId}/{urlHash}
 
+// Backup endpoint - Get all nodes for a user (excluding limbo)
+router.options(
+    "/backup/nodes",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/backup/nodes",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, page = 1, limit = 200 } = req.body || {};
+
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
+            // Convert page and limit to numbers and apply constraints
+            const pageNum = Number(page);
+            const limitNum = limit && limit <= 200 ? Number(limit) : 200;
+
+            const pool = await db.getTasksDB();
+
+            // Get all nodes for user excluding limbo parent_id
+            const query = `
+                SELECT *
+                FROM btw.nodes
+                WHERE user_id = $1 AND (parent_id IS NULL OR parent_id <> 'limbo')
+                ORDER BY updated_at DESC
+                LIMIT $2 OFFSET $3
+            `;
+
+            const rows = await pool.query(query, [
+                user.id,
+                limitNum,
+                (pageNum - 1) * limitNum,
+            ]);
+
+            // Count total nodes
+            const countQuery = `
+                SELECT COUNT(*) as count
+                FROM btw.nodes
+                WHERE user_id = $1 AND (parent_id IS NULL OR parent_id <> 'limbo')
+            `;
+
+            const totalRows = await pool.query(countQuery, [user.id]);
+
+            res.json({
+                success: true,
+                data: {
+                    nodes: rows.rows,
+                    page: pageNum,
+                    total: Number(totalRows.rows[0].count),
+                    limit: limitNum,
+                },
+                isLoggedIn: true,
+            });
+        } catch (e) {
+            console.log("Backup nodes error:", e);
+            res.json({
+                success: false,
+                error: e.message || e.toString(),
+                isLoggedIn: false,
+            });
+        }
+    }
+);
+
 module.exports = router;
