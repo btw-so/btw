@@ -594,4 +594,81 @@ router.post(
     }
 );
 
+router.options(
+    "/backup/notes",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/backup/notes",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, page = 1, limit = 50 } = req.body || {};
+
+        // get loginToken as btw_uuid cookie
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
+            const pageNum = Number(page);
+            const limitNum = limit && limit <= 50 ? Number(limit) : 50;
+            const pool = await db.getTasksDB();
+
+            // Get all notes for user excluding list tags
+            const query = `
+                SELECT *
+                FROM btw.notes
+                WHERE user_id = $1 AND (tags NOT LIKE '%list%' OR tags IS NULL)
+                ORDER BY updated_at DESC
+                LIMIT $2 OFFSET $3
+            `;
+
+            const rows = await pool.query(query, [
+                user.id,
+                limitNum,
+                (pageNum - 1) * limitNum,
+            ]);
+
+            // Count total notes
+            const countQuery = `
+                SELECT COUNT(*) as count
+                FROM btw.notes
+                WHERE user_id = $1 AND (tags NOT LIKE '%list%' OR tags IS NULL)
+            `;
+
+            const totalRows = await pool.query(countQuery, [user.id]);
+
+            res.json({
+                success: true,
+                data: {
+                    notes: rows.rows,
+                    page: pageNum,
+                    total: Number(totalRows.rows[0].count),
+                    limit: limitNum,
+                },
+                isLoggedIn: true,
+            });
+        } catch (e) {
+            res.json({
+                success: false,
+                error: e.message,
+                isLoggedIn: false,
+            });
+        }
+    }
+);
+
 module.exports = router;
