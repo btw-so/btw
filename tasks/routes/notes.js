@@ -1,6 +1,7 @@
 var express = require("express");
 var router = express.Router();
 var cors = require("cors");
+const db = require("../services/db");
 var { getUserFromToken, doesLoginTokenExist } = require("../logic/user");
 var {
     getNotes,
