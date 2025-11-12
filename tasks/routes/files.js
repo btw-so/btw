@@ -222,13 +222,14 @@ router.post(
             const limitNum = limit && limit <= 200 ? Number(limit) : 200;
             const pool = await db.getTasksDB();
 
-            // Get files modified after specified date
+            // Get files created/modified after specified date
+            // Note: files table uses created_at, not updated_at
             const query = `
                 SELECT *
                 FROM btw.files
                 WHERE user_id = $1
-                  AND updated_at > $2
-                ORDER BY updated_at DESC
+                  AND created_at > $2
+                ORDER BY created_at DESC
                 LIMIT $3 OFFSET $4
             `;
 
@@ -244,7 +245,7 @@ router.post(
                 SELECT COUNT(*) as count
                 FROM btw.files
                 WHERE user_id = $1
-                  AND updated_at > $2
+                  AND created_at > $2
             `;
 
             const totalRows = await pool.query(countQuery, [user.id, modifiedDate]);
