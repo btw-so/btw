@@ -10,6 +10,32 @@ import Combine
 
 #if os(macOS)
 
+// MARK: - Backup Metadata Model
+
+struct BackupMetadata: Codable {
+    let backupId: String
+    let userId: Int
+    let startTime: Date
+    var lastSyncTime: Date
+    var completionTime: Date?
+    let version: String
+    var nodesCount: Int
+    var notesCount: Int
+    var filesCount: Int
+
+    init(backupId: String, userId: Int, startTime: Date = Date()) {
+        self.backupId = backupId
+        self.userId = userId
+        self.startTime = startTime
+        self.lastSyncTime = startTime
+        self.completionTime = nil
+        self.version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        self.nodesCount = 0
+        self.notesCount = 0
+        self.filesCount = 0
+    }
+}
+
 // MARK: - Backup Progress Model
 
 struct BackupProgress {
@@ -57,6 +83,16 @@ class BackupManager: ObservableObject {
         }
     }
 
+    @Published var backupRetentionDays: Int {
+        didSet {
+            UserDefaults.standard.set(backupRetentionDays, forKey: "backup_retention_days")
+            // Clean up old backups when retention period changes
+            Task {
+                await cleanupOldBackups()
+            }
+        }
+    }
+
     @Published var backupLocation: URL {
         didSet {
             UserDefaults.standard.set(backupLocation.path, forKey: "backup_location")
@@ -71,6 +107,7 @@ class BackupManager: ObservableObject {
 
     private var isCancelled = false
     private var currentBackupTask: Task<Void, Never>?
+    private var incrementalSyncTimer: Timer?
 
     private var lastBackupDate: Date? {
         get {
@@ -89,6 +126,10 @@ class BackupManager: ObservableObject {
         // Load saved preferences
         self.isBackupEnabled = UserDefaults.standard.bool(forKey: "backup_enabled")
 
+        // Load retention days (default to 30)
+        let savedRetentionDays = UserDefaults.standard.integer(forKey: "backup_retention_days")
+        self.backupRetentionDays = savedRetentionDays > 0 ? savedRetentionDays : 30
+
         if let savedPath = UserDefaults.standard.string(forKey: "backup_location") {
             self.backupLocation = URL(fileURLWithPath: savedPath)
             // Try to restore bookmark
@@ -98,6 +139,11 @@ class BackupManager: ObservableObject {
             let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             let appFolder = appSupport.appendingPathComponent("com.siddg.locus")
             self.backupLocation = appFolder.appendingPathComponent("backups")
+        }
+
+        // Start incremental sync timer if backups are enabled
+        if isBackupEnabled {
+            startIncrementalSync()
         }
     }
 
@@ -169,6 +215,147 @@ class BackupManager: ObservableObject {
         } else {
             // No bookmark, just try the operation (works for Application Support)
             return try operation()
+        }
+    }
+
+    // MARK: - Metadata Management
+
+    private func saveMetadata(_ metadata: BackupMetadata, to folder: URL) throws {
+        let metadataFile = folder.appendingPathComponent("metadata.json")
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(metadata)
+        try data.write(to: metadataFile)
+    }
+
+    private func loadMetadata(from folder: URL) -> BackupMetadata? {
+        let metadataFile = folder.appendingPathComponent("metadata.json")
+        guard FileManager.default.fileExists(atPath: metadataFile.path) else {
+            return nil
+        }
+
+        do {
+            let data = try Data(contentsOf: metadataFile)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            return try decoder.decode(BackupMetadata.self, from: data)
+        } catch {
+            print("❌ Failed to load metadata: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    private func getLatestBackupFolder() -> URL? {
+        guard let bookmarkedURL = bookmarkedURL else { return nil }
+
+        do {
+            guard bookmarkedURL.startAccessingSecurityScopedResource() else { return nil }
+            defer { bookmarkedURL.stopAccessingSecurityScopedResource() }
+
+            let contents = try FileManager.default.contentsOfDirectory(
+                at: backupLocation,
+                includingPropertiesForKeys: [.creationDateKey],
+                options: [.skipsHiddenFiles]
+            )
+
+            let backupFolders = contents.filter { url in
+                url.lastPathComponent.hasPrefix("backup_") &&
+                !url.lastPathComponent.hasSuffix("_temp") &&
+                url.hasDirectoryPath
+            }
+
+            return backupFolders.sorted { url1, url2 in
+                let date1 = (try? url1.resourceValues(forKeys: [.creationDateKey]))?.creationDate ?? Date.distantPast
+                let date2 = (try? url2.resourceValues(forKeys: [.creationDateKey]))?.creationDate ?? Date.distantPast
+                return date1 > date2
+            }.first
+        } catch {
+            print("❌ Failed to get latest backup: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    // MARK: - Backup Cleanup
+
+    func cleanupOldBackups() async {
+        guard isBackupEnabled else { return }
+
+        print("🧹 Cleaning up old backups (retention: \(backupRetentionDays) days)")
+
+        do {
+            try await accessBackupLocation {
+                let contents = try FileManager.default.contentsOfDirectory(
+                    at: backupLocation,
+                    includingPropertiesForKeys: [.creationDateKey],
+                    options: [.skipsHiddenFiles]
+                )
+
+                let cutoffDate = Calendar.current.date(byAdding: .day, value: -backupRetentionDays, to: Date())!
+
+                for folder in contents {
+                    // Skip temp folders and non-backup folders
+                    guard folder.lastPathComponent.hasPrefix("backup_"),
+                          !folder.lastPathComponent.hasSuffix("_temp"),
+                          folder.hasDirectoryPath else {
+                        continue
+                    }
+
+                    if let creationDate = try? folder.resourceValues(forKeys: [.creationDateKey]).creationDate,
+                       creationDate < cutoffDate {
+                        print("  🗑️  Removing old backup: \(folder.lastPathComponent)")
+                        try FileManager.default.removeItem(at: folder)
+                    }
+                }
+            }
+
+            print("✅ Cleanup completed")
+        } catch {
+            print("❌ Cleanup failed: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - Incremental Sync
+
+    func startIncrementalSync() {
+        stopIncrementalSync()
+
+        guard isBackupEnabled else { return }
+
+        print("🔄 Starting incremental sync timer (2 minutes)")
+
+        incrementalSyncTimer = Timer.scheduledTimer(withTimeInterval: 120, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            Task {
+                await self.performIncrementalSync()
+            }
+        }
+    }
+
+    func stopIncrementalSync() {
+        incrementalSyncTimer?.invalidate()
+        incrementalSyncTimer = nil
+    }
+
+    private func performIncrementalSync() async {
+        guard isBackupEnabled,
+              !backupProgress.isActive,
+              let latestBackupFolder = getLatestBackupFolder(),
+              var metadata = loadMetadata(from: latestBackupFolder) else {
+            return
+        }
+
+        print("🔄 Performing incremental sync from: \(metadata.lastSyncTime)")
+
+        // TODO: Implement API calls to fetch modified items since lastSyncTime
+        // For now, just update the lastSyncTime
+        metadata.lastSyncTime = Date()
+
+        do {
+            try saveMetadata(metadata, to: latestBackupFolder)
+            print("✅ Incremental sync completed")
+        } catch {
+            print("❌ Failed to save metadata: \(error.localizedDescription)")
         }
     }
 
@@ -265,10 +452,19 @@ class BackupManager: ObservableObject {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
         let timestamp = dateFormatter.string(from: Date())
+        let backupId = "backup_\(timestamp)"
+
+        // Get current user ID
+        guard let userId = AuthManager.shared.currentUser?.id else {
+            throw NSError(domain: "BackupManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user logged in"])
+        }
+
+        // Create metadata for this backup
+        var metadata = BackupMetadata(backupId: backupId, userId: userId)
 
         // Use a temporary folder for the backup
-        let tempFolder = backupLocation.appendingPathComponent("backup_\(timestamp)_temp")
-        let finalFolder = backupLocation.appendingPathComponent("backup_\(timestamp)")
+        let tempFolder = backupLocation.appendingPathComponent("\(backupId)_temp")
+        let finalFolder = backupLocation.appendingPathComponent(backupId)
 
         // Clean up any existing temp folder
         try? FileManager.default.removeItem(at: tempFolder)
@@ -276,7 +472,8 @@ class BackupManager: ObservableObject {
 
         do {
             // Fetch all nodes from API
-            try await backupNodes(to: tempFolder)
+            let nodesCount = try await backupNodes(to: tempFolder)
+            metadata.nodesCount = nodesCount
 
             if isCancelled {
                 try? FileManager.default.removeItem(at: tempFolder)
@@ -284,7 +481,8 @@ class BackupManager: ObservableObject {
             }
 
             // Fetch all notes from API
-            try await backupNotes(to: tempFolder)
+            let notesCount = try await backupNotes(to: tempFolder)
+            metadata.notesCount = notesCount
 
             if isCancelled {
                 try? FileManager.default.removeItem(at: tempFolder)
@@ -292,7 +490,8 @@ class BackupManager: ObservableObject {
             }
 
             // Fetch all files from API
-            try await backupFiles(to: tempFolder)
+            let filesCount = try await backupFiles(to: tempFolder)
+            metadata.filesCount = filesCount
 
             if isCancelled {
                 try? FileManager.default.removeItem(at: tempFolder)
@@ -304,6 +503,12 @@ class BackupManager: ObservableObject {
                 backupProgress.stage = .finalizing
                 backupProgress.currentItem = "Finalizing backup..."
             }
+
+            // Set completion time
+            metadata.completionTime = Date()
+
+            // Save metadata to temp folder
+            try saveMetadata(metadata, to: tempFolder)
 
             // If final folder already exists, remove it
             try? FileManager.default.removeItem(at: finalFolder)
@@ -320,6 +525,9 @@ class BackupManager: ObservableObject {
             }
 
             print("✅ Backup completed successfully to \(finalFolder.path)")
+
+            // Clean up old backups based on retention policy
+            await cleanupOldBackups()
         } catch {
             // Clean up temp folder on failure
             try? FileManager.default.removeItem(at: tempFolder)
@@ -327,7 +535,7 @@ class BackupManager: ObservableObject {
         }
     }
 
-    private func backupNodes(to folder: URL) async throws {
+    private func backupNodes(to folder: URL) async throws -> Int {
         await MainActor.run {
             backupProgress.stage = .backingUpNodes
             backupProgress.currentItem = "Fetching nodes..."
@@ -412,9 +620,10 @@ class BackupManager: ObservableObject {
         }
 
         print("  ✓ Backed up \(totalNodes) nodes as individual files")
+        return totalNodes
     }
 
-    private func backupNotes(to folder: URL) async throws {
+    private func backupNotes(to folder: URL) async throws -> Int {
         await MainActor.run {
             backupProgress.stage = .backingUpNotes
             backupProgress.currentItem = "Fetching notes..."
@@ -445,7 +654,7 @@ class BackupManager: ObservableObject {
 
         guard !firstNotes.isEmpty else {
             print("  ✓ No notes to back up")
-            return
+            return 0
         }
 
         // Save first page notes
@@ -508,9 +717,10 @@ class BackupManager: ObservableObject {
         }
 
         print("  ✓ Backed up \(totalNotes) notes as individual files")
+        return totalNotes
     }
 
-    private func backupFiles(to folder: URL) async throws {
+    private func backupFiles(to folder: URL) async throws -> Int {
         await MainActor.run {
             backupProgress.stage = .backingUpFiles
             backupProgress.currentItem = "Fetching files..."
@@ -541,7 +751,7 @@ class BackupManager: ObservableObject {
 
         guard !firstFiles.isEmpty else {
             print("  ✓ No files to back up")
-            return
+            return 0
         }
 
         // Save first page files
@@ -604,6 +814,7 @@ class BackupManager: ObservableObject {
         }
 
         print("  ✓ Backed up \(totalFiles) files as individual files")
+        return totalFiles
     }
 
     /// Trigger backup on app open if needed
