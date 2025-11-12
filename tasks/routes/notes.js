@@ -672,4 +672,98 @@ router.post(
     }
 );
 
+// Backup endpoint - Get modified notes since a specific date
+router.options(
+    "/backup/notes/modified",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/backup/notes/modified",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, modified_since, page = 1, limit = 50 } = req.body || {};
+
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
+            // Validate modified_since is a valid ISO date
+            if (!modified_since) {
+                throw new Error("modified_since parameter is required");
+            }
+
+            const modifiedDate = new Date(modified_since);
+            if (isNaN(modifiedDate.getTime())) {
+                throw new Error("Invalid date format for modified_since");
+            }
+
+            const pageNum = Number(page);
+            const limitNum = limit && limit <= 50 ? Number(limit) : 50;
+            const pool = await db.getTasksDB();
+
+            // Get notes modified since the specified date
+            const query = `
+                SELECT *
+                FROM btw.notes
+                WHERE user_id = $1
+                  AND (tags LIKE '%list%')
+                  AND updated_at > $2
+                ORDER BY updated_at DESC
+                LIMIT $3 OFFSET $4
+            `;
+
+            const rows = await pool.query(query, [
+                user.id,
+                modifiedDate,
+                limitNum,
+                (pageNum - 1) * limitNum,
+            ]);
+
+            // Count total modified notes
+            const countQuery = `
+                SELECT COUNT(*) as count
+                FROM btw.notes
+                WHERE user_id = $1
+                  AND (tags LIKE '%list%')
+                  AND updated_at > $2
+            `;
+
+            const totalRows = await pool.query(countQuery, [user.id, modifiedDate]);
+
+            res.json({
+                success: true,
+                data: {
+                    notes: rows.rows,
+                    page: pageNum,
+                    total: Number(totalRows.rows[0].count),
+                    limit: limitNum,
+                    modified_since: modified_since,
+                },
+                isLoggedIn: true,
+            });
+        } catch (e) {
+            console.log("Backup modified notes error:", e);
+            res.json({
+                success: false,
+                error: e.message || e.toString(),
+                isLoggedIn: false,
+            });
+        }
+    }
+);
+
 module.exports = router;

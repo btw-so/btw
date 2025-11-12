@@ -1071,4 +1071,100 @@ router.post(
     }
 );
 
+// Backup endpoint - Get modified nodes since a specific date
+router.options(
+    "/backup/nodes/modified",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/backup/nodes/modified",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, modified_since, page = 1, limit = 200 } = req.body || {};
+
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
+            // Validate modified_since is a valid ISO date
+            if (!modified_since) {
+                throw new Error("modified_since parameter is required");
+            }
+
+            const modifiedDate = new Date(modified_since);
+            if (isNaN(modifiedDate.getTime())) {
+                throw new Error("Invalid date format for modified_since");
+            }
+
+            // Convert page and limit to numbers and apply constraints
+            const pageNum = Number(page);
+            const limitNum = limit && limit <= 200 ? Number(limit) : 200;
+
+            const pool = await db.getTasksDB();
+
+            // Get nodes modified since the specified date
+            const query = `
+                SELECT *
+                FROM btw.nodes
+                WHERE user_id = $1
+                  AND (parent_id IS NULL OR parent_id <> 'limbo')
+                  AND updated_at > $2
+                ORDER BY updated_at DESC
+                LIMIT $3 OFFSET $4
+            `;
+
+            const rows = await pool.query(query, [
+                user.id,
+                modifiedDate,
+                limitNum,
+                (pageNum - 1) * limitNum,
+            ]);
+
+            // Count total modified nodes
+            const countQuery = `
+                SELECT COUNT(*) as count
+                FROM btw.nodes
+                WHERE user_id = $1
+                  AND (parent_id IS NULL OR parent_id <> 'limbo')
+                  AND updated_at > $2
+            `;
+
+            const totalRows = await pool.query(countQuery, [user.id, modifiedDate]);
+
+            res.json({
+                success: true,
+                data: {
+                    nodes: rows.rows,
+                    page: pageNum,
+                    total: Number(totalRows.rows[0].count),
+                    limit: limitNum,
+                    modified_since: modified_since,
+                },
+                isLoggedIn: true,
+            });
+        } catch (e) {
+            console.log("Backup modified nodes error:", e);
+            res.json({
+                success: false,
+                error: e.message || e.toString(),
+                isLoggedIn: false,
+            });
+        }
+    }
+);
+
 module.exports = router;

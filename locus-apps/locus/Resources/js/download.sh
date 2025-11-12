@@ -11,8 +11,10 @@ curl -o tiptap-italic.js "https://cdn.jsdelivr.net/npm/@tiptap/extension-italic@
 curl -o tiptap-strike.js "https://cdn.jsdelivr.net/npm/@tiptap/extension-strike@2.0.0-beta.220/dist/index.umd.min.js"
 curl -o tiptap-underline.js "https://cdn.jsdelivr.net/npm/@tiptap/extension-underline@2.0.0-beta.220/dist/index.umd.min.js"
 curl -o tiptap-code.js "https://cdn.jsdelivr.net/npm/@tiptap/extension-code@2.0.0-beta.220/dist/index.umd.min.js"
+curl -o tiptap-code-block.js "https://cdn.jsdelivr.net/npm/@tiptap/extension-code-block@2.0.0-beta.220/dist/index.umd.min.js"
 curl -o tiptap-code-block-lowlight.js "https://cdn.jsdelivr.net/npm/@tiptap/extension-code-block-lowlight@2.0.0-beta.220/dist/index.umd.min.js"
 curl -o tiptap-blockquote.js "https://cdn.jsdelivr.net/npm/@tiptap/extension-blockquote@2.0.0-beta.220/dist/index.umd.min.js"
+curl -o tiptap-history.js "https://cdn.jsdelivr.net/npm/@tiptap/extension-history@2.0.0-beta.220/dist/index.umd.min.js"
 curl -o tiptap-heading.js "https://cdn.jsdelivr.net/npm/@tiptap/extension-heading@2.0.0-beta.220/dist/index.umd.min.js"
 curl -o tiptap-horizontal-rule.js "https://cdn.jsdelivr.net/npm/@tiptap/extension-horizontal-rule@2.0.0-beta.220/dist/index.umd.min.js"
 curl -o tiptap-bullet-list.js "https://cdn.jsdelivr.net/npm/@tiptap/extension-bullet-list@2.0.0-beta.220/dist/index.umd.min.js"
@@ -42,5 +44,12 @@ curl -o hocuspocus-provider.js "https://cdn.jsdelivr.net/npm/@hocuspocus/provide
 # Syntax highlighting
 curl -o highlight.js "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.7.0/build/highlight.min.js"
 curl -o lowlight.js "https://cdn.jsdelivr.net/npm/lowlight@2.9.0/lib/all.js"
+
+# RemixIcon CSS
+curl -o remixicon.css "https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css"
+
+# Uppy
+curl -o uppy.min.css "https://releases.transloadit.com/uppy/v3.25.0/uppy.min.css"
+curl -o uppy.min.js "https://releases.transloadit.com/uppy/v3.25.0/uppy.min.js"
 
 echo "All libraries downloaded!"

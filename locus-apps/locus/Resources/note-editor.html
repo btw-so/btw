@@ -6,10 +6,10 @@
     <title>Locus Note Editor</title>
 
     <!-- RemixIcon for toolbar icons -->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="js/remixicon.css" rel="stylesheet">
 
     <!-- Uppy CSS -->
-    <link href="https://releases.transloadit.com/uppy/v3.25.0/uppy.min.css" rel="stylesheet">
+    <link href="js/uppy.min.css" rel="stylesheet">
 
     <style>
         html, body {
@@ -706,6 +706,28 @@
             color: #A0B0BD;
         }
 
+        /* Dark mode task list styles */
+        body.theme-dark .tiptap-editor ul[data-type="taskList"] li > label > input[type="checkbox"] {
+            border-color: #8A8A8A;
+            background: transparent;
+        }
+
+        body.theme-dark .tiptap-editor ul[data-type="taskList"] li > label > input[type="checkbox"]:checked {
+            background-color: #6b7280;
+            border-color: #6b7280;
+        }
+
+        body.theme-dark .tiptap-editor ul[data-type="taskList"] li[data-checked="true"],
+        body.theme-dark .tiptap-editor ul[data-type="taskList"] li[data-checked]:not([data-checked="false"]) {
+            text-decoration: line-through !important;
+            color: #666666;
+        }
+
+        body.theme-dark .tiptap-editor ul[data-type="taskList"] li[data-checked="true"] p,
+        body.theme-dark .tiptap-editor ul[data-type="taskList"] li[data-checked]:not([data-checked="false"]) p {
+            color: #666666;
+        }
+
         .tiptap-editor a {
             color: #007AFF;
             text-decoration: underline;
@@ -729,14 +751,14 @@
     </div>
 
     <!-- Uppy JS -->
-    <script src="https://releases.transloadit.com/uppy/v3.25.0/uppy.min.js"></script>
+    <script src="js/uppy.min.js"></script>
 
-    <!-- Use esm.sh CDN with explicit Y.js aliasing to prevent duplicate imports -->
+    <!-- Use esm.sh CDN for Tiptap - ES modules work better in browser -->
     <script type="module">
-        // Import Y.js first to ensure single instance - MATCHING REACT APP VERSION
+        // Import Y.js first to ensure single instance
         import * as Y from 'https://esm.sh/yjs@13.5.48';
 
-        // Import everything else with Y.js aliased to the same version - MATCHING REACT APP VERSIONS
+        // Import everything else with Y.js aliased
         import { Editor, mergeAttributes } from 'https://esm.sh/@tiptap/core@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
         import { Node } from 'https://esm.sh/@tiptap/core@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
         import Document from 'https://esm.sh/@tiptap/extension-document@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';

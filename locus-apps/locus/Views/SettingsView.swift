@@ -14,12 +14,16 @@ struct SettingsView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var themeManager: ThemeManager
     @State private var showingLogoutAlert = false
+    @State private var deleteBackupsOnLogout = false
     @Environment(\.dismiss) var dismiss
 
     #if os(macOS)
     @ObservedObject private var backupManager = BackupManager.shared
     @State private var lastBackupStatus: String = "Never"
     #endif
+
+    @ObservedObject private var localFirstManager = LocalFirstManager.shared
+    @ObservedObject private var dirtyStateManager = DirtyStateManager.shared
 
     var body: some View {
         ScrollView {
@@ -141,6 +145,57 @@ struct SettingsView: View {
                                 .padding(.horizontal, Spacing.md)
                                 .background(LocusColors.backgroundSecondary)
                                 .cornerRadius(CornerRadius.md)
+                            }
+
+                            // Retention Period
+                            VStack(alignment: .leading, spacing: Spacing.sm) {
+                                Text("Backup Retention")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(LocusColors.textSecondary)
+
+                                VStack(spacing: Spacing.sm) {
+                                    ForEach([7, 14, 30], id: \.self) { days in
+                                        Button(action: {
+                                            backupManager.backupRetentionDays = days
+                                        }) {
+                                            HStack {
+                                                Text("\(days) days")
+                                                    .font(.system(size: 16))
+                                                    .foregroundColor(LocusColors.textPrimary)
+
+                                                Spacer()
+
+                                                if backupManager.backupRetentionDays == days {
+                                                    Image(systemName: "checkmark")
+                                                        .foregroundColor(LocusColors.accent)
+                                                }
+                                            }
+                                            .padding(.vertical, Spacing.sm)
+                                            .padding(.horizontal, Spacing.md)
+                                            .background(
+                                                backupManager.backupRetentionDays == days ?
+                                                LocusColors.accent.opacity(0.1) :
+                                                LocusColors.backgroundSecondary
+                                            )
+                                            .cornerRadius(CornerRadius.md)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: CornerRadius.md)
+                                                    .stroke(
+                                                        backupManager.backupRetentionDays == days ?
+                                                        LocusColors.accent :
+                                                        LocusColors.clear,
+                                                        lineWidth: 2
+                                                    )
+                                            )
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    }
+                                }
+
+                                Text("Backups older than \(backupManager.backupRetentionDays) days will be automatically deleted")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(LocusColors.textSecondary.opacity(0.7))
+                                    .padding(.top, 4)
                             }
 
                             // Backup Status and Progress
@@ -293,6 +348,64 @@ struct SettingsView: View {
                 }
                 #endif
 
+                // Local-First Mode Section
+                VStack(alignment: .leading, spacing: Spacing.md) {
+                    Text("Performance")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(LocusColors.textPrimary)
+
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        // Local-First Toggle
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Optimize for local speed")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(LocusColors.textPrimary)
+                                Text("Edit locally and sync to cloud in the background")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(LocusColors.textSecondary)
+                            }
+
+                            Spacer()
+
+                            Toggle("", isOn: $localFirstManager.isLocalFirstEnabled)
+                                .toggleStyle(.switch)
+                                .labelsHidden()
+                        }
+                        .padding(.vertical, Spacing.sm)
+
+                        // Dirty items indicator
+                        if dirtyStateManager.hasDirtyItems() {
+                            VStack(alignment: .leading, spacing: Spacing.sm) {
+                                HStack {
+                                    Image(systemName: "arrow.triangle.2.circlepath")
+                                        .foregroundColor(LocusColors.accent)
+                                    Text("\(dirtyStateManager.getDirtyCount()) items pending sync")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(LocusColors.textPrimary)
+                                }
+
+                                HStack(spacing: 12) {
+                                    if !dirtyStateManager.dirtyNodes.isEmpty {
+                                        Text("\(dirtyStateManager.dirtyNodes.count) nodes")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(LocusColors.textSecondary)
+                                    }
+                                    if !dirtyStateManager.dirtyNotes.isEmpty {
+                                        Text("\(dirtyStateManager.dirtyNotes.count) notes")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(LocusColors.textSecondary)
+                                    }
+                                }
+                            }
+                            .padding(Spacing.md)
+                            .background(LocusColors.accent.opacity(0.1))
+                            .cornerRadius(CornerRadius.md)
+                        }
+                    }
+                }
+                .padding(.bottom, Spacing.xl)
+
                 // User Info Section
                 VStack(alignment: .leading, spacing: Spacing.md) {
                     Text("Account")
@@ -332,13 +445,40 @@ struct SettingsView: View {
                     .cornerRadius(CornerRadius.md)
                 }
                 .buttonStyle(PlainButtonStyle())
-                .alert("Logout", isPresented: $showingLogoutAlert) {
-                    Button("Cancel", role: .cancel) { }
-                    Button("Logout", role: .destructive) {
-                        authManager.logout()
+                .confirmationDialog("Logout", isPresented: $showingLogoutAlert, titleVisibility: .visible) {
+                    if dirtyStateManager.hasDirtyItems() {
+                        Button("Sync & Logout") {
+                            syncAndLogout()
+                        }
+                        Button("Discard & Logout", role: .destructive) {
+                            handleLogout(clearDirty: true)
+                        }
+                    } else {
+                        Button("Logout", role: .destructive) {
+                            handleLogout(clearDirty: false)
+                        }
                     }
+
+                    #if os(macOS)
+                    if backupManager.isBackupEnabled {
+                        Button("Logout & Delete Backups", role: .destructive) {
+                            handleLogout(clearDirty: true, deleteBackups: true)
+                        }
+                    }
+                    #endif
+
+                    Button("Cancel", role: .cancel) { }
                 } message: {
-                    Text("Are you sure you want to logout?")
+                    VStack {
+                        if dirtyStateManager.hasDirtyItems() {
+                            Text("You have \(dirtyStateManager.getDirtyCount()) unsaved changes.")
+                        }
+                        #if os(macOS)
+                        if backupManager.isBackupEnabled {
+                            Text("Your local backups will be kept unless you choose to delete them.")
+                        }
+                        #endif
+                    }
                 }
 
                 Spacer()
@@ -353,6 +493,70 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.large)
         #endif
     }
+
+    // MARK: - Logout Functions
+
+    func handleLogout(clearDirty: Bool, deleteBackups: Bool = false) {
+        if clearDirty {
+            dirtyStateManager.clearAll()
+        }
+
+        #if os(macOS)
+        if deleteBackups {
+            Task {
+                await deleteAllBackups()
+                await MainActor.run {
+                    authManager.logout()
+                }
+            }
+        } else {
+            authManager.logout()
+        }
+        #else
+        authManager.logout()
+        #endif
+    }
+
+    func syncAndLogout() {
+        Task {
+            let _ = await localFirstManager.forceSyncAll()
+            // Logout regardless of sync result
+            await MainActor.run {
+                authManager.logout()
+            }
+        }
+    }
+
+    #if os(macOS)
+    func deleteAllBackups() async {
+        let backupURL = backupManager.backupLocation
+
+        do {
+            guard backupURL.startAccessingSecurityScopedResource() else { return }
+            defer { backupURL.stopAccessingSecurityScopedResource() }
+
+            let contents = try FileManager.default.contentsOfDirectory(
+                at: backupManager.backupLocation,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles]
+            )
+
+            for folder in contents {
+                guard folder.lastPathComponent.hasPrefix("backup_"),
+                      folder.hasDirectoryPath else {
+                    continue
+                }
+
+                try FileManager.default.removeItem(at: folder)
+                print("🗑️  Deleted backup: \(folder.lastPathComponent)")
+            }
+
+            print("✅ All backups deleted")
+        } catch {
+            print("❌ Failed to delete backups: \(error.localizedDescription)")
+        }
+    }
+    #endif
 
     #if os(macOS)
     // MARK: - Backup Functions
