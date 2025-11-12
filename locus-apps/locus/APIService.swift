@@ -667,6 +667,146 @@ class APIService {
         return filesData
     }
 
+    // MARK: - Incremental Backup (Modified Items)
+
+    func getModifiedNodes(since: Date, page: Int = 1, limit: Int = 200) async throws -> ListResponse.ListData {
+        let url = URL(string: "\(baseURL)/list/backup/nodes/modified")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let token = loginToken {
+            request.setValue("btw_uuid=\(token)", forHTTPHeaderField: "Cookie")
+        }
+
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let modifiedSince = iso8601Formatter.string(from: since)
+
+        let body = [
+            "modified_since": modifiedSince,
+            "page": page,
+            "limit": limit,
+            "fingerprint": generateFingerprint()
+        ] as [String : Any]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        if httpResponse.statusCode != 200 {
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("❌ getModifiedNodes failed (status \(httpResponse.statusCode)): \(responseString)")
+            }
+            throw URLError(.badServerResponse)
+        }
+
+        let result = try JSONDecoder().decode(ListResponse.self, from: data)
+        return result.data
+    }
+
+    func getModifiedNotes(since: Date, page: Int = 1, limit: Int = 200) async throws -> NotesResponse.NotesData {
+        let url = URL(string: "\(baseURL)/notes/backup/notes/modified")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let token = loginToken {
+            request.setValue("btw_uuid=\(token)", forHTTPHeaderField: "Cookie")
+        }
+
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let modifiedSince = iso8601Formatter.string(from: since)
+
+        let body = [
+            "modified_since": modifiedSince,
+            "page": page,
+            "limit": limit,
+            "fingerprint": generateFingerprint()
+        ] as [String : Any]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        if httpResponse.statusCode != 200 {
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("❌ getModifiedNotes failed (status \(httpResponse.statusCode)): \(responseString)")
+            }
+            throw URLError(.badServerResponse)
+        }
+
+        do {
+            let result = try JSONDecoder().decode(NotesResponse.self, from: data)
+
+            guard result.success, let notesData = result.data else {
+                let errorMsg = result.error ?? "Unknown error from API"
+                print("❌ getModifiedNotes API error: \(errorMsg)")
+                throw NSError(domain: "APIService", code: -1, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+            }
+
+            return notesData
+        } catch {
+            print("❌ Failed to decode modified notes response")
+            if let responseString = String(data: data, encoding: .utf8) {
+                let preview = String(responseString.prefix(500))
+                print("📄 Response preview: \(preview)")
+            }
+            print("❌ Decode error: \(error)")
+            throw error
+        }
+    }
+
+    func getModifiedFiles(since: Date, page: Int = 1, limit: Int = 200) async throws -> FilesResponse.FilesData {
+        let url = URL(string: "\(baseURL)/files/backup/files/modified")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let token = loginToken {
+            request.setValue("btw_uuid=\(token)", forHTTPHeaderField: "Cookie")
+        }
+
+        let iso8601Formatter = ISO8601DateFormatter()
+        iso8601Formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let modifiedSince = iso8601Formatter.string(from: since)
+
+        let body = [
+            "modified_since": modifiedSince,
+            "page": page,
+            "limit": limit,
+            "fingerprint": generateFingerprint()
+        ] as [String : Any]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        if httpResponse.statusCode != 200 {
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("❌ getModifiedFiles failed (status \(httpResponse.statusCode)): \(responseString)")
+            }
+            throw URLError(.badServerResponse)
+        }
+
+        let result = try JSONDecoder().decode(FilesResponse.self, from: data)
+
+        guard result.success, let filesData = result.data else {
+            let errorMsg = result.error ?? "Unknown error from API"
+            print("❌ getModifiedFiles API error: \(errorMsg)")
+            throw NSError(domain: "APIService", code: -1, userInfo: [NSLocalizedDescriptionKey: errorMsg])
+        }
+
+        return filesData
+    }
+
     // MARK: - Scribble Management
 
     func getScribblePage(scribbleId: String, pageNumber: Int) async throws -> ScribblePage? {

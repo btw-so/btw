@@ -158,7 +158,6 @@ struct KeyboardHandlingTextField: NSViewRepresentable {
     }
 
     func makeNSView(context: Context) -> KeyboardCapturingTextField {
-        print("🏗️ makeNSView called - creating NEW text view")
         let textView = KeyboardCapturingTextField()
 
         textView.backgroundColor = .clear
@@ -215,8 +214,6 @@ struct KeyboardHandlingTextField: NSViewRepresentable {
         let needsTextUpdate = textView.string != text
         let isEditing = textView.window?.firstResponder == textView
 
-        print("🔄 updateNSView CALLED - text: '\(text)', textView.string: '\(textView.string)', isEditing: \(isEditing), needsTextUpdate: \(needsTextUpdate), cursor: \(textView.selectedRange().location)")
-
         // CRITICAL: If user is editing, DON'T touch ANYTHING except height calculation
         if isEditing {
             print("   ⚠️ User is editing - SKIPPING all updates except height")
@@ -236,8 +233,6 @@ struct KeyboardHandlingTextField: NSViewRepresentable {
             return  // EXIT EARLY - don't modify anything while user is typing!
         }
 
-        print("   ✅ User NOT editing - applying LTR settings")
-
         // Ensure text direction is always left-to-right
         textView.alignment = .left
         textView.baseWritingDirection = .leftToRight
@@ -253,10 +248,6 @@ struct KeyboardHandlingTextField: NSViewRepresentable {
             .foregroundColor: textColor,
             .paragraphStyle: paragraphStyle
         ]
-
-        if needsTextUpdate {
-            print("🔄 updateNSView - text mismatch! textView: '\(textView.string)', binding: '\(text)', isEditing: \(isEditing)")
-        }
 
         if needsTextUpdate {
             print("   ⚠️ Updating textView.string from binding (not editing)")
@@ -349,8 +340,6 @@ struct KeyboardHandlingTextField: NSViewRepresentable {
 
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? NSTextView else { return }
-
-            print("📝 textDidChange - text: '\(textView.string)', cursor: \(textView.selectedRange().location)")
 
             // DON'T modify text storage here - it resets the cursor!
             // Just update the parent's text binding

@@ -118,8 +118,21 @@ class BackupManager: ObservableObject {
         }
     }
 
+    private var lastIncrementalSyncDate: Date? {
+        get {
+            UserDefaults.standard.object(forKey: "last_incremental_sync_date") as? Date
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "last_incremental_sync_date")
+        }
+    }
+
     var lastSuccessfulBackupDate: Date? {
         return lastBackupDate
+    }
+
+    var lastSuccessfulIncrementalSyncDate: Date? {
+        return lastIncrementalSyncDate
     }
 
     private init() {
@@ -253,27 +266,44 @@ class BackupManager: ObservableObject {
             guard bookmarkedURL.startAccessingSecurityScopedResource() else { return nil }
             defer { bookmarkedURL.stopAccessingSecurityScopedResource() }
 
-            let contents = try FileManager.default.contentsOfDirectory(
-                at: backupLocation,
-                includingPropertiesForKeys: [.creationDateKey],
-                options: [.skipsHiddenFiles]
-            )
-
-            let backupFolders = contents.filter { url in
-                url.lastPathComponent.hasPrefix("backup_") &&
-                !url.lastPathComponent.hasSuffix("_temp") &&
-                url.hasDirectoryPath
-            }
-
-            return backupFolders.sorted { url1, url2 in
-                let date1 = (try? url1.resourceValues(forKeys: [.creationDateKey]))?.creationDate ?? Date.distantPast
-                let date2 = (try? url2.resourceValues(forKeys: [.creationDateKey]))?.creationDate ?? Date.distantPast
-                return date1 > date2
-            }.first
+            return try getLatestBackupFolderWithinScope()
         } catch {
             print("❌ Failed to get latest backup: \(error.localizedDescription)")
             return nil
         }
+    }
+
+    /// Get the latest backup folder - must be called within security-scoped resource access
+    private func getLatestBackupFolderWithinScope() throws -> URL? {
+        let contents = try FileManager.default.contentsOfDirectory(
+            at: backupLocation,
+            includingPropertiesForKeys: [.creationDateKey],
+            options: [.skipsHiddenFiles]
+        )
+
+        let backupFolders = contents.filter { url in
+            url.lastPathComponent.hasPrefix("backup_") &&
+            !url.lastPathComponent.hasSuffix("_temp") &&
+            url.hasDirectoryPath
+        }
+
+        return backupFolders.sorted { url1, url2 in
+            let date1 = (try? url1.resourceValues(forKeys: [.creationDateKey]))?.creationDate ?? Date.distantPast
+            let date2 = (try? url2.resourceValues(forKeys: [.creationDateKey]))?.creationDate ?? Date.distantPast
+            return date1 > date2
+        }.first
+    }
+
+    /// Get the latest backup folder for local-first operations
+    /// Returns the latest backup folder, or nil if backup is not enabled
+    /// Caller should trigger a backup if needed using startBackup()
+    func getLatestBackupFolderForLocalFirst() -> URL? {
+        guard isBackupEnabled else {
+            print("⚠️ Backup is not enabled. Please enable backups in Settings.")
+            return nil
+        }
+
+        return getLatestBackupFolder()
     }
 
     // MARK: - Backup Cleanup
@@ -339,24 +369,198 @@ class BackupManager: ObservableObject {
 
     private func performIncrementalSync() async {
         guard isBackupEnabled,
-              !backupProgress.isActive,
-              let latestBackupFolder = getLatestBackupFolder(),
-              var metadata = loadMetadata(from: latestBackupFolder) else {
+              !backupProgress.isActive else {
             return
         }
 
-        print("🔄 Performing incremental sync from: \(metadata.lastSyncTime)")
+        // Start accessing security-scoped resource first
+        let shouldStopAccessing: Bool
+        if let bookmarkedURL = bookmarkedURL {
+            guard bookmarkedURL.startAccessingSecurityScopedResource() else {
+                print("❌ Could not access backup location for incremental sync")
+                return
+            }
+            shouldStopAccessing = true
+        } else {
+            shouldStopAccessing = false
+        }
 
-        // TODO: Implement API calls to fetch modified items since lastSyncTime
-        // For now, just update the lastSyncTime
-        metadata.lastSyncTime = Date()
+        defer {
+            if shouldStopAccessing, let bookmarkedURL = bookmarkedURL {
+                bookmarkedURL.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        // Now load the latest backup folder and metadata (within security scope)
+        let latestBackupFolder: URL?
+        do {
+            latestBackupFolder = try getLatestBackupFolderWithinScope()
+        } catch {
+            print("❌ Failed to get latest backup folder: \(error.localizedDescription)")
+            return
+        }
+
+        guard let latestBackupFolder = latestBackupFolder,
+              let metadata = loadMetadata(from: latestBackupFolder) else {
+            return
+        }
+
+        var mutableMetadata = metadata
+
+        print("🔄 Performing incremental sync from: \(mutableMetadata.lastSyncTime)")
+
+        var totalUpdated = 0
 
         do {
-            try saveMetadata(metadata, to: latestBackupFolder)
-            print("✅ Incremental sync completed")
+            // Fetch and save modified nodes
+            let modifiedNodesCount = try await syncModifiedNodes(
+                since: mutableMetadata.lastSyncTime,
+                to: latestBackupFolder
+            )
+            totalUpdated += modifiedNodesCount
+
+            // Fetch and save modified notes
+            let modifiedNotesCount = try await syncModifiedNotes(
+                since: mutableMetadata.lastSyncTime,
+                to: latestBackupFolder
+            )
+            totalUpdated += modifiedNotesCount
+
+            // Fetch and save modified files
+            let modifiedFilesCount = try await syncModifiedFiles(
+                since: mutableMetadata.lastSyncTime,
+                to: latestBackupFolder
+            )
+            totalUpdated += modifiedFilesCount
+
+            // Update metadata with new sync time
+            mutableMetadata.lastSyncTime = Date()
+            try saveMetadata(mutableMetadata, to: latestBackupFolder)
+
+            // Update the last incremental sync date on success
+            lastIncrementalSyncDate = Date()
+
+            if totalUpdated > 0 {
+                print("✅ Incremental sync completed: \(totalUpdated) items updated")
+            } else {
+                print("✅ Incremental sync completed: no changes")
+            }
         } catch {
-            print("❌ Failed to save metadata: \(error.localizedDescription)")
+            print("❌ Incremental sync failed: \(error.localizedDescription)")
         }
+    }
+
+    private func syncModifiedNodes(since: Date, to folder: URL) async throws -> Int {
+        let nodesFolder = folder.appendingPathComponent("nodes")
+        try FileManager.default.createDirectory(at: nodesFolder, withIntermediateDirectories: true)
+
+        var totalNodes = 0
+        var currentPage = 1
+        let limit = 200
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+
+        while true {
+            let response = try await APIService.shared.getModifiedNodes(since: since, page: currentPage, limit: limit)
+            guard !response.nodes.isEmpty else { break }
+
+            // Save or update each modified node
+            for node in response.nodes {
+                let fileName = "\(node.id).json"
+                let nodeFile = nodesFolder.appendingPathComponent(fileName)
+                let nodeData = try encoder.encode(node)
+                try nodeData.write(to: nodeFile)
+                totalNodes += 1
+            }
+
+            if response.nodes.count < limit {
+                break // Last page
+            }
+
+            currentPage += 1
+        }
+
+        if totalNodes > 0 {
+            print("  🔄 Updated \(totalNodes) modified nodes")
+        }
+        return totalNodes
+    }
+
+    private func syncModifiedNotes(since: Date, to folder: URL) async throws -> Int {
+        let notesFolder = folder.appendingPathComponent("notes")
+        try FileManager.default.createDirectory(at: notesFolder, withIntermediateDirectories: true)
+
+        var totalNotes = 0
+        var currentPage = 1
+        let limit = 200
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+
+        while true {
+            let response = try await APIService.shared.getModifiedNotes(since: since, page: currentPage, limit: limit)
+            let notes = response.notes ?? []
+            guard !notes.isEmpty else { break }
+
+            // Save or update each modified note
+            for note in notes {
+                let fileName = "\(note.id).json"
+                let noteFile = notesFolder.appendingPathComponent(fileName)
+                let noteData = try encoder.encode(note)
+                try noteData.write(to: noteFile)
+                totalNotes += 1
+            }
+
+            if notes.count < limit {
+                break // Last page
+            }
+
+            currentPage += 1
+        }
+
+        if totalNotes > 0 {
+            print("  🔄 Updated \(totalNotes) modified notes")
+        }
+        return totalNotes
+    }
+
+    private func syncModifiedFiles(since: Date, to folder: URL) async throws -> Int {
+        let filesFolder = folder.appendingPathComponent("files")
+        try FileManager.default.createDirectory(at: filesFolder, withIntermediateDirectories: true)
+
+        var totalFiles = 0
+        var currentPage = 1
+        let limit = 200
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+
+        while true {
+            let response = try await APIService.shared.getModifiedFiles(since: since, page: currentPage, limit: limit)
+            let files = response.files ?? []
+            guard !files.isEmpty else { break }
+
+            // Save or update each modified file
+            for file in files {
+                let fileName = "\(file.id).json"
+                let fileFile = filesFolder.appendingPathComponent(fileName)
+                let fileData = try encoder.encode(file)
+                try fileData.write(to: fileFile)
+                totalFiles += 1
+            }
+
+            if files.count < limit {
+                break // Last page
+            }
+
+            currentPage += 1
+        }
+
+        if totalFiles > 0 {
+            print("  🔄 Updated \(totalFiles) modified files")
+        }
+        return totalFiles
     }
 
     /// Check if a backup should run today
