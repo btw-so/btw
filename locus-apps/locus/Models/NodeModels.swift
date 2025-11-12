@@ -194,12 +194,36 @@ struct LocusNote: Codable {
             json = jsonString
         } else if container.contains(.json) {
             // Try to decode as a generic JSON value and re-encode it as a string
-            let jsonDecoder = JSONDecoder()
-            if let jsonData = try? JSONSerialization.data(withJSONObject: try container.decode(AnyCodable.self, forKey: .json).value, options: []),
-               let jsonString = String(data: jsonData, encoding: .utf8) {
-                json = jsonString
-            } else {
+            let anyCodable = try container.decode(AnyCodable.self, forKey: .json)
+            let value = anyCodable.value
+
+            // NSJSONSerialization only accepts Array or Dictionary as top-level objects
+            // For scalar values, we need to wrap them or handle them differently
+            if let arrayValue = value as? [Any] {
+                if let jsonData = try? JSONSerialization.data(withJSONObject: arrayValue, options: []),
+                   let jsonString = String(data: jsonData, encoding: .utf8) {
+                    json = jsonString
+                } else {
+                    json = nil
+                }
+            } else if let dictValue = value as? [String: Any] {
+                if let jsonData = try? JSONSerialization.data(withJSONObject: dictValue, options: []),
+                   let jsonString = String(data: jsonData, encoding: .utf8) {
+                    json = jsonString
+                } else {
+                    json = nil
+                }
+            } else if let stringValue = value as? String {
+                // If it's already a string, just use it
+                json = stringValue
+            } else if let numberValue = value as? NSNumber {
+                // Convert number to string
+                json = numberValue.stringValue
+            } else if value is NSNull {
                 json = nil
+            } else {
+                // For other scalar types, convert to string representation
+                json = "\(value)"
             }
         } else {
             json = nil
