@@ -20,10 +20,8 @@ struct SettingsView: View {
     #if os(macOS)
     @ObservedObject private var backupManager = BackupManager.shared
     @State private var lastBackupStatus: String = "Never"
+    @State private var lastIncrementalSyncStatus: String = "Never"
     #endif
-
-    @ObservedObject private var localFirstManager = LocalFirstManager.shared
-    @ObservedObject private var dirtyStateManager = DirtyStateManager.shared
 
     var body: some View {
         ScrollView {
@@ -111,6 +109,12 @@ struct SettingsView: View {
                             Toggle("", isOn: $backupManager.isBackupEnabled)
                                 .toggleStyle(.switch)
                                 .labelsHidden()
+                                .onChange(of: backupManager.isBackupEnabled) { newValue in
+                                    if newValue {
+                                        // Auto-initiate backup if no backup exists
+                                        initiateBackupIfNeeded()
+                                    }
+                                }
                         }
                         .padding(.vertical, Spacing.sm)
 
@@ -203,7 +207,10 @@ struct SettingsView: View {
                                 // Last backup status
                                 HStack {
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text("Last backup: \(lastBackupStatus)")
+                                        Text("Last full backup: \(lastBackupStatus)")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(LocusColors.textSecondary)
+                                        Text("Last incremental sync: \(lastIncrementalSyncStatus)")
                                             .font(.system(size: 12))
                                             .foregroundColor(LocusColors.textSecondary)
                                     }
@@ -342,69 +349,15 @@ struct SettingsView: View {
                 .padding(.bottom, Spacing.xl)
                 .onAppear {
                     updateLastBackupStatus()
+                    updateLastIncrementalSyncStatus()
                 }
                 .onChange(of: backupManager.lastSuccessfulBackupDate) { _ in
                     updateLastBackupStatus()
                 }
-                #endif
-
-                // Local-First Mode Section
-                VStack(alignment: .leading, spacing: Spacing.md) {
-                    Text("Performance")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(LocusColors.textPrimary)
-
-                    VStack(alignment: .leading, spacing: Spacing.md) {
-                        // Local-First Toggle
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Optimize for local speed")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(LocusColors.textPrimary)
-                                Text("Edit locally and sync to cloud in the background")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(LocusColors.textSecondary)
-                            }
-
-                            Spacer()
-
-                            Toggle("", isOn: $localFirstManager.isLocalFirstEnabled)
-                                .toggleStyle(.switch)
-                                .labelsHidden()
-                        }
-                        .padding(.vertical, Spacing.sm)
-
-                        // Dirty items indicator
-                        if dirtyStateManager.hasDirtyItems() {
-                            VStack(alignment: .leading, spacing: Spacing.sm) {
-                                HStack {
-                                    Image(systemName: "arrow.triangle.2.circlepath")
-                                        .foregroundColor(LocusColors.accent)
-                                    Text("\(dirtyStateManager.getDirtyCount()) items pending sync")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(LocusColors.textPrimary)
-                                }
-
-                                HStack(spacing: 12) {
-                                    if !dirtyStateManager.dirtyNodes.isEmpty {
-                                        Text("\(dirtyStateManager.dirtyNodes.count) nodes")
-                                            .font(.system(size: 12))
-                                            .foregroundColor(LocusColors.textSecondary)
-                                    }
-                                    if !dirtyStateManager.dirtyNotes.isEmpty {
-                                        Text("\(dirtyStateManager.dirtyNotes.count) notes")
-                                            .font(.system(size: 12))
-                                            .foregroundColor(LocusColors.textSecondary)
-                                    }
-                                }
-                            }
-                            .padding(Spacing.md)
-                            .background(LocusColors.accent.opacity(0.1))
-                            .cornerRadius(CornerRadius.md)
-                        }
-                    }
+                .onChange(of: backupManager.lastSuccessfulIncrementalSyncDate) { _ in
+                    updateLastIncrementalSyncStatus()
                 }
-                .padding(.bottom, Spacing.xl)
+                #endif
 
                 // User Info Section
                 VStack(alignment: .leading, spacing: Spacing.md) {
@@ -446,39 +399,25 @@ struct SettingsView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 .confirmationDialog("Logout", isPresented: $showingLogoutAlert, titleVisibility: .visible) {
-                    if dirtyStateManager.hasDirtyItems() {
-                        Button("Sync & Logout") {
-                            syncAndLogout()
-                        }
-                        Button("Discard & Logout", role: .destructive) {
-                            handleLogout(clearDirty: true)
-                        }
-                    } else {
-                        Button("Logout", role: .destructive) {
-                            handleLogout(clearDirty: false)
-                        }
+                    Button("Logout", role: .destructive) {
+                        handleLogout(deleteBackups: false)
                     }
 
                     #if os(macOS)
                     if backupManager.isBackupEnabled {
                         Button("Logout & Delete Backups", role: .destructive) {
-                            handleLogout(clearDirty: true, deleteBackups: true)
+                            handleLogout(deleteBackups: true)
                         }
                     }
                     #endif
 
                     Button("Cancel", role: .cancel) { }
                 } message: {
-                    VStack {
-                        if dirtyStateManager.hasDirtyItems() {
-                            Text("You have \(dirtyStateManager.getDirtyCount()) unsaved changes.")
-                        }
-                        #if os(macOS)
-                        if backupManager.isBackupEnabled {
-                            Text("Your local backups will be kept unless you choose to delete them.")
-                        }
-                        #endif
+                    #if os(macOS)
+                    if backupManager.isBackupEnabled {
+                        Text("Your local backups will be kept unless you choose to delete them.")
                     }
+                    #endif
                 }
 
                 Spacer()
@@ -496,11 +435,7 @@ struct SettingsView: View {
 
     // MARK: - Logout Functions
 
-    func handleLogout(clearDirty: Bool, deleteBackups: Bool = false) {
-        if clearDirty {
-            dirtyStateManager.clearAll()
-        }
-
+    func handleLogout(deleteBackups: Bool = false) {
         #if os(macOS)
         if deleteBackups {
             Task {
@@ -515,16 +450,6 @@ struct SettingsView: View {
         #else
         authManager.logout()
         #endif
-    }
-
-    func syncAndLogout() {
-        Task {
-            let _ = await localFirstManager.forceSyncAll()
-            // Logout regardless of sync result
-            await MainActor.run {
-                authManager.logout()
-            }
-        }
     }
 
     #if os(macOS)
@@ -574,6 +499,17 @@ struct SettingsView: View {
             // The URL from NSOpenPanel is already security-scoped
             // Setting backupLocation will trigger the bookmark save
             backupManager.backupLocation = url
+
+            // Auto-initiate backup if no backup exists
+            initiateBackupIfNeeded()
+        }
+    }
+
+    func initiateBackupIfNeeded() {
+        // Check if no backup exists
+        if backupManager.getLatestBackupFolderForLocalFirst() == nil {
+            // Start backup automatically
+            backupManager.startBackup()
         }
     }
 
@@ -584,6 +520,16 @@ struct SettingsView: View {
             lastBackupStatus = formatter.localizedString(for: lastBackup, relativeTo: Date())
         } else {
             lastBackupStatus = "Never"
+        }
+    }
+
+    func updateLastIncrementalSyncStatus() {
+        if let lastSync = backupManager.lastSuccessfulIncrementalSyncDate {
+            let formatter = RelativeDateTimeFormatter()
+            formatter.unitsStyle = .full
+            lastIncrementalSyncStatus = formatter.localizedString(for: lastSync, relativeTo: Date())
+        } else {
+            lastIncrementalSyncStatus = "Never"
         }
     }
     #endif
