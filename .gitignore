@@ -38,12 +38,16 @@ deployment/.DS_Store
 
 locus-apps/build/
 locus-apps/DerivedData/
-locus-apps/*.xcuserstate
-locus-apps/xcuserdata/
+locus-apps/**/*.xcuserstate
+locus-apps/**/xcuserdata/
 locus-apps/*.xcworkspace
 locus-apps/Pods/
 locus-apps/.DS_Store
 locus-apps/*.swp
 locus-apps/*.swo
+locus-apps/**/*.hmap
+locus-apps/**/*.ipa
+locus-apps/**/*.dSYM
+locus-apps/**/*.dSYM.zip
 
 .DS_Store
