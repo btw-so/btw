@@ -1,0 +1,1 @@
+Couldn't find the requested file /dist/y-prosemirror.js in y-prosemirror.

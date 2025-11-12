@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locus Note Editor</title>
+
+    <!-- RemixIcon for toolbar icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- Uppy CSS -->
+    <link href="https://releases.transloadit.com/uppy/v3.25.0/uppy.min.css" rel="stylesheet">
+
+    <style>
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", "Satoshi", "Circular", sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background: #FBFBFB;
+            color: #333333;
+        }
+
+        #app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #FBFBFB;
+        }
+
+        /* Tiptap Editor Styles */
+        .tiptap-editor {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px 28px 28px 28px;
+            background: #FBFBFB;
+            color: #333333;
+            line-height: 1.8;
+        }
+
+        .tiptap-editor p {
+            line-height: 1.8;
+            margin-bottom: 0.75em;
+        }
+
+        .tiptap-editor strong {
+            font-weight: 600;
+        }
+
+        .tiptap-editor li p {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            line-height: 1.5 !important;
+        }
+
+        .tiptap-editor li {
+            margin-top: 0.25em !important;
+            margin-bottom: 0.25em !important;
+            line-height: 1.5;
+        }
+
+        .tiptap-editor ul, .tiptap-editor ol {
+            margin-top: 0.75em;
+            margin-bottom: 0.75em;
+            padding-left: 1.5em;
+        }
+
+        .tiptap-editor mark {
+            background-color: #ffe066;
+            border-radius: 0.25em;
+            box-decoration-break: clone;
+            padding: 0.125em 0;
+        }
+
+        .tiptap-editor .mention {
+            border: 1px solid #000;
+            border-radius: 0.4rem;
+            box-decoration-break: clone;
+            padding: 0.1rem 0.3rem;
+        }
+
+        .tiptap-editor .collaboration-cursor__caret {
+            border-left: 1px solid #0d0d0d;
+            border-right: 1px solid #0d0d0d;
+            margin-left: -1px;
+            margin-right: -1px;
+            pointer-events: none;
+            position: relative;
+            word-break: normal;
+        }
+
+        .tiptap-editor .collaboration-cursor__label {
+            border-radius: 3px 3px 3px 0;
+            color: #0d0d0d;
+            font-size: 12px;
+            font-style: normal;
+            font-weight: 600;
+            left: -1px;
+            line-height: normal;
+            padding: 0.1rem 0.3rem;
+            position: absolute;
+            top: -1.4em;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .tiptap-editor h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .tiptap-editor h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .tiptap-editor h3 {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .tiptap-editor h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .tiptap-editor ul[data-type="taskList"] {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tiptap-editor ul[data-type="taskList"] p {
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .tiptap-editor ul[data-type="taskList"] li {
+            display: flex;
+            line-height: 1.4;
+            margin-top: 0.2em !important;
+            margin-bottom: 0.2em !important;
+        }
+
+        .tiptap-editor ul[data-type="taskList"] li > label {
+            flex: 0 0 auto;
+            margin-right: 0.5rem;
+            user-select: none;
+            display: flex;
+            margin-top: 0.3rem !important;
+        }
+
+        .tiptap-editor ul[data-type="taskList"] li > div {
+            flex: 1 1 auto;
+            margin-bottom: 0 !important;
+        }
+
+        .tiptap-editor ul[data-type="taskList"] li > div > ul[data-type="taskList"] {
+            margin-top: 0rem !important;
+            margin-bottom: 0rem !important;
+        }
+
+        .tiptap-editor ul[data-type="taskList"] li > label > input[type="checkbox"] {
+            border-radius: 0.25rem;
+            background: transparent;
+            width: 0.85rem;
+            height: 0.85rem;
+            cursor: pointer;
+            border-color: #6b7280;
+            outline: none;
+            box-shadow: none;
+            -webkit-appearance: none;
+            appearance: none;
+            border: 1px solid;
+        }
+
+        .tiptap-editor ul[data-type="taskList"] li > label > input[type="checkbox"]:checked {
+            background-color: #9ca3af;
+            border-color: #9ca3af;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+        }
+
+        .tiptap-editor ul[data-type="taskList"] li[data-checked="true"],
+        .tiptap-editor ul[data-type="taskList"] li[data-checked]:not([data-checked="false"]) {
+            text-decoration: line-through !important;
+            color: #6b7280;
+        }
+
+        .tiptap-editor ul[data-type="taskList"] li[data-checked="true"] p,
+        .tiptap-editor ul[data-type="taskList"] li[data-checked]:not([data-checked="false"]) p {
+            color: #6b7280;
+        }
+
+        .tiptap-editor ol > li > ol,
+        .tiptap-editor ul > li > ul {
+            margin-top: 0rem !important;
+            margin-bottom: 0rem !important;
+        }
+
+        .tiptap-editor ul > li::marker {
+            color: rgb(107, 114, 128) !important;
+        }
+
+        /* Code Block Styles */
+        .tiptap-editor pre {
+            font-family: 'Courier New', Courier, monospace;
+            background: #f3f4f6 !important;
+            margin: 1.5rem 0;
+            padding: 0.75rem 1rem;
+            color: #040402;
+            border-radius: 0.375rem;
+            overflow-x: auto;
+        }
+
+        .tiptap-editor code {
+            background-color: #f3f4f6;
+            border-radius: 0.25rem;
+            padding: 0.125rem 0.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.875em;
+        }
+
+        .tiptap-editor pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Image Styles */
+        .tiptap-editor img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.375rem;
+            margin: 1rem 0;
+        }
+
+        .tiptap-editor img.ProseMirror-selectednode {
+            outline: 2px solid #00b4d5;
+            outline-offset: 2px;
+        }
+
+        /* Blockquote Styles */
+        .tiptap-editor blockquote {
+            border-left: 4px solid #e5e7eb;
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #6b7280;
+        }
+
+        .tiptap-editor blockquote p {
+            margin: 0 0 0.75em 0;
+            line-height: 1.8;
+        }
+
+        .tiptap-editor blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Horizontal Rule Styles */
+        .tiptap-editor hr {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 2rem 0;
+        }
+
+        .tiptap-editor hr.ProseMirror-selectednode {
+            border-top: 1px solid #00b4d5;
+        }
+
+        /* YouTube Video Styles */
+        .tiptap-editor iframe[src*="youtube.com"],
+        .tiptap-editor iframe[src*="youtu.be"] {
+            max-width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 0.375rem;
+            margin: 1rem 0;
+        }
+
+        .tiptap-editor .youtube-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            margin: 1rem 0;
+        }
+
+        .tiptap-editor .youtube-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 0.375rem;
+        }
+
+        /* Embed Styles */
+        .tiptap-editor .btw-embed-wrapper {
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .tiptap-editor .btw-embed-content {
+            width: 100%;
+        }
+
+        .tiptap-editor .btw-embed-content iframe {
+            border: none !important;
+            display: block;
+        }
+
+        .tiptap-editor .btw-embed-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 8px;
+            border: 2px dashed #e5e7eb;
+            border-radius: 0.375rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            color: #333333;
+            background: #FBFBFB;
+            resize: vertical;
+        }
+
+        .tiptap-editor .btw-embed-textarea:focus {
+            outline: none;
+            border-color: #00b4d5;
+        }
+
+        .tiptap-editor .btw-embed-display {
+            border-radius: 0.375rem;
+            overflow: hidden;
+            border: none;
+            background: transparent;
+        }
+
+        .tiptap-editor .btw-embed-display iframe {
+            border: none !important;
+            outline: none !important;
+        }
+
+        .tiptap-editor .btw-embed-wrapper.ProseMirror-selectednode {
+            outline: 2px solid #00b4d5;
+            outline-offset: 2px;
+            border-radius: 0.375rem;
+        }
+
+        .tiptap-editor .btw-embed-controls {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+
+        .tiptap-editor .btw-embed-wrapper:hover .btw-embed-controls {
+            opacity: 1;
+        }
+
+        .tiptap-editor .btw-embed-control-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #333333;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .tiptap-editor .btw-embed-control-btn:hover {
+            background: #00b4d5;
+            color: white;
+            border-color: #00b4d5;
+        }
+
+        /* Menu Bar Styles */
+        .editor__header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            padding: 8px 12px 8px 18px;
+            border-bottom: 2px solid #f3f4f6;
+            background: #FBFBFB;
+        }
+
+        .editor__header button {
+            background: transparent;
+            border: none;
+            border-radius: 11px;
+            padding: 2px;
+            margin: 2px;
+            outline: none;
+            cursor: pointer;
+            transition: box-shadow 0.15s, background 0.15s, color 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            min-height: 24px;
+        }
+
+        .editor__header button:hover {
+            background: #f3f4f6;
+        }
+
+        .editor__header button.is-active {
+            background: #040402;
+        }
+
+        .editor__header button.is-active i {
+            color: #FBFBFB;
+        }
+
+        .editor__header button i {
+            font-size: 15px;
+            color: #040402;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .editor__header .divider {
+            width: 1px;
+            height: 24px;
+            background-color: #e5e7eb;
+            margin: 0 4px;
+        }
+
+        /* File Input for Image Upload */
+        input[type="file"] {
+            display: none;
+        }
+
+        
+        /* Uppy Modal Overlay */
+        .uppy-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .uppy-modal-container {
+            width: 90%;
+            max-width: 750px;
+            max-height: 90vh;
+        }
+
+        /* Override Uppy colors to match your brand */
+        .uppy-Dashboard-inner {
+            background: #FBFBFB !important;
+        }
+
+        .uppy-DashboardContent-bar {
+            background: #FBFBFB !important;
+        }
+
+        .ProseMirror {
+            outline: none;
+        }
+
+        .ProseMirror p.is-editor-empty:first-child::before {
+            content: attr(data-placeholder);
+            float: left;
+            color: #ced4da;
+            pointer-events: none;
+            height: 0;
+        }
+
+        .character-count {
+            padding: 8px;
+            text-align: left;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        hr.ProseMirror-selectednode {
+            border-top: 1px solid #68cef8;
+        }
+
+        /* Scrollbar Styles */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #cccccc #ffffff;
+        }
+
+        *::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        *::-webkit-scrollbar-track {
+            border-radius: 6px;
+            background-color: #ffffff;
+        }
+
+        *::-webkit-scrollbar-thumb {
+            border-radius: 6px;
+            background-color: #cccccc;
+        }
+
+        *::-webkit-scrollbar-thumb:hover {
+            background-color: #bbbbbb;
+        }
+
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: white;
+            color: #040402;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            max-width: 300px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.hide {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .toast-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-loading .toast-icon {
+            border: 2px solid #e5e7eb;
+            border-top-color: #00b4d5;
+            animation: spin 1s linear infinite;
+        }
+
+        .toast-success .toast-icon {
+            background: #10b981;
+            color: white;
+        }
+
+        .toast-error .toast-icon {
+            background: #ef4444;
+            color: white;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Dark mode support */
+        body.theme-dark {
+            background: #0a0a0a;
+            color: #D0D0D0;
+        }
+
+        body.theme-dark #app {
+            background: #0a0a0a;
+        }
+
+        body.theme-dark .tiptap-editor {
+            background: #0a0a0a;
+            color: #D0D0D0;
+        }
+
+        body.theme-dark .editor__header {
+            background: #1a1a1a;
+            border-bottom-color: #2a2a2a;
+        }
+
+        body.theme-dark .toast {
+            background: #1a1a1a;
+            color: #FAFAFA;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-dark .editor__header button {
+            color: #FAFAFA;
+        }
+
+        body.theme-dark .editor__header button i {
+            color: #FAFAFA;
+        }
+
+        body.theme-dark .editor__header button:hover {
+            background: #252525;
+        }
+
+        body.theme-dark .editor__header button.is-active {
+            background: #FAFAFA;
+        }
+
+        body.theme-dark .editor__header button.is-active i {
+            color: #040402;
+        }
+
+        body.theme-dark .tiptap-editor pre {
+            background: #1a1a1a !important;
+            color: #D0D0D0;
+        }
+
+        body.theme-dark .tiptap-editor code {
+            background-color: #1a1a1a;
+            color: #D0D0D0;
+        }
+
+        body.theme-dark .tiptap-editor blockquote {
+            border-left-color: #2a2a2a;
+            color: #8A8A8A;
+        }
+
+        body.theme-dark .tiptap-editor hr {
+            border-top-color: #2a2a2a;
+        }
+
+        body.theme-dark .btw-embed-textarea {
+            color: #D0D0D0;
+            background: #0a0a0a;
+            border-color: #2a2a2a;
+        }
+
+        body.theme-dark .btw-embed-control-btn {
+            background: rgba(26, 26, 26, 0.95);
+            color: #FAFAFA;
+            border-color: #2a2a2a;
+        }
+
+        body.theme-dark .ProseMirror p.is-editor-empty:first-child::before {
+            color: #666666;
+        }
+
+        body.theme-dark .character-count {
+            color: #8A8A8A;
+        }
+
+        body.theme-dark *::-webkit-scrollbar-track {
+            background-color: #0a0a0a;
+        }
+
+        body.theme-dark *::-webkit-scrollbar-thumb {
+            background-color: #444444;
+        }
+
+        body.theme-dark *::-webkit-scrollbar-thumb:hover {
+            background-color: #555555;
+        }
+
+        body.theme-dark .tiptap-editor mark {
+            background-color: #ffd93d;
+        }
+
+        body.theme-dark .editor__header .divider {
+            background-color: #2a2a2a;
+        }
+
+        body.theme-dark .tiptap-editor a {
+            color: #8A9BA8;
+            text-decoration: underline;
+        }
+
+        body.theme-dark .tiptap-editor a:hover {
+            color: #A0B0BD;
+        }
+
+        .tiptap-editor a {
+            color: #007AFF;
+            text-decoration: underline;
+        }
+
+        .tiptap-editor a:hover {
+            color: #0051D5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <div id="app">
+        <div class="editor__header" id="menubar"></div>
+        <div class="tiptap-editor">
+            <div id="editor"></div>
+        </div>
+        <div class="character-count" id="character-count">0 words</div>
+    </div>
+
+    <!-- Uppy JS -->
+    <script src="https://releases.transloadit.com/uppy/v3.25.0/uppy.min.js"></script>
+
+    <!-- Use esm.sh CDN with explicit Y.js aliasing to prevent duplicate imports -->
+    <script type="module">
+        // Import Y.js first to ensure single instance - MATCHING REACT APP VERSION
+        import * as Y from 'https://esm.sh/yjs@13.5.48';
+
+        // Import everything else with Y.js aliased to the same version - MATCHING REACT APP VERSIONS
+        import { Editor, mergeAttributes } from 'https://esm.sh/@tiptap/core@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import { Node } from 'https://esm.sh/@tiptap/core@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Document from 'https://esm.sh/@tiptap/extension-document@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Paragraph from 'https://esm.sh/@tiptap/extension-paragraph@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Text from 'https://esm.sh/@tiptap/extension-text@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Bold from 'https://esm.sh/@tiptap/extension-bold@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Italic from 'https://esm.sh/@tiptap/extension-italic@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Strike from 'https://esm.sh/@tiptap/extension-strike@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Underline from 'https://esm.sh/@tiptap/extension-underline@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Code from 'https://esm.sh/@tiptap/extension-code@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import CodeBlock from 'https://esm.sh/@tiptap/extension-code-block@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Heading from 'https://esm.sh/@tiptap/extension-heading@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import BulletList from 'https://esm.sh/@tiptap/extension-bullet-list@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import OrderedList from 'https://esm.sh/@tiptap/extension-ordered-list@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import ListItem from 'https://esm.sh/@tiptap/extension-list-item@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Blockquote from 'https://esm.sh/@tiptap/extension-blockquote@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import HorizontalRule from 'https://esm.sh/@tiptap/extension-horizontal-rule@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import HardBreak from 'https://esm.sh/@tiptap/extension-hard-break@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import History from 'https://esm.sh/@tiptap/extension-history@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Dropcursor from 'https://esm.sh/@tiptap/extension-dropcursor@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Gapcursor from 'https://esm.sh/@tiptap/extension-gapcursor@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Link from 'https://esm.sh/@tiptap/extension-link@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Highlight from 'https://esm.sh/@tiptap/extension-highlight@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import TaskList from 'https://esm.sh/@tiptap/extension-task-list@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import TaskItem from 'https://esm.sh/@tiptap/extension-task-item@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Image from 'https://esm.sh/@tiptap/extension-image@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Youtube from 'https://esm.sh/@tiptap/extension-youtube@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Placeholder from 'https://esm.sh/@tiptap/extension-placeholder@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import CharacterCount from 'https://esm.sh/@tiptap/extension-character-count@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Typography from 'https://esm.sh/@tiptap/extension-typography@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import Collaboration from 'https://esm.sh/@tiptap/extension-collaboration@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import CollaborationCursor from 'https://esm.sh/@tiptap/extension-collaboration-cursor@2.0.0-beta.220?alias=yjs:https://esm.sh/yjs@13.5.48';
+        import { HocuspocusProvider } from 'https://esm.sh/@hocuspocus/provider@1.1.1?alias=yjs:https://esm.sh/yjs@13.5.48';
+
+        // Custom Embed Extension for <btw-embed> elements
+        const Embed = Node.create({
+            name: 'btw-embed',
+            group: 'block',
+            selectable: true,
+            draggable: true,
+            atom: true,
+
+            addAttributes() {
+                return {
+                    code: {
+                        default: null,
+                        parseHTML: element => element.getAttribute('code'),
+                        renderHTML: attributes => {
+                            if (!attributes.code) {
+                                return {};
+                            }
+                            return {
+                                code: attributes.code,
+                            };
+                        },
+                    },
+                };
+            },
+
+            parseHTML() {
+                return [
+                    {
+                        tag: 'btw-embed',
+                    },
+                ];
+            },
+
+            renderHTML({ HTMLAttributes }) {
+                return ['btw-embed', mergeAttributes(HTMLAttributes)];
+            },
+
+            addNodeView() {
+                return ({ node, editor, getPos }) => {
+                    const dom = document.createElement('div');
+                    dom.className = 'btw-embed-wrapper';
+
+                    const contentDOM = document.createElement('div');
+                    contentDOM.className = 'btw-embed-content';
+
+                    let currentNode = node;
+                    let isEditing = false;
+                    let editModeActive = false;
+
+                    const renderEmbed = (updatedNode) => {
+                        currentNode = updatedNode || currentNode;
+
+                        // Don't re-render if we're in edit mode
+                        if (editModeActive) {
+                            return;
+                        }
+
+                        contentDOM.innerHTML = '';
+
+                        // Always just show the iframe display on iOS/macOS (no editing)
+                        if (currentNode.attrs.code) {
+                            // Show the embedded content in an iframe
+                            const embedContainer = document.createElement('div');
+                            embedContainer.className = 'btw-embed-display';
+                            embedContainer.style.position = 'relative';
+
+                            let html = currentNode.attrs.code.replace(/&quot;/g, '"');
+                            const iframeId = 'iframe-' + Math.random().toString(36).substr(2, 16);
+
+                            const jsCode = `
+                                <script>
+                                function sendHeightToParent() {
+                                    var height = document.body.scrollHeight;
+                                    var origin = window.location.origin;
+                                    if (origin === "null" || !origin) {
+                                        origin = "*";
+                                    }
+                                    window.parent.postMessage({
+                                        type: 'setIframeHeight',
+                                        iframeId: '${iframeId}',
+                                        height: height
+                                    }, origin);
+                                }
+
+                                window.addEventListener('load', sendHeightToParent, false);
+                                window.addEventListener('resize', sendHeightToParent, false);
+                                setTimeout(sendHeightToParent, 1000);
+                                <\/script>
+                            `;
+
+                            if (html.includes('<body>')) {
+                                html = html.replace('<body>', `<body>${jsCode}`);
+                            } else {
+                                html = html + jsCode;
+                            }
+
+                            const iframe = document.createElement('iframe');
+                            iframe.id = iframeId;
+                            iframe.srcdoc = html;
+                            iframe.frameBorder = '0';
+                            iframe.scrolling = 'no';
+                            iframe.style.width = '100%';
+                            iframe.style.border = 'none';
+                            iframe.style.minHeight = '100px';
+
+                            embedContainer.appendChild(iframe);
+                            contentDOM.appendChild(embedContainer);
+
+                            // Listen for iframe height messages
+                            window.addEventListener('message', (event) => {
+                                if (event.data.type === 'setIframeHeight' && event.data.iframeId === iframeId) {
+                                    iframe.style.height = event.data.height + 'px';
+                                }
+                            });
+                        }
+                    };
+
+                    renderEmbed();
+                    dom.appendChild(contentDOM);
+
+                    return {
+                        dom,
+                        update: (updatedNode) => {
+                            if (updatedNode.type !== node.type) {
+                                return false;
+                            }
+                            // Only re-render if not in edit mode
+                            if (!editModeActive) {
+                                renderEmbed(updatedNode);
+                            }
+                            return true;
+                        },
+                    };
+                };
+            },
+        });
+
+        // Toast notification system
+        const toastManager = {
+            activeToasts: new Map(),
+
+            show(message, type = 'loading', duration = null) {
+                const id = Date.now() + Math.random();
+                const container = document.getElementById('toast-container');
+
+                // Create toast element
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                toast.id = `toast-${id}`;
+
+                // Create icon
+                const icon = document.createElement('div');
+                icon.className = 'toast-icon';
+                if (type === 'success') {
+                    icon.innerHTML = '✓';
+                } else if (type === 'error') {
+                    icon.innerHTML = '✕';
+                }
+
+                // Create message
+                const messageEl = document.createElement('span');
+                messageEl.textContent = message;
+
+                toast.appendChild(icon);
+                toast.appendChild(messageEl);
+                container.appendChild(toast);
+
+                // Trigger animation
+                setTimeout(() => toast.classList.add('show'), 10);
+
+                // Store toast reference
+                this.activeToasts.set(id, toast);
+
+                // Auto-dismiss if duration is set
+                if (duration) {
+                    setTimeout(() => this.dismiss(id), duration);
+                }
+
+                return id;
+            },
+
+            dismiss(id) {
+                const toast = this.activeToasts.get(id);
+                if (toast) {
+                    toast.classList.remove('show');
+                    toast.classList.add('hide');
+                    setTimeout(() => {
+                        toast.remove();
+                        this.activeToasts.delete(id);
+                    }, 300);
+                }
+            },
+
+            update(id, message, type) {
+                const toast = this.activeToasts.get(id);
+                if (toast) {
+                    // Update class
+                    toast.className = `toast toast-${type} show`;
+
+                    // Update icon
+                    const icon = toast.querySelector('.toast-icon');
+                    if (type === 'success') {
+                        icon.innerHTML = '✓';
+                    } else if (type === 'error') {
+                        icon.innerHTML = '✕';
+                    }
+
+                    // Update message
+                    const messageEl = toast.querySelector('span');
+                    messageEl.textContent = message;
+
+                    // Auto-dismiss success/error toasts
+                    if (type !== 'loading') {
+                        setTimeout(() => this.dismiss(id), 3000);
+                    }
+                }
+            },
+
+            loading(message) {
+                return this.show(message, 'loading');
+            },
+
+            success(message, duration = 3000) {
+                return this.show(message, 'success', duration);
+            },
+
+            error(message, duration = 4000) {
+                return this.show(message, 'error', duration);
+            }
+        };
+
+        // Global editor instance
+        let editor;
+        let provider;
+        let ydoc;
+        let connectionToastId = null;
+        let editorConfig = {
+            backendURL: 'wss://yjs.siddg.com',
+            userId: '1',
+            noteId: '356935be-5f8b-4104-86a2-db91fd16a8c3',
+            token: '35540db8-8262-4e86-89c7-340b106c185c',
+            fingerprint: 'r3e6gkgpkwerruf9wj00e',
+            userName: 'You',
+            initialContent: '<p>Start writing...</p>',
+            placeholder: 'Write something...',
+        };
+
+        // Generate a simple fingerprint for this device
+        function generateFingerprint() {
+            const key = 'locus_fingerprint_uuid';
+            let uuid = localStorage.getItem(key);
+            if (uuid) {
+                return uuid;
+            }
+            uuid = Math.random().toString(36).substring(2, 15) +
+                   Math.random().toString(36).substring(2, 15);
+            localStorage.setItem(key, uuid);
+            return uuid;
+        }
+
+        // Initialize editor with configuration
+        function initializeEditor(config) {
+            if (config) {
+                editorConfig = { ...editorConfig, ...config };
+            }
+
+            // Generate fingerprint if not provided
+            if (!editorConfig.fingerprint) {
+                editorConfig.fingerprint = generateFingerprint();
+            }
+
+            // Apply theme
+            if (editorConfig.theme === 'dark') {
+                document.body.classList.add('theme-dark');
+            } else {
+                document.body.classList.remove('theme-dark');
+            }
+
+            const extensions = [
+                Embed,
+                Document,
+                Paragraph,
+                Text,
+                Bold,
+                Italic,
+                Strike,
+                Underline,
+                Code,
+                CodeBlock,
+                Heading,
+                BulletList,
+                OrderedList,
+                ListItem,
+                Blockquote,
+                HorizontalRule,
+                HardBreak,
+                History,
+                Dropcursor,
+                Gapcursor,
+                Link,
+                Highlight,
+                TaskList,
+                TaskItem.configure({
+                    nested: true,
+                }),
+                Image,
+                Youtube.configure({
+                    controls: false,
+                    nocookie: true,
+                    inline: false,
+                    HTMLAttributes: {
+                        class: 'youtube-embed',
+                    },
+                }),
+                Placeholder.configure({
+                    placeholder: editorConfig.placeholder,
+                }),
+                CharacterCount,
+                Typography,
+            ];
+
+            // Add collaboration extensions if backend URL is provided
+            if (editorConfig.backendURL && editorConfig.userId && editorConfig.noteId && editorConfig.token) {
+                ydoc = new Y.Doc();
+
+                const documentName = `note.${editorConfig.userId}.${editorConfig.noteId}.list`;
+                const authToken = `${editorConfig.token}:::${editorConfig.fingerprint}`;
+
+                console.log('🔌 Connecting to WebSocket...');
+                console.log('📍 URL:', editorConfig.backendURL);
+                console.log('📄 Document Name:', documentName);
+                console.log('🔑 Auth Token:', authToken);
+
+                provider = new HocuspocusProvider({
+                    url: editorConfig.backendURL,
+                    name: documentName,
+                    document: ydoc,
+                    token: authToken,
+                    onConnect: () => {
+                        console.log('✅ Connected to collaboration server');
+
+                        // Only update the reconnecting toast if it exists
+                        // Don't show toast on initial connection
+                        if (connectionToastId) {
+                            toastManager.update(connectionToastId, 'Connected', 'success');
+                            connectionToastId = null;
+                        }
+
+                        sendMessageToNative({
+                            type: 'connectionStatus',
+                            status: 'connected'
+                        });
+                    },
+                    onDisconnect: ({ event }) => {
+                        console.log('⚠️ Disconnected from collaboration server');
+
+                        // Show reconnecting toast
+                        connectionToastId = toastManager.loading('Reconnecting...');
+
+                        sendMessageToNative({
+                            type: 'connectionStatus',
+                            status: 'disconnected'
+                        });
+                    },
+                    onAuthenticationFailed: (data) => {
+                        console.error('❌ Authentication failed:', data);
+
+                        // Show error toast
+                        if (connectionToastId) {
+                            toastManager.update(connectionToastId, 'Authentication failed', 'error');
+                            connectionToastId = null;
+                        } else {
+                            toastManager.error('Authentication failed');
+                        }
+
+                        sendMessageToNative({
+                            type: 'error',
+                            error: 'authentication_failed',
+                            message: data.reason || 'Authentication failed'
+                        });
+                    },
+                    onSynced: () => {
+                        console.log('📄 Document synced');
+                    },
+                });
+
+                extensions.push(
+                    Collaboration.configure({
+                        document: ydoc,
+                    }),
+                    CollaborationCursor.configure({
+                        provider: provider,
+                        user: {
+                            name: editorConfig.userName,
+                            color: '#ffcc00',
+                        },
+                    })
+                );
+            }
+
+            // Only set content if we're NOT using collaboration (Hocuspocus will handle loading)
+            const editorOptions = {
+                element: document.querySelector('#editor'),
+                extensions: extensions,
+                editorProps: {
+                    attributes: {
+                        class: 'focus:outline-none',
+                    },
+                },
+                onUpdate: ({ editor }) => {
+                    const html = editor.getHTML();
+                    updateCharacterCount();
+
+                    // Send content updates to native app
+                    sendMessageToNative({
+                        type: 'contentUpdate',
+                        html: html,
+                        json: editor.getJSON()
+                    });
+                },
+            };
+
+            // Only set initial content if NOT using collaboration
+            if (!provider && editorConfig.initialContent) {
+                editorOptions.content = editorConfig.initialContent;
+            }
+
+            editor = new Editor(editorOptions);
+
+            setupMenuBar();
+            updateCharacterCount();
+        }
+
+        function updateCharacterCount() {
+            if (editor && editor.storage.characterCount) {
+                const words = editor.storage.characterCount.words();
+                document.getElementById('character-count').textContent = `${words} words`;
+            }
+        }
+
+        function setupMenuBar() {
+            const menubar = document.getElementById('menubar');
+            menubar.innerHTML = ''; // Clear existing items
+
+            // Check if it's iPhone (iOS but not iPad)
+            const isIPhone = editorConfig.isIPhone || (navigator.userAgent.match(/iPhone/i) && !navigator.userAgent.match(/iPad/i));
+
+            const menuItems = [
+                { icon: 'bold', title: 'Bold', action: () => editor.chain().focus().toggleBold().run(), isActive: () => editor.isActive('bold') },
+                { icon: 'italic', title: 'Italic', action: () => editor.chain().focus().toggleItalic().run(), isActive: () => editor.isActive('italic') },
+                { icon: 'strikethrough', title: 'Strike', action: () => editor.chain().focus().toggleStrike().run(), isActive: () => editor.isActive('strike') },
+                { icon: 'underline', title: 'Underline', action: () => editor.chain().focus().toggleUnderline().run(), isActive: () => editor.isActive('underline') },
+                { icon: 'links-line', title: 'Link', action: () => setLink(), isActive: () => editor.isActive('link') },
+                { icon: 'code-view', title: 'Code', action: () => editor.chain().focus().toggleCode().run(), isActive: () => editor.isActive('code') },
+                { icon: 'mark-pen-line', title: 'Highlight', action: () => editor.chain().focus().toggleHighlight().run(), isActive: () => editor.isActive('highlight') },
+                { type: 'divider' },
+                { icon: 'h-1', title: 'Heading 1', action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(), isActive: () => editor.isActive('heading', { level: 1 }) },
+                { icon: 'h-2', title: 'Heading 2', action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(), isActive: () => editor.isActive('heading', { level: 2 }) },
+                { icon: 'list-unordered', title: 'Bullet List', action: () => editor.chain().focus().toggleBulletList().run(), isActive: () => editor.isActive('bulletList') },
+                { icon: 'list-ordered', title: 'Ordered List', action: () => editor.chain().focus().toggleOrderedList().run(), isActive: () => editor.isActive('orderedList') },
+                { icon: 'list-check-2', title: 'Task List', action: () => editor.chain().focus().toggleTaskList().run(), isActive: () => editor.isActive('taskList') },
+                { icon: 'code-box-line', title: 'Code Block', action: () => editor.chain().focus().toggleCodeBlock().run(), isActive: () => editor.isActive('codeBlock') },
+                { type: 'divider' },
+                { icon: 'image-line', title: 'Image', action: () => addImage(), isActive: () => editor.isActive('image') },
+                { icon: 'double-quotes-l', title: 'Blockquote', action: () => editor.chain().focus().toggleBlockquote().run(), isActive: () => editor.isActive('blockquote') },
+                { icon: 'separator', title: 'Horizontal Rule', action: () => editor.chain().focus().setHorizontalRule().run() },
+                // Only show Hard Break and Clear Format on non-iPhone devices
+                ...(!isIPhone ? [
+                    { type: 'divider' },
+                    { icon: 'text-wrap', title: 'Hard Break', action: () => editor.chain().focus().setHardBreak().run() },
+                    { icon: 'format-clear', title: 'Clear Format', action: () => editor.chain().focus().clearNodes().unsetAllMarks().run() },
+                ] : []),
+                { type: 'divider' },
+                { icon: 'arrow-go-back-line', title: 'Undo', action: () => editor.chain().focus().undo().run() },
+                { icon: 'arrow-go-forward-line', title: 'Redo', action: () => editor.chain().focus().redo().run() },
+            ];
+
+            menuItems.forEach(item => {
+                if (item.type === 'divider') {
+                    const divider = document.createElement('div');
+                    divider.className = 'divider';
+                    menubar.appendChild(divider);
+                } else {
+                    const button = document.createElement('button');
+                    button.title = item.title;
+                    button.innerHTML = `<i class="remix ri-${item.icon}"></i>`;
+                    button.onclick = item.action;
+
+                    if (item.isActive) {
+                        button.className = item.isActive() ? 'is-active' : '';
+                        editor.on('transaction', () => {
+                            button.className = item.isActive() ? 'is-active' : '';
+                        });
+                    }
+
+                    menubar.appendChild(button);
+                }
+            });
+        }
+
+        function setLink() {
+            const previousUrl = editor.getAttributes('link').href;
+            const url = prompt('URL', previousUrl);
+
+            if (url === null) return;
+
+            if (url === '') {
+                editor.chain().focus().extendMarkRange('link').unsetLink().run();
+                return;
+            }
+
+            editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+        }
+
+        let uppyInstance = null;
+
+        function initializeUppy() {
+            if (uppyInstance) return uppyInstance;
+
+            const userId = editorConfig.userId;
+            const noteId = editorConfig.noteId;
+
+            uppyInstance = new Uppy.Uppy({
+                restrictions: {
+                    maxFileSize: 10 * 1024 * 1024, // 10MB
+                    allowedFileTypes: ['image/png', 'image/gif', 'image/jpeg', 'image/webp', 'image/svg+xml']
+                },
+                autoProceed: false
+            })
+            .use(Uppy.Dashboard, {
+                inline: false,
+                target: 'body',
+                showProgressDetails: true,
+                proudlyDisplayPoweredByUppy: false,
+                note: 'Images only, up to 10MB',
+                height: 470,
+                metaFields: [
+                    { id: 'name', name: 'Name', placeholder: 'file name' }
+                ]
+            })
+            .use(Uppy.AwsS3, {
+                companionUrl: 'https://api.siddg.com',
+                companionHeaders: {
+                    // Credentials will be sent via cookies
+                },
+                getUploadParameters: (file) => {
+                    const folder = `list/${userId}/notes/${noteId}`;
+                    const fileName = `${folder}/${file.name}`;
+
+                    return fetch(`https://api.siddg.com/companion/s3/params?metadata[fileName]=${encodeURIComponent(fileName)}`, {
+                        credentials: 'include'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        return {
+                            method: data.method || 'POST',
+                            url: data.url,
+                            fields: data.fields,
+                            headers: data.headers || {}
+                        };
+                    });
+                }
+            });
+
+            uppyInstance.on('complete', (result) => {
+                console.log('Upload complete:', result);
+
+                result.successful.forEach(file => {
+                    let imageUrl = file.uploadURL || file.response?.uploadURL;
+
+                    if (imageUrl) {
+                        // Fix URL if needed (same logic as React app)
+                        const s3Endpoint = 'https://api.siddg.com'; // or your S3_ENDPOINT
+                        imageUrl = imageUrl
+                            .split(`${s3Endpoint}/${s3Endpoint}`)
+                            .join(s3Endpoint);
+
+                        // Insert image into editor
+                        editor.chain().focus().setImage({ src: imageUrl }).run();
+
+                        toastManager.success('Image uploaded');
+                    }
+                });
+
+                if (result.failed.length > 0) {
+                    toastManager.error('Some uploads failed');
+                }
+
+                // Close the dashboard
+                uppyInstance.getPlugin('Dashboard').closeModal();
+            });
+
+            uppyInstance.on('error', (error) => {
+                console.error('Uppy error:', error);
+                toastManager.error('Upload error');
+            });
+
+            return uppyInstance;
+        }
+
+        function addImage() {
+            const uppy = initializeUppy();
+            uppy.getPlugin('Dashboard').openModal();
+        }
+
+        function addEmbed() {
+            // Insert an empty embed element which will automatically show the textarea
+            editor.chain().focus().insertContent({
+                type: 'btw-embed',
+                attrs: {
+                    code: null
+                }
+            }).run();
+        }
+
+        // Send messages to native Swift/Kotlin code
+        function sendMessageToNative(message) {
+            try {
+                // iOS WKWebView
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.locusEditor) {
+                    window.webkit.messageHandlers.locusEditor.postMessage(message);
+                }
+                // Android WebView
+                else if (window.LocusNativeInterface) {
+                    window.LocusNativeInterface.postMessage(JSON.stringify(message));
+                }
+            } catch (error) {
+                console.error('Error sending message to native:', error);
+            }
+        }
+
+        // Public API for native app to call
+        window.LocusEditor = {
+            // Initialize the editor with configuration
+            init: function(config) {
+                initializeEditor(config);
+            },
+
+            // Get current content
+            getHTML: function() {
+                return editor ? editor.getHTML() : '';
+            },
+
+            getJSON: function() {
+                return editor ? editor.getJSON() : null;
+            },
+
+            // Set content
+            setContent: function(content) {
+                if (editor) {
+                    editor.commands.setContent(content);
+                }
+            },
+
+            // Focus the editor
+            focus: function() {
+                if (editor) {
+                    editor.commands.focus();
+                }
+            },
+
+            // Destroy the editor
+            destroy: function() {
+                if (provider) {
+                    provider.destroy();
+                }
+                if (editor) {
+                    editor.destroy();
+                }
+            },
+
+            // Get the editor instance
+            getEditor: function() {
+                return editor;
+            },
+
+            // Update configuration
+            updateConfig: function(config) {
+                editorConfig = { ...editorConfig, ...config };
+            },
+
+            // Update theme
+            setTheme: function(theme) {
+                editorConfig.theme = theme;
+                if (theme === 'dark') {
+                    document.body.classList.add('theme-dark');
+                } else {
+                    document.body.classList.remove('theme-dark');
+                }
+            }
+        };
+
+        // Auto-initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if there's an embedded config script
+            const configScript = document.getElementById('editor-config');
+            if (configScript) {
+                try {
+                    const config = JSON.parse(configScript.textContent);
+                    initializeEditor(config);
+                } catch (error) {
+                    console.error('Error parsing editor config:', error);
+                }
+            } else {
+                // Initialize with default config if no script provided
+                initializeEditor();
+            }
+        });
+    </script>
+</body>
+</html>

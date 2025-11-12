@@ -1,0 +1,8 @@
+/**
+ * Minified by jsDelivr using Terser v5.39.0.
+ * Original file: /npm/@tiptap/extension-strike@2.0.0-beta.220/dist/index.umd.js
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports,require("@tiptap/core")):"function"==typeof define&&define.amd?define(["exports","@tiptap/core"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self)["@tiptap/extension-strike"]={},e.core)}(this,(function(e,t){"use strict";const s=/(?:^|\s)((?:~~)((?:[^~]+))(?:~~))$/,r=/(?:^|\s)((?:~~)((?:[^~]+))(?:~~))/g,i=t.Mark.create({name:"strike",addOptions:()=>({HTMLAttributes:{}}),parseHTML:()=>[{tag:"s"},{tag:"del"},{tag:"strike"},{style:"text-decoration",consuming:!1,getAttrs:e=>!!e.includes("line-through")&&{}}],renderHTML({HTMLAttributes:e}){return["s",t.mergeAttributes(this.options.HTMLAttributes,e),0]},addCommands(){return{setStrike:()=>({commands:e})=>e.setMark(this.name),toggleStrike:()=>({commands:e})=>e.toggleMark(this.name),unsetStrike:()=>({commands:e})=>e.unsetMark(this.name)}},addKeyboardShortcuts(){return{"Mod-Shift-x":()=>this.editor.commands.toggleStrike()}},addInputRules(){return[t.markInputRule({find:s,type:this.type})]},addPasteRules(){return[t.markPasteRule({find:r,type:this.type})]}});e.Strike=i,e.default=i,e.inputRegex=s,e.pasteRegex=r,Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=/sm/89230edcda105c29bf0ea448d2a1753575635f2f20f13c3414998d4245bd4e67.map

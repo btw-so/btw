@@ -1,0 +1,8 @@
+/**
+ * Minified by jsDelivr using Terser v5.39.0.
+ * Original file: /npm/@tiptap/extension-horizontal-rule@2.0.0-beta.220/dist/index.umd.js
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports,require("@tiptap/core"),require("@tiptap/pm/state")):"function"==typeof define&&define.amd?define(["exports","@tiptap/core","@tiptap/pm/state"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self)["@tiptap/extension-horizontal-rule"]={},e.core,e.state)}(this,(function(e,t,n){"use strict";const o=t.Node.create({name:"horizontalRule",addOptions:()=>({HTMLAttributes:{}}),group:"block",parseHTML:()=>[{tag:"hr"}],renderHTML({HTMLAttributes:e}){return["hr",t.mergeAttributes(this.options.HTMLAttributes,e)]},addCommands(){return{setHorizontalRule:()=>({chain:e})=>e().insertContent({type:this.name}).command((({tr:e,dispatch:t})=>{var o;if(t){const{$to:t}=e.selection,i=t.end();if(t.nodeAfter)e.setSelection(n.TextSelection.create(e.doc,t.pos));else{const r=null===(o=t.parent.type.contentMatch.defaultType)||void 0===o?void 0:o.create();r&&(e.insert(i,r),e.setSelection(n.TextSelection.create(e.doc,i)))}e.scrollIntoView()}return!0})).run()}},addInputRules(){return[t.nodeInputRule({find:/^(?:---|—-|___\s|\*\*\*\s)$/,type:this.type})]}});e.HorizontalRule=o,e.default=o,Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=/sm/5868aa48ae868f7975b5f942bb420e2371cd100cd45754b64344661e4f342c6f.map
