@@ -1,0 +1,8 @@
+/**
+ * Minified by jsDelivr using Terser v5.39.0.
+ * Original file: /npm/@tiptap/extension-highlight@2.0.0-beta.220/dist/index.umd.js
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+!function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports,require("@tiptap/core")):"function"==typeof define&&define.amd?define(["exports","@tiptap/core"],e):e((t="undefined"!=typeof globalThis?globalThis:t||self)["@tiptap/extension-highlight"]={},t.core)}(this,(function(t,e){"use strict";const o=/(?:^|\s)((?:==)((?:[^~=]+))(?:==))$/,r=/(?:^|\s)((?:==)((?:[^~=]+))(?:==))/g,i=e.Mark.create({name:"highlight",addOptions:()=>({multicolor:!1,HTMLAttributes:{}}),addAttributes(){return this.options.multicolor?{color:{default:null,parseHTML:t=>t.getAttribute("data-color")||t.style.backgroundColor,renderHTML:t=>t.color?{"data-color":t.color,style:`background-color: ${t.color}; color: inherit`}:{}}}:{}},parseHTML:()=>[{tag:"mark"}],renderHTML({HTMLAttributes:t}){return["mark",e.mergeAttributes(this.options.HTMLAttributes,t),0]},addCommands(){return{setHighlight:t=>({commands:e})=>e.setMark(this.name,t),toggleHighlight:t=>({commands:e})=>e.toggleMark(this.name,t),unsetHighlight:()=>({commands:t})=>t.unsetMark(this.name)}},addKeyboardShortcuts(){return{"Mod-Shift-h":()=>this.editor.commands.toggleHighlight()}},addInputRules(){return[e.markInputRule({find:o,type:this.type})]},addPasteRules(){return[e.markPasteRule({find:r,type:this.type})]}});t.Highlight=i,t.default=i,t.inputRegex=o,t.pasteRegex=r,Object.defineProperty(t,"__esModule",{value:!0})}));
+//# sourceMappingURL=/sm/b6d77f0dc35f92a740b663f7b448a6b6de96fc1abc8f1968161c52a113071fbd.map

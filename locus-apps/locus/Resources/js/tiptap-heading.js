@@ -1,0 +1,8 @@
+/**
+ * Minified by jsDelivr using Terser v5.39.0.
+ * Original file: /npm/@tiptap/extension-heading@2.0.0-beta.220/dist/index.umd.js
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports,require("@tiptap/core")):"function"==typeof define&&define.amd?define(["exports","@tiptap/core"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self)["@tiptap/extension-heading"]={},e.core)}(this,(function(e,t){"use strict";const s=t.Node.create({name:"heading",addOptions:()=>({levels:[1,2,3,4,5,6],HTMLAttributes:{}}),content:"inline*",group:"block",defining:!0,addAttributes:()=>({level:{default:1,rendered:!1}}),parseHTML(){return this.options.levels.map((e=>({tag:`h${e}`,attrs:{level:e}})))},renderHTML({node:e,HTMLAttributes:s}){return[`h${this.options.levels.includes(e.attrs.level)?e.attrs.level:this.options.levels[0]}`,t.mergeAttributes(this.options.HTMLAttributes,s),0]},addCommands(){return{setHeading:e=>({commands:t})=>!!this.options.levels.includes(e.level)&&t.setNode(this.name,e),toggleHeading:e=>({commands:t})=>!!this.options.levels.includes(e.level)&&t.toggleNode(this.name,"paragraph",e)}},addKeyboardShortcuts(){return this.options.levels.reduce(((e,t)=>({...e,[`Mod-Alt-${t}`]:()=>this.editor.commands.toggleHeading({level:t})})),{})},addInputRules(){return this.options.levels.map((e=>t.textblockTypeInputRule({find:new RegExp(`^(#{1,${e}})\\s$`),type:this.type,getAttributes:{level:e}})))}});e.Heading=s,e.default=s,Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=/sm/28109efd3eb1c27ff850a343c310969ca8f984fc1c97b7c69ec8eebafe999bfa.map

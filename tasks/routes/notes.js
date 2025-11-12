@@ -632,7 +632,7 @@ router.post(
             const query = `
                 SELECT *
                 FROM btw.notes
-                WHERE user_id = $1 AND (tags NOT LIKE '%list%' OR tags IS NULL)
+                WHERE user_id = $1 AND (tags LIKE '%list%')
                 ORDER BY updated_at DESC
                 LIMIT $2 OFFSET $3
             `;
@@ -647,7 +647,7 @@ router.post(
             const countQuery = `
                 SELECT COUNT(*) as count
                 FROM btw.notes
-                WHERE user_id = $1 AND (tags NOT LIKE '%list%' OR tags IS NULL)
+                WHERE user_id = $1 AND (tags LIKE '%list%')
             `;
 
             const totalRows = await pool.query(countQuery, [user.id]);

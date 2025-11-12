@@ -1,0 +1,8 @@
+/**
+ * Minified by jsDelivr using Terser v5.39.0.
+ * Original file: /npm/@tiptap/extension-hard-break@2.0.0-beta.220/dist/index.umd.js
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports,require("@tiptap/core")):"function"==typeof define&&define.amd?define(["exports","@tiptap/core"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self)["@tiptap/extension-hard-break"]={},e.core)}(this,(function(e,t){"use strict";const r=t.Node.create({name:"hardBreak",addOptions:()=>({keepMarks:!0,HTMLAttributes:{}}),inline:!0,group:"inline",selectable:!1,parseHTML:()=>[{tag:"br"}],renderHTML({HTMLAttributes:e}){return["br",t.mergeAttributes(this.options.HTMLAttributes,e)]},renderText:()=>"\n",addCommands(){return{setHardBreak:()=>({commands:e,chain:t,state:r,editor:n})=>e.first([()=>e.exitCode(),()=>e.command((()=>{const{selection:e,storedMarks:s}=r;if(e.$from.parent.type.spec.isolating)return!1;const{keepMarks:a}=this.options,{splittableMarks:i}=n.extensionManager,o=s||e.$to.parentOffset&&e.$from.marks();return t().insertContent({type:this.name}).command((({tr:e,dispatch:t})=>{if(t&&o&&a){const t=o.filter((e=>i.includes(e.type.name)));e.ensureMarks(t)}return!0})).run()}))])}},addKeyboardShortcuts(){return{"Mod-Enter":()=>this.editor.commands.setHardBreak(),"Shift-Enter":()=>this.editor.commands.setHardBreak()}}});e.HardBreak=r,e.default=r,Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=/sm/796c3cf0b3f48a1bbf8876d223263ffb0ac44f68c626b38d514391180c6a0759.map

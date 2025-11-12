@@ -1,0 +1,8 @@
+/**
+ * Minified by jsDelivr using Terser v5.39.0.
+ * Original file: /npm/@tiptap/extension-code@2.0.0-beta.220/dist/index.umd.js
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports,require("@tiptap/core")):"function"==typeof define&&define.amd?define(["exports","@tiptap/core"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self)["@tiptap/extension-code"]={},e.core)}(this,(function(e,t){"use strict";const o=/(?:^|\s)((?:`)((?:[^`]+))(?:`))$/,d=/(?:^|\s)((?:`)((?:[^`]+))(?:`))/g,s=t.Mark.create({name:"code",addOptions:()=>({HTMLAttributes:{}}),excludes:"_",code:!0,exitable:!0,parseHTML:()=>[{tag:"code"}],renderHTML({HTMLAttributes:e}){return["code",t.mergeAttributes(this.options.HTMLAttributes,e),0]},addCommands(){return{setCode:()=>({commands:e})=>e.setMark(this.name),toggleCode:()=>({commands:e})=>e.toggleMark(this.name),unsetCode:()=>({commands:e})=>e.unsetMark(this.name)}},addKeyboardShortcuts(){return{"Mod-e":()=>this.editor.commands.toggleCode()}},addInputRules(){return[t.markInputRule({find:o,type:this.type})]},addPasteRules(){return[t.markPasteRule({find:d,type:this.type})]}});e.Code=s,e.default=s,e.inputRegex=o,e.pasteRegex=d,Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=/sm/b634bb69267d6245c47d82734ba78bdfeee24c05b80854239b6de59f376849c7.map

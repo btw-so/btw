@@ -1,0 +1,8 @@
+/**
+ * Minified by jsDelivr using Terser v5.39.0.
+ * Original file: /npm/@tiptap/extension-image@2.0.0-beta.220/dist/index.umd.js
+ *
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports,require("@tiptap/core")):"function"==typeof define&&define.amd?define(["exports","@tiptap/core"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self)["@tiptap/extension-image"]={},e.core)}(this,(function(e,t){"use strict";const n=/(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/,i=t.Node.create({name:"image",addOptions:()=>({inline:!1,allowBase64:!1,HTMLAttributes:{}}),inline(){return this.options.inline},group(){return this.options.inline?"inline":"block"},draggable:!0,addAttributes:()=>({src:{default:null},alt:{default:null},title:{default:null}}),parseHTML(){return[{tag:this.options.allowBase64?"img[src]":'img[src]:not([src^="data:"])'}]},renderHTML({HTMLAttributes:e}){return["img",t.mergeAttributes(this.options.HTMLAttributes,e)]},addCommands(){return{setImage:e=>({commands:t})=>t.insertContent({type:this.name,attrs:e})}},addInputRules(){return[t.nodeInputRule({find:n,type:this.type,getAttributes:e=>{const[,,t,n,i]=e;return{src:n,alt:t,title:i}}})]}});e.Image=i,e.default=i,e.inputRegex=n,Object.defineProperty(e,"__esModule",{value:!0})}));
+//# sourceMappingURL=/sm/fa21f319250850fdf00920beb5eac0208276c1c0f7ed2f2b63c1fa00dad8317e.map
