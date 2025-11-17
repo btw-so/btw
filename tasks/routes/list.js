@@ -41,7 +41,7 @@ router.post(
         origin: process.env.CORS_DOMAINS.split(","),
     }),
     async (req, res) => {
-        const { fingerprint } = req.body || {};
+        const { fingerprint, page = 1, limit = 100, after = 0 } = req.body || {};
 
         let user;
 
@@ -64,13 +64,21 @@ router.post(
             return;
         }
 
-        const pinnedNodes = await getPinnedNodes({
+        const { pinnedNodes, total, page: pageToSend, limit: limitToSend } = await getPinnedNodes({
             user_id: user.id,
+            page,
+            limit,
+            after,
         });
 
         res.json({
             success: true,
-            data: { pinnedNodes },
+            data: {
+                pinnedNodes,
+                total,
+                page: pageToSend,
+                limit: limitToSend,
+            },
         });
     }
 );
