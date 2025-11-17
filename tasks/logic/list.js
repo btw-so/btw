@@ -19,11 +19,63 @@ async function searchNodes({ user_id, query, limit = 50, page = 1 }) {
     return rows.rows;
 }
 
-async function getPinnedNodes({ user_id }) {
+async function getPinnedNodes({ user_id, page = 1, limit = 100, after = 0 }) {
     const pool = await db.getTasksDB();
-    const query = `SELECT * FROM btw.nodes WHERE user_id = $1 AND pinned_pos IS NOT NULL AND parent_id <> 'limbo' ORDER BY pinned_pos ASC LIMIT 100`;
-    const rows = await pool.query(query, [user_id]);
-    return rows.rows;
+
+    // Convert parameters
+    page = Number(page);
+    limit = limit && limit <= 100 ? Number(limit) : 100;
+    after = new Date(after);
+
+    const query = `
+        SELECT
+            n.*,
+            CASE
+                WHEN notes.id IS NOT NULL AND notes.html IS NOT NULL AND notes.html <> '' AND notes.html <> '<p></p>' THEN TRUE
+                ELSE FALSE
+            END AS note_exists,
+            CASE
+                WHEN scribbles.id IS NOT NULL AND scribbles.pages IS NOT NULL THEN TRUE
+                ELSE FALSE
+            END AS scribble_exists,
+            notes.html AS note_html,
+            notes.md AS note_md
+        FROM
+            btw.nodes n
+        LEFT JOIN
+            btw.notes ON n.note_id = notes.id AND notes.user_id = n.user_id
+        LEFT JOIN
+            btw.scribbles ON n.note_id = scribbles.id AND scribbles.user_id = n.user_id
+        WHERE
+            n.user_id = $1
+            AND n.pinned_pos IS NOT NULL
+            AND n.parent_id <> 'limbo'
+            AND n.updated_at >= $2
+        ORDER BY
+            n.pinned_pos ASC
+        LIMIT $3 OFFSET $4
+    `;
+
+    const rows = await pool.query(query, [user_id, after, limit, (page - 1) * limit]);
+
+    // Count total pinned nodes
+    const countQuery = `
+        SELECT COUNT(*) as count
+        FROM btw.nodes
+        WHERE user_id = $1
+            AND pinned_pos IS NOT NULL
+            AND parent_id <> 'limbo'
+            AND updated_at >= $2
+    `;
+
+    const totalRows = await pool.query(countQuery, [user_id, after]);
+
+    return {
+        pinnedNodes: rows.rows,
+        total: Number(totalRows.rows[0].count),
+        page,
+        limit,
+    };
 }
 
 async function getList({
