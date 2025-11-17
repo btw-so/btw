@@ -11,7 +11,11 @@ var {
     searchNodes,
 } = require("../logic/list");
 var crypto = require("crypto");
-var { generateWidgetToken, verifyWidgetToken, verifyWidgetTokenForUser } = require("../logic/widgetAuth");
+var {
+    generateWidgetToken,
+    verifyWidgetToken,
+    verifyWidgetTokenForUser,
+} = require("../logic/widgetAuth");
 const { parse } = require("@postlight/parser");
 const TurndownService = require("turndown");
 const showdown = require("showdown");
@@ -364,7 +368,6 @@ router.post(
                     file,
                 },
             });
-
         } catch (err) {
             console.log("error", err);
             res.json({ success: false, error: err.message || err.toString() });
@@ -620,6 +623,147 @@ router.post(
     }
 );
 
+// Update note content of a node
+router.options(
+    "/api/note/update/:id/:hash",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    })
+);
+router.post(
+    "/api/note/update/:id/:hash",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { id, hash } = req.params || {};
+        const { title, md } = req.body || {};
+
+        if (!id || !hash) {
+            res.json({ success: false, error: "Missing required fields" });
+            return;
+        }
+        // Validate hash
+        const serverHash = shortHash(id, process.env.ENCRYPTION_KEY);
+        if (serverHash !== hash) {
+            res.json({ success: false, error: "Invalid hash" });
+            return;
+        }
+
+        // If note exists, find note_id of that node and update note content of that note.
+        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
+
+        try {
+            const user = await getUserFromToken({
+                token: loginToken,
+                fingerprint,
+            });
+
+            if (!user) {
+                throw new Error("User not found");
+            }
+
+            // Markdown to HTML
+            let html = "";
+            if (md) {
+                html = showdownConverter.makeHtml(md);
+            }
+
+            // HTML to tiptap JSON
+            let tiptapJSON = null;
+            try {
+                tiptapJSON = generateJSON(html, tiptapExtensions);
+            } catch (e) {
+                tiptapJSON = null;
+            }
+
+            // After you have tiptapJSON
+            let ydoc = null;
+            try {
+                const transformer =
+                    TiptapTransformer.extensions(tiptapExtensions);
+                ydoc = transformer.toYdoc(tiptapJSON, "default");
+            } catch (e) {
+                ydoc = null;
+            }
+
+            // if title exists, update node id's title. set tags
+            // to "list,auto"
+            let tags = "list,auto";
+
+            // Verify node exists
+            const pool = await db.getTasksDB();
+            const { rows: nodeRows } = await pool.query(
+                "SELECT id, note_id, file_id, parent_id, pos FROM btw.nodes WHERE id = $1 AND user_id = $2",
+                [id, user.id]
+            );
+
+            if (nodeRows.length === 0) {
+                res.json({
+                    success: false,
+                    error: "Node not found",
+                });
+                return;
+            }
+
+            const node = nodeRows[0];
+            let note_id = node.note_id;
+
+            if (!note_id && node.file_id) {
+                res.json({
+                    success: false,
+                    error: "Note can't be added to a file node. Please create a new note.",
+                });
+                return;
+            }
+
+            // Upsert node
+            await upsertNode({
+                id: id,
+                user_id: user.id,
+                text: title || "",
+                parent_id: node.parent_id,
+                pos: node.pos,
+                note_id,
+            });
+
+            // Upsert note
+            await upsertNote({
+                id: note_id,
+                user_id: user.id,
+                json: tiptapJSON,
+                html,
+                title: title || "",
+                ydoc,
+                tags: "list,auto",
+            });
+
+            // Return the public note URL
+            const publicHash = shortHash(note_id, process.env.ENCRYPTION_KEY);
+            const url = `${
+                process.env.LIST_DOMAIN || ""
+            }/public/note/${note_id}/${publicHash}`;
+
+            res.json({
+                success: true,
+                data: {
+                    url,
+                    node_id: id,
+                    note_id,
+                },
+            });
+        } catch (e) {
+            console.log("error", e);
+            res.json({
+                success: false,
+                error: e.message || e.toString(),
+            });
+        }
+    }
+);
+
 // Create a new node with note from title and markdown
 router.options(
     "/api/note/create",
@@ -674,7 +818,8 @@ router.post(
             // Convert tiptap JSON to ydoc
             let ydoc = null;
             try {
-                const transformer = TiptapTransformer.extensions(tiptapExtensions);
+                const transformer =
+                    TiptapTransformer.extensions(tiptapExtensions);
                 ydoc = transformer.toYdoc(tiptapJSON, "default");
             } catch (e) {
                 ydoc = null;
@@ -796,7 +941,10 @@ router.get(
                     });
 
                     if (user) {
-                        console.log("Authenticated via widget token (parent-based) for node detail:", nodeId);
+                        console.log(
+                            "Authenticated via widget token (parent-based) for node detail:",
+                            nodeId
+                        );
                     }
                 } else {
                     // Otherwise use exact match verification
@@ -807,7 +955,10 @@ router.get(
                     });
 
                     if (user) {
-                        console.log("Authenticated via widget token for node detail:", nodeId);
+                        console.log(
+                            "Authenticated via widget token for node detail:",
+                            nodeId
+                        );
                     }
                 }
             }
@@ -1086,7 +1237,12 @@ router.post(
         origin: process.env.CORS_DOMAINS.split(","),
     }),
     async (req, res) => {
-        const { fingerprint, modified_since, page = 1, limit = 200 } = req.body || {};
+        const {
+            fingerprint,
+            modified_since,
+            page = 1,
+            limit = 200,
+        } = req.body || {};
 
         const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
 
@@ -1143,7 +1299,10 @@ router.post(
                   AND updated_at > $2
             `;
 
-            const totalRows = await pool.query(countQuery, [user.id, modifiedDate]);
+            const totalRows = await pool.query(countQuery, [
+                user.id,
+                modifiedDate,
+            ]);
 
             res.json({
                 success: true,
