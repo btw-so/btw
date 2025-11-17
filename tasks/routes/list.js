@@ -652,19 +652,7 @@ router.post(
             return;
         }
 
-        // If note exists, find note_id of that node and update note content of that note.
-        const loginToken = req.cookies[process.env.BTW_UUID_KEY || "btw_uuid"];
-
         try {
-            const user = await getUserFromToken({
-                token: loginToken,
-                fingerprint,
-            });
-
-            if (!user) {
-                throw new Error("User not found");
-            }
-
             // Markdown to HTML
             let html = "";
             if (md) {
@@ -696,8 +684,8 @@ router.post(
             // Verify node exists
             const pool = await db.getTasksDB();
             const { rows: nodeRows } = await pool.query(
-                "SELECT id, note_id, file_id, parent_id, pos FROM btw.nodes WHERE id = $1 AND user_id = $2",
-                [id, user.id]
+                "SELECT id, user_id, note_id, file_id, parent_id, pos FROM btw.nodes WHERE id = $1",
+                [id]
             );
 
             if (nodeRows.length === 0) {
@@ -722,7 +710,7 @@ router.post(
             // Upsert node
             await upsertNode({
                 id: id,
-                user_id: user.id,
+                user_id: node.user_id,
                 text: title || "",
                 parent_id: node.parent_id,
                 pos: node.pos,
@@ -732,7 +720,7 @@ router.post(
             // Upsert note
             await upsertNote({
                 id: note_id,
-                user_id: user.id,
+                user_id: node.user_id,
                 json: tiptapJSON,
                 html,
                 title: title || "",
