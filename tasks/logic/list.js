@@ -35,11 +35,9 @@ async function getPinnedNodes({ user_id, page = 1, limit = 100, after = 0 }) {
                 ELSE FALSE
             END AS note_exists,
             CASE
-                WHEN scribbles.id IS NOT NULL AND scribbles.pages IS NOT NULL THEN TRUE
+                WHEN scribbles.id IS NOT NULL THEN TRUE
                 ELSE FALSE
-            END AS scribble_exists,
-            notes.html AS note_html,
-            notes.md AS note_md
+            END AS scribble_exists
         FROM
             btw.nodes n
         LEFT JOIN
