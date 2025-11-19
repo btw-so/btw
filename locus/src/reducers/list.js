@@ -126,15 +126,18 @@ export default {
         }
       }
 
-      if (payload.pinned_pos) {
+      // Check the merged node data to see if it has pinned_pos (not just the payload)
+      const mergedNode = draft.nodeDBMap[payload.id];
+
+      if (mergedNode.pinned_pos) {
         // if it is not in pinnedNodes, then add it
         if (!draft.pinnedNodes.data.find((x) => x.id === payload.id)) {
           draft.pinnedNodes.data = [
             ...draft.pinnedNodes.data,
             {
               id: payload.id,
-              pinned_pos: payload.pinned_pos,
-              text: draft.nodeDBMap[payload.id].text,
+              pinned_pos: mergedNode.pinned_pos,
+              text: mergedNode.text,
             },
           ];
 
@@ -144,10 +147,12 @@ export default {
           );
         }
 
-        // if it is in pinnedNodes, then update it
+        // if it is in pinnedNodes, then update it (preserve pinned_pos, update text)
         if (draft.pinnedNodes.data.find((x) => x.id === payload.id)) {
           draft.pinnedNodes.data = draft.pinnedNodes.data.map((x) =>
-            x.id === payload.id ? { ...x, pinned_pos: payload.pinned_pos } : x
+            x.id === payload.id
+              ? { ...x, pinned_pos: mergedNode.pinned_pos, text: mergedNode.text }
+              : x
           );
         }
 
@@ -155,8 +160,8 @@ export default {
         draft.pinnedNodes.data = draft.pinnedNodes.data.sort(
           (a, b) => a.pinned_pos - b.pinned_pos
         );
-      } else {
-        // if it is not pinned, then remove it from pinnedNodes
+      } else if (payload.pinned_pos === null) {
+        // Only remove from pinnedNodes if pinned_pos is explicitly set to null (unpinning)
         draft.pinnedNodes.data = draft.pinnedNodes.data.filter(
           (x) => x.id !== payload.id
         );

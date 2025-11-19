@@ -58,7 +58,18 @@ function AppWrapper(props) {
                 >
                   <i className="ri-home-7-line text-gray-400 hover:text-gray-700 transition-colors duration-200"></i>
                 </button>
-                
+
+                {/* Dash button - show if user has pinned notes */}
+                {localStorage.getItem('hasPinnedNodes') === 'true' && (
+                  <button
+                    onClick={() => navigate("/dash")}
+                    className="p-2"
+                    title="Dash"
+                  >
+                    <i className="ri-dashboard-line text-gray-400 hover:text-gray-700 transition-colors duration-200"></i>
+                  </button>
+                )}
+
                 {/* Settings button at bottom */}
                 <div className="mt-auto">
                   <button

@@ -118,6 +118,8 @@ struct PlaceholderNodeButton: View {
             1.0
         }
 
+        let noteId = UUID().uuidString // Always generate a note_id for new nodes
+
         let newNode = ListNode(
             id: newNodeId,
             parentId: parentId,
@@ -127,7 +129,7 @@ struct PlaceholderNodeButton: View {
             checkedDate: nil,
             collapsed: nil,
             pinnedPos: nil,
-            noteId: nil,
+            noteId: noteId,
             fileId: nil,
             noteExists: nil,
             scribbleExists: nil,
@@ -155,9 +157,14 @@ struct PlaceholderNodeButton: View {
             checkedDate: nil,
             collapsed: nil,
             pinnedPos: nil,
-            noteId: nil,
+            noteId: noteId,
             fileId: nil
         ))
+
+        // Immediately push to backend to avoid delays
+        Task {
+            await viewModel.pushUpdates()
+        }
     }
 }
 
@@ -332,6 +339,11 @@ struct NodeRowView: View {
                                     noteId: nil,
                                     fileId: nil
                                 ))
+
+                                // Immediately push to backend after text change
+                                Task {
+                                    await viewModel.pushUpdates()
+                                }
                             }
                         }
                     },
@@ -805,6 +817,17 @@ class ListViewModel: ObservableObject {
             noteId: nil,
             fileId: nil
         ))
+
+        // Immediately push to backend to avoid delays
+        Task {
+            await pushUpdates()
+
+            // If this node is pinned, notify sidebar to refresh
+            if nodeDBMap[nodeId]?.pinnedPos != nil {
+                try? await Task.sleep(nanoseconds: 100_000_000) // Wait 100ms for backend to process
+                NotificationCenter.default.post(name: NSNotification.Name("RefreshSidebar"), object: nil)
+            }
+        }
     }
 
     func togglePin(_ nodeId: String) {
@@ -825,6 +848,15 @@ class ListViewModel: ObservableObject {
                 noteId: nil,
                 fileId: nil
             ))
+
+            // Immediately push to backend to avoid delays
+            Task {
+                await pushUpdates()
+
+                // Notify sidebar to refresh immediately
+                try? await Task.sleep(nanoseconds: 100_000_000) // Wait 100ms for backend to process
+                NotificationCenter.default.post(name: NSNotification.Name("RefreshSidebar"), object: nil)
+            }
         }
     }
 
@@ -880,6 +912,8 @@ class ListViewModel: ObservableObject {
             print("   parentId set to: \(parentId), newPos: \(newPos)")
         }
 
+        let noteId = UUID().uuidString // Always generate a note_id for new nodes
+
         let newNode = ListNode(
             id: newNodeId,
             parentId: parentId,
@@ -889,7 +923,7 @@ class ListViewModel: ObservableObject {
             checkedDate: nil,
             collapsed: nil,
             pinnedPos: nil,
-            noteId: nil,
+            noteId: noteId,
             fileId: nil,
             noteExists: nil,
             scribbleExists: nil,
@@ -917,9 +951,14 @@ class ListViewModel: ObservableObject {
             checkedDate: nil,
             collapsed: nil,
             pinnedPos: nil,
-            noteId: nil,
+            noteId: noteId,
             fileId: nil
         ))
+
+        // Immediately push to backend to avoid delays
+        Task {
+            await pushUpdates()
+        }
     }
 
     /// Navigate to the previous node using the web implementation logic
@@ -1121,6 +1160,11 @@ class ListViewModel: ObservableObject {
             noteId: nil,
             fileId: nil
         ))
+
+        // Immediately push to backend to avoid delays
+        Task {
+            await pushUpdates()
+        }
     }
 
     /// Outdent a node (make it a sibling of its parent)
@@ -1173,6 +1217,11 @@ class ListViewModel: ObservableObject {
             noteId: nil,
             fileId: nil
         ))
+
+        // Immediately push to backend to avoid delays
+        Task {
+            await pushUpdates()
+        }
     }
 
     /// Delete a node if it's empty
@@ -1306,6 +1355,9 @@ class ListViewModel: ObservableObject {
                 noteId: newNode.noteId,
                 fileId: fileId
             ))
+
+            // Immediately push to backend to avoid delays
+            await pushUpdates()
 
             print("✅ File node created: \(newNodeId)")
 

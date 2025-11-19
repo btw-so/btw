@@ -8,6 +8,7 @@
 import SwiftUI
 
 #if os(macOS)
+
 import AppKit
 /// Custom text view that captures keyboard events
 class KeyboardCapturingTextView: NSTextView {

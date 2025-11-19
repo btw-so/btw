@@ -261,6 +261,39 @@ class APIService {
         return result.success ? result.data.pinnedNodes : []
     }
 
+    func getPinnedNodesDetailed() async throws -> PinnedNodesResponse.PinnedNodesData {
+        let url = URL(string: "\(baseURL)/list/pinned")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let token = loginToken {
+            request.setValue("btw_uuid=\(token)", forHTTPHeaderField: "Cookie")
+        }
+
+        let body = ["fingerprint": generateFingerprint()]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        if httpResponse.statusCode != 200 {
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("❌ getPinnedNodesDetailed failed (status \(httpResponse.statusCode)): \(responseString)")
+            }
+            throw URLError(.badServerResponse)
+        }
+
+        let result = try JSONDecoder().decode(PinnedNodesResponse.self, from: data)
+        guard result.success else {
+            throw URLError(.badServerResponse)
+        }
+
+        return result.data
+    }
+
     func getBackupNodes(page: Int = 1, limit: Int = 200) async throws -> ListResponse.ListData {
         let url = URL(string: "\(baseURL)/list/backup/nodes")!
         var request = URLRequest(url: url)

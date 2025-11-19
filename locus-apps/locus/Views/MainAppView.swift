@@ -13,6 +13,7 @@ struct MainAppView: View {
     @State private var selectedNodeId: String? = "home"
     @AppStorage("isSidebarCollapsed") private var isSidebarCollapsed = false
     @State private var showSidebar = true
+    @State private var hasCheckedInitialRoute = false
 
     // Check if running on iPhone (not iPad, not macOS)
     private var isIPhone: Bool {
@@ -39,6 +40,28 @@ struct MainAppView: View {
             #endif
         }
         .background(LocusColors.backgroundPrimary)
+        .task {
+            // Check for default route on first load (like web's DefaultRedirect)
+            if !hasCheckedInitialRoute {
+                checkAndSetDefaultRoute()
+                hasCheckedInitialRoute = true
+            }
+        }
+    }
+
+    private func checkAndSetDefaultRoute() {
+        // Check if user has pinned nodes (cached in UserDefaults by DashView)
+        let hasPinnedNodes = UserDefaults.standard.bool(forKey: "hasPinnedNodes")
+
+        if hasPinnedNodes {
+            // Redirect to Dash if user has pinned nodes
+            selectedNodeId = "__dash__"
+            print("📍 Redirecting to Dash (user has pinned nodes)")
+        } else {
+            // Default to home list
+            selectedNodeId = "home"
+            print("📍 Redirecting to Home (no pinned nodes)")
+        }
     }
 
     @ViewBuilder
@@ -65,6 +88,9 @@ struct MainAppView: View {
                     // Show Settings page
                     SettingsView()
                         .environmentObject(authManager)
+                } else if nodeId == "__dash__" {
+                    // Show Dash view
+                    DashView(selectedNodeId: $selectedNodeId)
                 } else {
                     // Show normal node content
                     ListContainerView(
@@ -93,6 +119,8 @@ struct iPhoneNavigationView: View {
     @State private var hasListContent: Bool = false
     @State private var hasNoteContent: Bool = false
     @State private var hasScribbleContent: Bool = false
+    @State private var showDashView = false
+    @AppStorage("hasPinnedNodes") private var hasPinnedNodes: Bool = false
     @EnvironmentObject var authManager: AuthManager
 
     enum iPhoneTab: String {
@@ -103,19 +131,36 @@ struct iPhoneNavigationView: View {
         case scribble = "Scribble"
         case file = "File"
         case back = "Back"
+        case dash = "Dash"
+        case home = "Home"
     }
 
     private var isHomeNode: Bool {
         selectedNodeId == "home"
     }
 
+    private var isDashView: Bool {
+        showDashView
+    }
+
     private var availableTabs: [iPhoneTab] {
-        if isHomeNode {
-            // Home node: show content tabs with search and settings at the end
+        if isDashView {
+            // Dash view: show home, dash, search, settings
+            return [.home, .dash, .search, .settings]
+        } else if isHomeNode {
+            // Home node: show content tabs with dash (if available), search and settings
             if currentNodeHasFile {
-                return [.list, .file, .search, .settings]
+                if hasPinnedNodes {
+                    return [.list, .file, .dash, .search, .settings]
+                } else {
+                    return [.list, .file, .search, .settings]
+                }
             } else {
-                return [.list, .note, .scribble, .search, .settings]
+                if hasPinnedNodes {
+                    return [.list, .note, .scribble, .dash, .search, .settings]
+                } else {
+                    return [.list, .note, .scribble, .search, .settings]
+                }
             }
         } else {
             // Non-home node: show back and content tabs
@@ -135,6 +180,7 @@ struct iPhoneNavigationView: View {
                     onNodeSelect: { nodeId in
                         selectedNodeId = nodeId
                         showSearch = false
+                        showDashView = false
                     },
                     onDismiss: {
                         showSearch = false
@@ -143,6 +189,16 @@ struct iPhoneNavigationView: View {
             } else if showSettings {
                 SettingsView()
                     .environmentObject(authManager)
+            } else if showDashView {
+                // Show Dash view
+                DashView(selectedNodeId: $selectedNodeId)
+                    .onChange(of: selectedNodeId) { newNodeId in
+                        // When user selects a node from Dash, exit Dash view
+                        if newNodeId != nil && newNodeId != "__dash__" {
+                            showDashView = false
+                            activeTab = .note
+                        }
+                    }
             } else if let nodeId = selectedNodeId {
                 // Show node content with tabs
                 iPhoneNodeContentView(
@@ -150,6 +206,7 @@ struct iPhoneNavigationView: View {
                     activeTab: $activeTab,
                     onNodeSelect: { newNodeId in
                         selectedNodeId = newNodeId
+                        showDashView = false
                         // Reset to note tab when navigating
                         activeTab = .note
                     },
@@ -176,7 +233,7 @@ struct iPhoneNavigationView: View {
                             Text(tabLabel(for: tab))
                                 .font(.system(size: 10))
                         }
-                        .foregroundColor(activeTab == tab && !showSearch && !showSettings ? .blue : LocusColors.textSecondary)
+                        .foregroundColor((activeTab == tab && !showSearch && !showSettings) || (tab == .dash && showDashView) || (tab == .search && showSearch) || (tab == .settings && showSettings) ? .blue : LocusColors.textSecondary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
                     }
@@ -191,6 +248,13 @@ struct iPhoneNavigationView: View {
             )
         }
         .ignoresSafeArea(.all, edges: .bottom)
+        .task {
+            // On initial load, if user has pinned nodes, show Dash view
+            if hasPinnedNodes {
+                showDashView = true
+                activeTab = .dash
+            }
+        }
     }
 
     private func handleTabAction(_ tab: iPhoneTab) {
@@ -198,15 +262,30 @@ struct iPhoneNavigationView: View {
         case .search:
             showSearch = true
             showSettings = false
+            showDashView = false
         case .settings:
             showSettings = true
             showSearch = false
+            showDashView = false
         case .back:
             selectedNodeId = "home"
+            activeTab = .note
+            showDashView = false
+        case .dash:
+            showDashView = true
+            showSearch = false
+            showSettings = false
+            activeTab = .dash
+        case .home:
+            selectedNodeId = "home"
+            showDashView = false
+            showSearch = false
+            showSettings = false
             activeTab = .note
         case .list, .note, .scribble, .file:
             showSearch = false
             showSettings = false
+            showDashView = false
             activeTab = tab
         }
     }
@@ -220,6 +299,8 @@ struct iPhoneNavigationView: View {
         case .scribble: return "pencil.and.scribble"
         case .file: return "doc"
         case .back: return "chevron.left"
+        case .dash: return "square.grid.2x2"
+        case .home: return "house"
         }
     }
 
@@ -227,11 +308,11 @@ struct iPhoneNavigationView: View {
         let baseName = tab.rawValue
         switch tab {
         case .list:
-            return hasListContent ? "\(baseName) *" : baseName
+            return hasListContent ? "\(baseName)*" : baseName
         case .note:
-            return hasNoteContent ? "\(baseName) *" : baseName
+            return hasNoteContent ? "\(baseName)*" : baseName
         case .scribble:
-            return hasScribbleContent ? "\(baseName) *" : baseName
+            return hasScribbleContent ? "\(baseName)*" : baseName
         default:
             return baseName
         }
@@ -654,6 +735,7 @@ struct SearchViewiOS: View {
     @State private var searchText = ""
     @StateObject private var viewModel = SearchViewModel()
     @State private var searchTask: Task<Void, Never>?
+    @State private var pinnedNodes: [ListNode] = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -701,20 +783,70 @@ struct SearchViewiOS: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if searchText.isEmpty {
-                VStack(spacing: 16) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 48))
-                        .foregroundColor(LocusColors.textSecondary)
-                    Text("Search for nodes")
-                        .font(.headline)
-                        .foregroundColor(LocusColors.textSecondary)
-                    Text("Type to search through all your nodes")
-                        .font(.caption)
-                        .foregroundColor(LocusColors.textSecondary)
-                        .multilineTextAlignment(.center)
+                // Show pinned nodes when no search input
+                if pinnedNodes.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 48))
+                            .foregroundColor(LocusColors.textSecondary)
+                        Text("Search for nodes")
+                            .font(.headline)
+                            .foregroundColor(LocusColors.textSecondary)
+                        Text("Type to search through all your nodes")
+                            .font(.caption)
+                            .foregroundColor(LocusColors.textSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding()
+                } else {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: Spacing.md) {
+                            Text("Pinned Nodes")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(LocusColors.textPrimary)
+                                .padding(.horizontal, Spacing.lg)
+                                .padding(.top, Spacing.md)
+
+                            LazyVStack(spacing: 0) {
+                                ForEach(pinnedNodes.sorted(by: { $0.pinnedPos ?? 0 < $1.pinnedPos ?? 0 }), id: \.id) { node in
+                                    Button(action: {
+                                        onNodeSelect(node.id)
+                                    }) {
+                                        HStack(spacing: Spacing.md) {
+                                            Image(systemName: "pin.fill")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(LocusColors.textSecondary)
+                                                .frame(width: 24)
+
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text(node.text)
+                                                    .font(.system(size: 16))
+                                                    .foregroundColor(LocusColors.textPrimary)
+                                                    .lineLimit(2)
+                                                    .multilineTextAlignment(.leading)
+                                            }
+
+                                            Spacer()
+
+                                            Image(systemName: "chevron.right")
+                                                .font(.system(size: 12))
+                                                .foregroundColor(LocusColors.textSecondary)
+                                        }
+                                        .padding(.horizontal, Spacing.lg)
+                                        .padding(.vertical, Spacing.md)
+                                        .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+
+                                    Rectangle()
+                                        .fill(LocusColors.borderStandard)
+                                        .frame(height: 1)
+                                }
+                            }
+                        }
+                    }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding()
             } else if viewModel.searchResults.isEmpty {
                 VStack(spacing: 16) {
                     Image(systemName: "doc.text.magnifyingglass")
@@ -778,6 +910,19 @@ struct SearchViewiOS: View {
             }
         }
         .background(LocusColors.backgroundPrimary)
+        .task {
+            // Load pinned nodes when search view appears
+            await loadPinnedNodes()
+        }
+    }
+
+    private func loadPinnedNodes() async {
+        do {
+            pinnedNodes = try await APIService.shared.getPinnedNodes()
+            print("📌 Loaded \(pinnedNodes.count) pinned nodes for search view")
+        } catch {
+            print("❌ Error loading pinned nodes for search: \(error)")
+        }
     }
 }
 

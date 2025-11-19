@@ -50,6 +50,36 @@ struct SidebarView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         if viewModel.searchTerm.count < 3 {
+                            // Dash Section - Show only if there are pinned nodes
+                            if !viewModel.pinnedNodes.isEmpty {
+                                SectionHeader(title: "Views")
+
+                                Button(action: {
+                                    onNodeSelect("__dash__")
+                                }) {
+                                    HStack(spacing: Spacing.md) {
+                                        Image(systemName: "square.grid.2x2")
+                                            .foregroundColor(LocusColors.textSecondary)
+                                            .frame(width: 6, height: 6)
+                                            .font(.system(size: 12))
+
+                                        Text("Dash")
+                                            .font(Typography.nodeText)
+                                            .foregroundColor(LocusColors.textPrimary)
+                                            .lineLimit(1)
+
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, Spacing.md)
+                                    .padding(.vertical, Spacing.sm)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(selectedNodeId == "__dash__" ? LocusColors.borderDark.opacity(0.2) : LocusColors.clear)
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+
                             // Pinned Section
                             SectionHeader(title: "Pinned")
 
@@ -150,6 +180,18 @@ struct SidebarView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
 
+                    // Dash button - show only if there are pinned notes
+                    if !viewModel.pinnedNodes.isEmpty {
+                        Button(action: {
+                            onNodeSelect("__dash__")
+                        }) {
+                            Image(systemName: "square.grid.2x2")
+                                .foregroundColor(LocusColors.textSecondary)
+                                .font(.system(size: 14))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+
                     Spacer()
 
                     // Settings button
@@ -169,6 +211,11 @@ struct SidebarView: View {
         .background(LocusColors.backgroundSecondary)
         .task {
             await viewModel.loadPinnedNodes()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("RefreshSidebar"))) { _ in
+            Task {
+                await viewModel.loadPinnedNodes()
+            }
         }
     }
 }
