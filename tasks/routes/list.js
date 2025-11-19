@@ -692,7 +692,7 @@ router.post(
             // Verify node exists
             const pool = await db.getTasksDB();
             const { rows: nodeRows } = await pool.query(
-                "SELECT id, user_id, note_id, file_id, parent_id, pos FROM btw.nodes WHERE id = $1",
+                "SELECT id, user_id, note_id, file_id, parent_id, pos, scribble_id, pinned_pos FROM btw.nodes WHERE id = $1",
                 [id]
             );
 
@@ -722,7 +722,10 @@ router.post(
                 text: title || "",
                 parent_id: node.parent_id,
                 pos: node.pos,
+                pinned_pos: node.pinned_pos,
                 note_id,
+                file_id: node.file_id,
+                scribble_id: node.scribble_id,
             });
 
             // Upsert note
