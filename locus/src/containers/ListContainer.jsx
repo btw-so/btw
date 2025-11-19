@@ -1109,6 +1109,14 @@ function ListContainer(props) {
       ? nodeDBMap[secondParentOfCurrentSelection].parent_id
       : null;
 
+  // Text edit debounce timer ref
+  const textEditTimerRef = useRef({});
+  // Keep a ref to the latest nodeDBMap to avoid closure issues
+  const nodeDBMapRef = useRef(nodeDBMap);
+  useEffect(() => {
+    nodeDBMapRef.current = nodeDBMap;
+  }, [nodeDBMap]);
+
   const upsertHelper = (d) => {
     setUpdatedNodeIds({
       ...updatedNodeIds,
@@ -1116,6 +1124,45 @@ function ListContainer(props) {
     });
 
     dispatch(upsertListNode(d));
+
+    // Immediately push to backend for critical operations
+    if (d.new || d.parent_id === "limbo" || d.posChange) {
+      // Small delay to ensure local state is updated
+      setTimeout(() => {
+        // For new nodes, send d directly since nodeDBMap won't have it yet
+        // For existing nodes, merge with current state
+        const nodeData = d.new ? d : {
+          ...nodeDBMapRef.current[d.id],
+          ...d,
+        };
+
+        dispatch(batchPushNodes({
+          nodes: [nodeData]
+        }));
+      }, 50);
+    }
+    // For text edits, debounce and push after 1 second of no changes
+    else if (d.text !== undefined) {
+      if (textEditTimerRef.current[d.id]) {
+        clearTimeout(textEditTimerRef.current[d.id]);
+      }
+      textEditTimerRef.current[d.id] = setTimeout(() => {
+        const currentNode = nodeDBMapRef.current[d.id];
+        console.log('📝 Text edit - Current node from ref:', currentNode);
+        console.log('📝 Text edit - Update data (d):', d);
+
+        const nodeToSend = {
+          ...currentNode,
+          ...d,
+        };
+        console.log('📝 Text edit - Final node being sent to backend:', nodeToSend);
+
+        dispatch(batchPushNodes({
+          nodes: [nodeToSend]
+        }));
+        delete textEditTimerRef.current[d.id];
+      }, 1000);
+    }
   };
 
   // Drag handlers
@@ -1318,12 +1365,22 @@ function ListContainer(props) {
             <div
               className={`hidden md:flex flex-col items-center justify-center pb-1 ml-1 cursor-pointer`}
               onClick={() => {
+                const newPinnedPos = nodeDBMap[selectedListId]?.pinned_pos
+                  ? null
+                  : Date.now();
+
                 upsertHelper({
                   id: selectedListId,
-                  pinned_pos: nodeDBMap[selectedListId]?.pinned_pos
-                    ? null
-                    : Date.now(),
+                  pinned_pos: newPinnedPos,
                 });
+
+                // Immediately push to backend to avoid delays
+                dispatch(batchPushNodes({
+                  nodes: [{
+                    ...nodeDBMap[selectedListId],
+                    pinned_pos: newPinnedPos,
+                  }]
+                }));
               }}
             >
               <span className="flex items-center justify-center w-6 h-6">

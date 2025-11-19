@@ -12,11 +12,19 @@ import Combine
 /// TipTap editor view for notes with real-time collaboration
 struct NoteEditorView: View {
     let noteId: String
+    let showMenuBar: Bool
+    let hideCharacterCount: Bool
     @StateObject private var viewModel = NoteEditorViewModel()
+
+    init(noteId: String, showMenuBar: Bool = true, hideCharacterCount: Bool = false) {
+        self.noteId = noteId
+        self.showMenuBar = showMenuBar
+        self.hideCharacterCount = hideCharacterCount
+    }
 
     var body: some View {
         ZStack {
-            TipTapWebView(noteId: noteId, viewModel: viewModel)
+            TipTapWebView(noteId: noteId, showMenuBar: showMenuBar, hideCharacterCount: hideCharacterCount, viewModel: viewModel)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             // Loading overlay
@@ -96,6 +104,8 @@ class NoteEditorViewModel: ObservableObject {
 /// WebKit wrapper for TipTap editor (macOS)
 struct TipTapWebView: NSViewRepresentable {
     let noteId: String
+    let showMenuBar: Bool
+    let hideCharacterCount: Bool
     let viewModel: NoteEditorViewModel
 
     func makeCoordinator() -> Coordinator {
@@ -163,7 +173,9 @@ struct TipTapWebView: NSViewRepresentable {
                 "userName": user.name ?? user.email,
                 "placeholder": "Write something...",
                 "isIPhone": isIPhone,
-                "theme": theme
+                "theme": theme,
+                "showMenuBar": showMenuBar,
+                "hideCharacterCount": hideCharacterCount
             ]
 
             // Convert config to JSON string
@@ -234,6 +246,8 @@ struct TipTapWebView: NSViewRepresentable {
 /// WebKit wrapper for TipTap editor (iOS)
 struct TipTapWebView: UIViewRepresentable {
     let noteId: String
+    let showMenuBar: Bool
+    let hideCharacterCount: Bool
     let viewModel: NoteEditorViewModel
 
     func makeCoordinator() -> Coordinator {
@@ -301,7 +315,9 @@ struct TipTapWebView: UIViewRepresentable {
                 "userName": user.name ?? user.email,
                 "placeholder": "Write something...",
                 "isIPhone": isIPhone,
-                "theme": theme
+                "theme": theme,
+                "showMenuBar": showMenuBar,
+                "hideCharacterCount": hideCharacterCount
             ]
 
             // Convert config to JSON string

@@ -20,8 +20,10 @@ import Login from "./routes/Login";
 import NotFound from "routes/NotFound";
 import PublicRoute from "./components/PublicRoute";
 import PrivateRoute from "./components/PrivateRoute";
+import DefaultRedirect from "./components/DefaultRedirect";
 import Settings from "./routes/Settings";
 import List from "./routes/List";
+import Dash from "./routes/Dash";
 import PublicNote from "./routes/PublicNote";
 import PublicList from "./routes/PublicList";
 import FourThousandWeeks from "./routes/FourThousandWeeks";
@@ -151,19 +153,23 @@ function Root() {
           />
           <Route
             element={
-              <PublicRoute
-                isLoggedIn={isLoggedIn}
-                to="/list"
-                isSidebarOpen={isSidebarOpen}
-                toggleSidebar={toggleSidebar}
-              >
-                <Login
+              isLoggedIn ? (
+                <DefaultRedirect />
+              ) : (
+                <PublicRoute
+                  isLoggedIn={isLoggedIn}
+                  to="/list"
                   isSidebarOpen={isSidebarOpen}
                   toggleSidebar={toggleSidebar}
-                  hideSidebar={hideSidebar}
-                  showSidebar={showSidebar}
-                />
-              </PublicRoute>
+                >
+                  <Login
+                    isSidebarOpen={isSidebarOpen}
+                    toggleSidebar={toggleSidebar}
+                    hideSidebar={hideSidebar}
+                    showSidebar={showSidebar}
+                  />
+                </PublicRoute>
+              )
             }
             path="/"
           />
@@ -199,6 +205,28 @@ function Root() {
               </PrivateRoute>
             }
             path="/list"
+          />
+          <Route
+            className="flex flex-grow"
+            element={
+              <PrivateRoute
+                isLoggedIn={isLoggedIn}
+                to="/login"
+                isSidebarOpen={isSidebarOpen}
+                toggleSidebar={toggleSidebar}
+              >
+                <Dash
+                  userId={user && user.data ? user.data.id : null}
+                  name={user && user.data ? user.data.name : null}
+                  email={user && user.data ? user.data.email : null}
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={toggleSidebar}
+                  hideSidebar={hideSidebar}
+                  showSidebar={showSidebar}
+                />
+              </PrivateRoute>
+            }
+            path="/dash"
           />
           <Route
             className="flex flex-grow"

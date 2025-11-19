@@ -1071,6 +1071,22 @@
                 document.body.classList.remove('theme-dark');
             }
 
+            // Hide menu bar if requested
+            if (editorConfig.showMenuBar === false) {
+                const menubar = document.getElementById('menubar');
+                if (menubar) {
+                    menubar.style.display = 'none';
+                }
+            }
+
+            // Hide character count if requested
+            if (editorConfig.hideCharacterCount === true) {
+                const characterCount = document.getElementById('character-count');
+                if (characterCount) {
+                    characterCount.style.display = 'none';
+                }
+            }
+
             const extensions = [
                 Embed,
                 Document,
@@ -1235,6 +1251,12 @@
 
         function setupMenuBar() {
             const menubar = document.getElementById('menubar');
+
+            // Don't set up menu bar if it should be hidden
+            if (editorConfig.showMenuBar === false) {
+                return;
+            }
+
             menubar.innerHTML = ''; // Clear existing items
 
             // Check if it's iPhone (iOS but not iPad)

@@ -21,7 +21,8 @@ function Sidebar(props) {
   const is4000Page = !!props.is4000Page;
   const isListPage = !!props.isListPage;
   const isIntelligencePage = !!props.isIntelligencePage;
-  const showSelectedNode = !is4000Page && !isIntelligencePage && !props.settingsPage;
+  const isDashPage = !!props.isDashPage;
+  const showSelectedNode = !is4000Page && !isIntelligencePage && !props.settingsPage && !isDashPage;
   const [token, setToken] = useCookie(
     process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
     ""
@@ -119,6 +120,11 @@ function Sidebar(props) {
         pinned_pos: newPosition,
       };
       upsertHelper(nodeToUpdate);
+
+      // Immediately push to backend to avoid delays
+      dispatch(batchPushNodes({
+        nodes: [nodeToUpdate]
+      }));
     }
 
     // Reset drag state
@@ -228,6 +234,33 @@ function Sidebar(props) {
           {/* Only show Pinned and Pages sections if not searching */}
           {searchTerm.length < 3 ? (
             <>
+              {/* Dash Section - Show only if user has pinned notes */}
+              {pinnedNodes.data.length > 0 && (
+                <>
+                  <div className="mt-2 mb-1 px-2">
+                    <span className="text-xs text-gray-400 font-bold">Views</span>
+                  </div>
+                  <div
+                    className={`w-full cursor-pointer py-0.5 px-2 transition-colors duration-200 rounded-md flex items-center hover:bg-gray-200 ${
+                      isDashPage ? "text-gray-900 bg-gray-200" : "text-gray-900"
+                    }`}
+                    onClick={() => {
+                      props.hideSidebar();
+                      navigate("/dash");
+                    }}
+                  >
+                    <span className="mr-2 mb-1">
+                      <i className="ri-dashboard-line ri-xxs text-gray-400"></i>
+                    </span>
+                    <span
+                      className={`overflow-hidden text-ellipsis truncate text-black`}
+                    >
+                      Dash
+                    </span>
+                  </div>
+                </>
+              )}
+
               {/* Pinned Section */}
               <div className="mt-4 mb-1 px-2">
                 <span className="text-xs text-gray-400 font-bold">Pinned</span>

@@ -8,7 +8,7 @@
 import Foundation
 
 
-struct ListNode: Codable, Identifiable {
+struct ListNode: Codable, Identifiable, Equatable {
     let id: String
     var parentId: String?
     var pos: Double?
@@ -23,6 +23,13 @@ struct ListNode: Codable, Identifiable {
     var scribbleExists: Bool?
     var createdAt: String?
     var updatedAt: String?
+    var noteHtml: String?
+    var noteMd: String?
+
+    // Equatable conformance - compare by id
+    static func == (lhs: ListNode, rhs: ListNode) -> Bool {
+        lhs.id == rhs.id
+    }
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -39,6 +46,8 @@ struct ListNode: Codable, Identifiable {
         case scribbleExists = "scribble_exists"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+        case noteHtml = "note_html"
+        case noteMd = "note_md"
     }
 
     var isPinned: Bool {
@@ -83,6 +92,9 @@ struct PinnedNodesResponse: Codable {
 
     struct PinnedNodesData: Codable {
         let pinnedNodes: [ListNode]
+        let total: Int?
+        let page: Int?
+        let limit: Int?
     }
 }
 
