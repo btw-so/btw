@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/siddharthagunti/Documents/code/btw/tasks/services/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
