@@ -160,7 +160,7 @@ function Dash(props) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
               {pinnedNotesWithContent.map((node, index) => (
                 <div
                   key={node.id}
@@ -170,7 +170,7 @@ function Dash(props) {
                   onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, index)}
                   onDragEnd={handleDragEnd}
-                  className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden aspect-square flex flex-col"
+                  className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden aspect-[3/4] flex flex-col"
                 >
                   {/* Card Header - Draggable */}
                   <div className="px-3 py-2 border-b border-gray-100 flex-shrink-0 cursor-move flex items-center gap-2">
