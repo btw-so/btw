@@ -1925,8 +1925,15 @@ async function getAlertFromId({ alert_id, user_id }) {
 
 module.exports = {
     addRemindersToDB,
-    aiProcessingWrapper,
+    addAlertsToDB,
     addAlertToDb,
+    editReminderTextsInDB,
+    completeRemindersInDB,
+    deleteRemindersFromDB,
+    deleteAlertsFromDB,
+    readReminders,
+    fetchDBUnitsMain,
+    aiProcessingWrapper,
     markReminderAsComplete,
     addNewAlertsForRecurringReminders,
     deleteReminderCompletely,
