@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:16
+FROM --platform=linux/amd64 node:20
 # FROM node:11.12.0-alpine
 
 # create an app directory and use it as working directory
@@ -10,8 +10,7 @@ ENV PATH /tasks/node_modules/.bin:$PATH
 
 COPY package.json /tasks/package.json
 COPY package.json /tmp/package.json
-RUN npm config set unsafe-perm true
-RUN cd /tmp && npm install
+RUN cd /tmp && npm install --legacy-peer-deps && npm install y-protocols@^1.0.1
 # COPY package-lock.json /tasks/package-lock.json
 
 # # RUN apk add --no-cache --virtual .gyp

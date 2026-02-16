@@ -29,13 +29,17 @@ async function sendMessageToUserOnTelegram({
         metadata,
     });
 
-    await fetch(`${TELEGRAM_API}/sendMessage`, {
+    const resp = await fetch(`${TELEGRAM_API}/sendMessage`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
         body: JSON.stringify(m),
     });
+    const respBody = await resp.json();
+    if (!respBody.ok) {
+        console.log(`[Telegram API] sendMessage failed:`, JSON.stringify(respBody));
+    }
 }
 
 async function sendTypingActionToTelegram({ chatId }) {

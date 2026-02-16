@@ -32,12 +32,13 @@ var {
     fetchUserChats,
 } = require("../logic/telegram");
 var {
-    aiProcessingWrapper,
     addAlertToDb,
     markReminderAsComplete,
     deleteReminderCompletely,
-    getReminderFromId, getAlertFromId 
+    getReminderFromId, getAlertFromId
 } = require("../logic/ai");
+var { runAgentLoop } = require("../logic/agent");
+var { transcribeAudio, isTranscriptionSupported } = require("../logic/transcribe");
 var { getReadableFromUTCToLocal } = require("../utils/utils");
 const { uxQueue } = require("../services/queue");
 
@@ -551,7 +552,42 @@ You can say "Meeting with Drake at 6PM on Mar 29 at Raffles Hotel. Remind me the
                     id: user_id,
                 });
 
-                if (sentMessage) {
+                if (sentMessage || req.body.message.photo) {
+                    // Handle text messages and photo messages (with optional caption)
+                    let imageBase64 = null;
+                    let imageMimeType = null;
+                    const inputText = sentMessage || req.body.message.caption || "";
+
+                    if (req.body.message.photo) {
+                        // Telegram sends multiple sizes; pick the largest (last in array)
+                        const photos = req.body.message.photo;
+                        const bestPhoto = photos[photos.length - 1];
+                        const fileId = bestPhoto.file_id;
+
+                        try {
+                            const fileResp = await fetch(`${TELEGRAM_API}/getFile`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ file_id: fileId }),
+                            });
+                            const fileData = await fileResp.json();
+
+                            if (fileData.ok && fileData.result?.file_path) {
+                                const downloadUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_TOKEN}/${fileData.result.file_path}`;
+                                const imageResp = await fetch(downloadUrl);
+                                const imageBuffer = await imageResp.buffer();
+                                imageBase64 = imageBuffer.toString("base64");
+
+                                // Determine mime type from file extension
+                                const ext = fileData.result.file_path.split(".").pop().toLowerCase();
+                                const mimeMap = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif", webp: "image/webp" };
+                                imageMimeType = mimeMap[ext] || "image/jpeg";
+                            }
+                        } catch (err) {
+                            console.log(`[Telegram] Failed to download photo:`, err.message);
+                        }
+                    }
+
                     let history = await fetchUserChats({
                         userId: user_id,
                         chatId,
@@ -565,30 +601,114 @@ You can say "Meeting with Drake at 6PM on Mar 29 at Raffles Hotel. Remind me the
                     );
 
                     try {
-                        const { dbUnits, newMessages, newClassification } =
-                            await aiProcessingWrapper({
-                                input: sentMessage,
-                                classification: "NA", // TODO: Helps in establishing existing context. but NA shouldn't be bad either
-                                user_id,
-                                timezone: user.settings?.timezone,
-                                timezoneOffsetInSeconds:
-                                    user.settings?.timezoneOffsetInSeconds,
-                                title: "", // title of the thread. can skip. we don't use this for now.
-                                thread_id: chatId, // there will be one single thread ofr every user-telegram chat
-                                messages: history,
-                                familyUsers,
-                            });
+                        const { text } = await runAgentLoop({
+                            input: inputText,
+                            messages: history,
+                            user_id,
+                            timezoneOffsetInSeconds:
+                                user.settings?.timezoneOffsetInSeconds,
+                            familyUsers,
+                            timezone: user.settings?.timezone,
+                            imageBase64,
+                            imageMimeType,
+                        });
 
-                        for (newMessage of newMessages) {
-                            if (newMessage.type === "bot" && newMessage.text) {
-                                await sendMessageToUserOnTelegram({
-                                    chatId,
-                                    message: newMessage.text,
-                                });
-                            }
+                        console.log(`[Telegram] Agent returned text: "${text?.slice(0, 200)}" (length: ${text?.length})`);
+                        if (text) {
+                            const sendResult = await sendMessageToUserOnTelegram({
+                                chatId,
+                                message: text,
+                            });
+                            console.log(`[Telegram] Message sent to chat ${chatId}`);
+                        } else {
+                            console.log(`[Telegram] No text to send`);
                         }
                     } catch (err) {
-                        console.log(err);
+                        console.log(`[Telegram] Error:`, err);
+                    }
+
+                    success();
+                    return;
+                } else if (req.body.message.voice || req.body.message.audio) {
+                    const voiceOrAudio = req.body.message.voice || req.body.message.audio;
+                    const fileId = voiceOrAudio.file_id;
+
+                    if (!isTranscriptionSupported()) {
+                        await sendMessageToUserOnTelegram({
+                            chatId,
+                            message: "Audio messages are not supported yet.",
+                        });
+                        success();
+                        return;
+                    }
+
+                    // Download the audio file from Telegram
+                    const fileResp = await fetch(`${TELEGRAM_API}/getFile`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ file_id: fileId }),
+                    });
+                    const fileData = await fileResp.json();
+
+                    let transcribedText = null;
+                    let transcribeError = null;
+
+                    if (fileData.ok && fileData.result?.file_path) {
+                        const downloadUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_TOKEN}/${fileData.result.file_path}`;
+                        const audioResp = await fetch(downloadUrl);
+                        const fileBuffer = await audioResp.buffer();
+                        const fileName = fileData.result.file_path.split("/").pop() || "audio.ogg";
+
+                        const result = await transcribeAudio({ fileBuffer, fileName });
+                        transcribedText = result.text;
+                        transcribeError = result.error;
+                    } else {
+                        transcribeError = "Failed to get file from Telegram";
+                    }
+
+                    if (!transcribedText) {
+                        console.log(`[Telegram] Transcription failed:`, transcribeError);
+                        await sendMessageToUserOnTelegram({
+                            chatId,
+                            message: "Sorry, I couldn't understand that audio. Please try again or send a text message.",
+                        });
+                        success();
+                        return;
+                    }
+
+                    // Run the transcribed text through the agent, same as text messages
+                    let history = await fetchUserChats({
+                        userId: user_id,
+                        chatId,
+                        before: Date.now(),
+                    });
+
+                    history = history.chats || [];
+                    history = history.filter(
+                        (x) =>
+                            x.message.message_id !== req.body.message.message_id
+                    );
+
+                    try {
+                        const { text } = await runAgentLoop({
+                            input: transcribedText,
+                            messages: history,
+                            user_id,
+                            timezoneOffsetInSeconds:
+                                user.settings?.timezoneOffsetInSeconds,
+                            familyUsers,
+                            timezone: user.settings?.timezone,
+                        });
+
+                        console.log(`[Telegram] Agent returned text: "${text?.slice(0, 200)}" (length: ${text?.length})`);
+                        if (text) {
+                            await sendMessageToUserOnTelegram({
+                                chatId,
+                                message: text,
+                            });
+                        }
+                    } catch (err) {
+                        console.log(`[Telegram] Error:`, err);
                     }
 
                     success();
