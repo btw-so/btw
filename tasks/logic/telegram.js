@@ -9,19 +9,39 @@ const { sendDiscordAlert } = require("../services/alerts");
 
 const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}`;
 
+function splitMessage(text, maxLen = 4096) {
+    if (text.length <= maxLen) return [text];
+    const chunks = [];
+    let remaining = text;
+    while (remaining.length > 0) {
+        if (remaining.length <= maxLen) {
+            chunks.push(remaining);
+            break;
+        }
+        // Try to split at last newline within limit
+        let splitAt = remaining.lastIndexOf("\n", maxLen);
+        if (splitAt <= 0) splitAt = maxLen;
+        chunks.push(remaining.slice(0, splitAt));
+        remaining = remaining.slice(splitAt).replace(/^\n/, "");
+    }
+    return chunks;
+}
+
 async function sendMessageToUserOnTelegram({
     chatId,
     message,
     reply_markup,
     metadata = {},
 }) {
+    const chunks = splitMessage(message);
+
+    // Store the full message in chat history (once)
     const m = {
         chat_id: chatId,
         text: message,
         ...(reply_markup && { reply_markup }),
         disable_web_page_preview: true,
     };
-
     await addToTelegramChats({
         chatId,
         message: m,
@@ -29,16 +49,24 @@ async function sendMessageToUserOnTelegram({
         metadata,
     });
 
-    const resp = await fetch(`${TELEGRAM_API}/sendMessage`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(m),
-    });
-    const respBody = await resp.json();
-    if (!respBody.ok) {
-        console.log(`[Telegram API] sendMessage failed:`, JSON.stringify(respBody));
+    // Send each chunk; attach reply_markup only to the last chunk
+    for (let i = 0; i < chunks.length; i++) {
+        const isLast = i === chunks.length - 1;
+        const payload = {
+            chat_id: chatId,
+            text: chunks[i],
+            disable_web_page_preview: true,
+            ...(isLast && reply_markup && { reply_markup }),
+        };
+        const resp = await fetch(`${TELEGRAM_API}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+        const respBody = await resp.json();
+        if (!respBody.ok) {
+            console.log(`[Telegram API] sendMessage failed:`, JSON.stringify(respBody));
+        }
     }
 }
 
