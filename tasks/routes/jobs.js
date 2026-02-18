@@ -1,5 +1,5 @@
 var express = require("express");
-const { alertsQueue, baseQueue, uxQueue } = require("../services/queue");
+const { alertsQueue, baseQueue, uxQueue, sandboxQueue } = require("../services/queue");
 const db = require("../services/db");
 var router = express.Router();
 
@@ -797,6 +797,111 @@ router.get("/admin/run-add-missing-recurring-alerts", async (req, res) => {
     );
 
     return res.send("Added reminder alert job");
+});
+
+// ============================================
+// Sandbox Queue Processors
+// ============================================
+
+const { provisionSandbox, checkSandboxReady, destroySandbox } = require("../logic/sandbox");
+
+sandboxQueue.process("provision-sandbox", async (job, done) => {
+    const { user_id, chat_id } = job.data || {};
+
+    try {
+        console.log(`[SandboxQueue] Provisioning sandbox for user ${user_id}`);
+        await provisionSandbox({ user_id });
+
+        // Schedule a check to see if the server is ready
+        sandboxQueue.add(
+            "check-sandbox-ready",
+            { user_id, chat_id, attempts: 0 },
+            { delay: 15000 } // Check after 15 seconds
+        );
+
+        done();
+    } catch (err) {
+        console.log(`[SandboxQueue] Provision error for user ${user_id}:`, err.message);
+
+        // Notify user of failure
+        if (chat_id) {
+            try {
+                const { rows: telegrams } = await (await db.getTasksDB()).query(
+                    `SELECT telegram_id FROM btw.telegram_user_map WHERE user_id = $1`,
+                    [user_id]
+                );
+                for (const t of telegrams) {
+                    await sendMessageToUserOnTelegram({
+                        chatId: t.telegram_id,
+                        message: "Sorry, there was an error provisioning your sandbox VM. We'll retry shortly.",
+                    });
+                }
+            } catch (_) {}
+        }
+
+        done(err);
+    }
+});
+
+sandboxQueue.process("check-sandbox-ready", async (job, done) => {
+    const { user_id, chat_id, attempts = 0 } = job.data || {};
+    const MAX_ATTEMPTS = 20; // ~5 minutes of checking
+
+    try {
+        const result = await checkSandboxReady({ user_id });
+
+        if (!result) {
+            done();
+            return;
+        }
+
+        if (result.ready) {
+            console.log(`[SandboxQueue] Sandbox ready for user ${user_id} at ${result.ipv4}`);
+
+            // Notify user
+            const tasksDB = await db.getTasksDB();
+            const { rows: telegrams } = await tasksDB.query(
+                `SELECT telegram_id FROM btw.telegram_user_map WHERE user_id = $1`,
+                [user_id]
+            );
+
+            for (const t of telegrams) {
+                await sendMessageToUserOnTelegram({
+                    chatId: t.telegram_id,
+                    message: `Your sandbox VM is ready! You now have a dedicated Linux server (Ubuntu 24.04, 2 vCPU, 4GB RAM).\n\nJust ask me to write code, run scripts, install packages, or anything else you'd do on a Linux server!`,
+                });
+            }
+
+            done();
+        } else if (attempts < MAX_ATTEMPTS) {
+            // Re-schedule check
+            sandboxQueue.add(
+                "check-sandbox-ready",
+                { user_id, chat_id, attempts: attempts + 1 },
+                { delay: 15000 }
+            );
+            done();
+        } else {
+            console.log(`[SandboxQueue] Sandbox still not ready after ${MAX_ATTEMPTS} attempts for user ${user_id}`);
+            done(new Error("Sandbox provisioning timed out"));
+        }
+    } catch (err) {
+        console.log(`[SandboxQueue] Check ready error:`, err.message);
+        done(err);
+    }
+});
+
+sandboxQueue.process("destroy-sandbox", async (job, done) => {
+    const { user_id } = job.data || {};
+
+    try {
+        console.log(`[SandboxQueue] Destroying sandbox for user ${user_id}`);
+        await destroySandbox({ user_id });
+        done();
+    } catch (err) {
+        console.log(`[SandboxQueue] Destroy error for user ${user_id}:`, err.message);
+        done(err);
+    }
 });
 
 module.exports = router;

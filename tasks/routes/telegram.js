@@ -41,6 +41,9 @@ var { runAgentLoop } = require("../logic/agent");
 var { transcribeAudio, isTranscriptionSupported } = require("../logic/transcribe");
 var { getReadableFromUTCToLocal } = require("../utils/utils");
 const { uxQueue } = require("../services/queue");
+const { createCheckoutSession, cancelSubscription } = require("../logic/subscription");
+const { getSandbox } = require("../logic/sandbox");
+const { resolveApproval } = require("../logic/approval");
 
 const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}`;
 
@@ -384,7 +387,9 @@ router.post(
                 chatId,
                 message: `Sweet! I will be your personal assistant. I can help remind you about calls, meetings, birthdays etc.
 
-You can say "Meeting with Drake at 6PM on Mar 29 at Raffles Hotel. Remind me the day before at 9PM" or "Remind me to wish Katlyn on Dec 23 every year" or "Remind me to drink water every hour from 9AM to 8PM".`,
+You can say "Meeting with Drake at 6PM on Mar 29 at Raffles Hotel. Remind me the day before at 9PM" or "Remind me to wish Katlyn on Dec 23 every year" or "Remind me to drink water every hour from 9AM to 8PM".
+
+Want superpowers? Use /subscribe to get Pro — your own sandbox Linux VM to write code, run scripts, and more!`,
                 reply_markup: {
                     remove_keyboard: true,
                 },
@@ -552,6 +557,58 @@ You can say "Meeting with Drake at 6PM on Mar 29 at Raffles Hotel. Remind me the
                     id: user_id,
                 });
 
+                // Handle /subscribe command
+                if (sentMessage === "/subscribe" || sentMessage === "/start subscribe") {
+                    if (user.pro) {
+                        await sendMessageToUserOnTelegram({
+                            chatId,
+                            message: "You already have a Pro subscription! Your sandbox VM is ready to use.",
+                        });
+                    } else {
+                        try {
+                            const { url } = await createCheckoutSession({ user_id, chatId });
+                            await sendMessageToUserOnTelegram({
+                                chatId,
+                                message: `Upgrade to A1 Pro and get your own sandbox Linux VM (2 vCPU, 4GB RAM)!\n\nYou'll be able to ask me to write code, run scripts, install packages, and more — all on your dedicated server.\n\nSubscribe here: ${url}`,
+                            });
+                        } catch (err) {
+                            console.log(`[Telegram] Subscribe error:`, err.message);
+                            await sendMessageToUserOnTelegram({
+                                chatId,
+                                message: "Sorry, subscriptions are not available right now. Please try again later.",
+                            });
+                        }
+                    }
+                    success();
+                    return;
+                }
+
+                // Handle /unsubscribe command
+                if (sentMessage === "/unsubscribe") {
+                    if (!user.pro) {
+                        await sendMessageToUserOnTelegram({
+                            chatId,
+                            message: "You don't have an active subscription.",
+                        });
+                    } else {
+                        try {
+                            await cancelSubscription({ user_id });
+                            await sendMessageToUserOnTelegram({
+                                chatId,
+                                message: "Your subscription has been canceled. Your sandbox VM will be destroyed shortly.",
+                            });
+                        } catch (err) {
+                            console.log(`[Telegram] Unsubscribe error:`, err.message);
+                            await sendMessageToUserOnTelegram({
+                                chatId,
+                                message: "Sorry, couldn't cancel your subscription right now. Please try again later.",
+                            });
+                        }
+                    }
+                    success();
+                    return;
+                }
+
                 if (sentMessage || req.body.message.photo) {
                     // Handle text messages and photo messages (with optional caption)
                     let imageBase64 = null;
@@ -600,34 +657,55 @@ You can say "Meeting with Drake at 6PM on Mar 29 at Raffles Hotel. Remind me the
                             x.message.message_id !== req.body.message.message_id
                     );
 
-                    try {
-                        const { text } = await runAgentLoop({
-                            input: inputText,
-                            messages: history,
-                            user_id,
-                            timezoneOffsetInSeconds:
-                                user.settings?.timezoneOffsetInSeconds,
-                            familyUsers,
-                            timezone: user.settings?.timezone,
-                            imageBase64,
-                            imageMimeType,
-                        });
-
-                        console.log(`[Telegram] Agent returned text: "${text?.slice(0, 200)}" (length: ${text?.length})`);
-                        if (text) {
-                            const sendResult = await sendMessageToUserOnTelegram({
-                                chatId,
-                                message: text,
-                            });
-                            console.log(`[Telegram] Message sent to chat ${chatId}`);
-                        } else {
-                            console.log(`[Telegram] No text to send`);
+                    // Look up sandbox for pro users
+                    let sandbox = null;
+                    if (user.pro) {
+                        try {
+                            sandbox = await getSandbox({ user_id });
+                        } catch (err) {
+                            console.log(`[Telegram] Sandbox lookup error:`, err.message);
                         }
-                    } catch (err) {
-                        console.log(`[Telegram] Error:`, err);
                     }
 
+                    // Respond immediately to Telegram, run agent loop async
+                    // This prevents Telegram from re-sending the webhook while
+                    // the agent loop might block waiting for tool approvals
                     success();
+
+                    (async () => {
+                        try {
+                            const { text } = await runAgentLoop({
+                                input: inputText,
+                                messages: history,
+                                user_id,
+                                timezoneOffsetInSeconds:
+                                    user.settings?.timezoneOffsetInSeconds,
+                                familyUsers,
+                                timezone: user.settings?.timezone,
+                                imageBase64,
+                                imageMimeType,
+                                isPro: !!user.pro,
+                                sandbox,
+                                chatId,
+                                entryPoint: "telegram",
+                                userName: user.name,
+                            });
+
+                            console.log(`[Telegram] Agent returned text: "${text?.slice(0, 200)}" (length: ${text?.length})`);
+                            if (text) {
+                                await sendMessageToUserOnTelegram({
+                                    chatId,
+                                    message: text,
+                                });
+                                console.log(`[Telegram] Message sent to chat ${chatId}`);
+                            } else {
+                                console.log(`[Telegram] No text to send`);
+                            }
+                        } catch (err) {
+                            console.log(`[Telegram] Error:`, err);
+                        }
+                    })();
+
                     return;
                 } else if (req.body.message.voice || req.body.message.audio) {
                     const voiceOrAudio = req.body.message.voice || req.body.message.audio;
@@ -689,29 +767,48 @@ You can say "Meeting with Drake at 6PM on Mar 29 at Raffles Hotel. Remind me the
                             x.message.message_id !== req.body.message.message_id
                     );
 
-                    try {
-                        const { text } = await runAgentLoop({
-                            input: transcribedText,
-                            messages: history,
-                            user_id,
-                            timezoneOffsetInSeconds:
-                                user.settings?.timezoneOffsetInSeconds,
-                            familyUsers,
-                            timezone: user.settings?.timezone,
-                        });
-
-                        console.log(`[Telegram] Agent returned text: "${text?.slice(0, 200)}" (length: ${text?.length})`);
-                        if (text) {
-                            await sendMessageToUserOnTelegram({
-                                chatId,
-                                message: text,
-                            });
+                    // Look up sandbox for pro users
+                    let sandbox = null;
+                    if (user.pro) {
+                        try {
+                            sandbox = await getSandbox({ user_id });
+                        } catch (err) {
+                            console.log(`[Telegram] Sandbox lookup error:`, err.message);
                         }
-                    } catch (err) {
-                        console.log(`[Telegram] Error:`, err);
                     }
 
+                    // Respond immediately, run agent async
                     success();
+
+                    (async () => {
+                        try {
+                            const { text } = await runAgentLoop({
+                                input: transcribedText,
+                                messages: history,
+                                user_id,
+                                timezoneOffsetInSeconds:
+                                    user.settings?.timezoneOffsetInSeconds,
+                                familyUsers,
+                                timezone: user.settings?.timezone,
+                                isPro: !!user.pro,
+                                sandbox,
+                                chatId,
+                                entryPoint: "telegram",
+                                userName: user.name,
+                            });
+
+                            console.log(`[Telegram] Agent returned text: "${text?.slice(0, 200)}" (length: ${text?.length})`);
+                            if (text) {
+                                await sendMessageToUserOnTelegram({
+                                    chatId,
+                                    message: text,
+                                });
+                            }
+                        } catch (err) {
+                            console.log(`[Telegram] Error:`, err);
+                        }
+                    })();
+
                     return;
                 } else if (req.body.message.contact) {
                     // user shared a contact to become part of the family.
@@ -874,6 +971,22 @@ You can say "Meeting with Drake at 6PM on Mar 29 at Raffles Hotel. Remind me the
                     } else if (action === "ignore") {
                         // nothing to do here
                     }
+                } else if (type === "approval") {
+                    // approval:approve:<approvalId> or approval:deny:<approvalId>
+                    const decision = callbackData.split(":")[1]; // "approve" or "deny"
+                    const approvalId = callbackData.split(":")[2];
+
+                    const approvalDecision = decision === "approve" ? "approved" : "denied";
+                    await resolveApproval({ approvalId, decision: approvalDecision });
+
+                    await editMessageOnTelegram({
+                        chatId,
+                        message: decision === "approve"
+                            ? "Approved. Executing..."
+                            : "Denied. Skipping this action.",
+                        messageId,
+                        reply_markup: { inline_keyboard: [] },
+                    });
                 } else if (type === "family") {
                     // family:<action>:<actioninfo>
                     const action = callbackData.split(":")[1];
