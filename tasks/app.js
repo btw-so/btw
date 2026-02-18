@@ -63,7 +63,8 @@ var telegramRouter = require("./routes/telegram");
 var userRouter = require("./routes/user");
 var a1Router = require("./routes/a1");
 var memoriesRouter = require("./routes/memories");
-var { baseQueue, alertsQueue, uxQueue } = require("./services/queue");
+var stripeRouter = require("./routes/stripe");
+var { baseQueue, alertsQueue, uxQueue, sandboxQueue } = require("./services/queue");
 var { upsertNote, getNote } = require("./logic/notes");
 
 var {
@@ -91,6 +92,10 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "hbs");
 
 app.use(logger("dev"));
+
+// Stripe webhook must be mounted BEFORE express.json() — needs raw body for signature verification
+app.use("/stripe", stripeRouter);
+
 app.use(express.json({ limit: '10mb' })); // Increased from default 100kb to 10mb for scribble data
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 app.use(cookieParser());
@@ -116,6 +121,7 @@ const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
         new BullAdapter(baseQueue),
         new BullAdapter(alertsQueue),
         new BullAdapter(uxQueue),
+        new BullAdapter(sandboxQueue),
     ],
     serverAdapter: serverAdapter,
 });
