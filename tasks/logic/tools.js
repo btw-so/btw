@@ -12,8 +12,9 @@ const {
 } = require("./ai");
 const { convertLocalTimeToUTC, getNow } = require("../utils/utils");
 const { uxQueue } = require("../services/queue");
+const { sendAudioToTelegram } = require("./telegram");
 
-function createTools({ user_id, timezoneOffsetInSeconds }) {
+function createTools({ user_id, timezoneOffsetInSeconds, chatId }) {
     return [
         {
             name: "add_reminder",
@@ -509,6 +510,106 @@ function createTools({ user_id, timezoneOffsetInSeconds }) {
                 }
             },
         },
+        ...(process.env.ELEVENLABS_API_KEY && chatId
+            ? [
+                  {
+                      name: "text_to_speech",
+                      description:
+                          "Convert text to speech and send it as an audio message to the user. Use when the user asks you to speak, say something out loud, send a voice message, read something aloud, or wants to hear audio. Keep the text natural and conversational.",
+                      parameters: Type.Object({
+                          text: Type.String({
+                              description:
+                                  "The text to convert to speech. Keep it natural and conversational. Max ~5000 characters.",
+                          }),
+                          voice: Type.Optional(
+                              StringEnum(
+                                  ["rachel", "drew", "paul", "sarah", "charlie", "george", "emily", "alice", "matilda", "james"],
+                                  {
+                                      description:
+                                          "Voice to use. Options: rachel (warm female), drew (confident male), paul (ground male), sarah (soft female), charlie (casual male), george (british male), emily (calm female), alice (confident female), matilda (warm female), james (deep male). Default: sarah.",
+                                  }
+                              )
+                          ),
+                      }),
+                      execute: async (_toolCallId, args) => {
+                          const VOICE_IDS = {
+                              rachel: "21m00Tcm4TlvDq8ikWAM",
+                              drew: "29vD33N1CtxCmqQRPOHJ",
+                              paul: "5Q0t7uMcjvnagumLfvZi",
+                              sarah: "EXAVITQu4vr4xnSDxMaL",
+                              charlie: "IKne3meq5aSn9XLyUdCD",
+                              george: "JBFqnCBsd6RMkjVDRZzb",
+                              emily: "LcfcDJNUP1GQjkzn1xUU",
+                              alice: "Xb7hH8MSUJpSbSDYk0k2",
+                              matilda: "XrExE9yKIg1WjnnlVkGX",
+                              james: "ZQe5CZNOzWyzPSCn5a3c",
+                          };
+
+                          const voiceName = args.voice || "sarah";
+                          const voiceId = VOICE_IDS[voiceName] || VOICE_IDS.sarah;
+
+                          try {
+                              console.log(`[TTS] Generating speech: voice=${voiceName}, text="${args.text.slice(0, 100)}..."`);
+
+                              const resp = await fetch(
+                                  `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
+                                  {
+                                      method: "POST",
+                                      headers: {
+                                          "Content-Type": "application/json",
+                                          "xi-api-key": process.env.ELEVENLABS_API_KEY,
+                                      },
+                                      body: JSON.stringify({
+                                          text: args.text,
+                                          model_id: "eleven_multilingual_v2",
+                                      }),
+                                  }
+                              );
+
+                              if (!resp.ok) {
+                                  const errBody = await resp.text();
+                                  console.log(`[TTS] ElevenLabs error ${resp.status}:`, errBody);
+                                  return {
+                                      output: JSON.stringify({
+                                          success: false,
+                                          error: `ElevenLabs API error: ${resp.status}`,
+                                      }),
+                                  };
+                              }
+
+                              const audioBuffer = await resp.buffer();
+                              console.log(`[TTS] Got ${audioBuffer.length} bytes of audio`);
+
+                              await sendAudioToTelegram({
+                                  chatId,
+                                  audioBuffer,
+                                  filename: "speech.mp3",
+                              });
+
+                              console.log(`[TTS] Audio sent to chat ${chatId}`);
+
+                              return {
+                                  output: JSON.stringify({
+                                      success: true,
+                                      action: "text_to_speech",
+                                      voice: voiceName,
+                                      textLength: args.text.length,
+                                      audioSize: audioBuffer.length,
+                                  }),
+                              };
+                          } catch (err) {
+                              console.log("[TTS] Error:", err.message);
+                              return {
+                                  output: JSON.stringify({
+                                      success: false,
+                                      error: err.message,
+                                  }),
+                              };
+                          }
+                      },
+                  },
+              ]
+            : []),
     ];
 }
 

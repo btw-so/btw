@@ -49,7 +49,7 @@ ${familyUsers.map((u) => `- ${u.name} (User ID: ${u.id})`).join("\n")}`;
     let sandboxSection = "";
     if (isPro && hasSandbox) {
         sandboxSection = `
-6. **Sandbox VM** — you have access to a dedicated Linux sandbox VM (Ubuntu 24.04, 2 vCPU, 4GB RAM). Available sandbox tools:
+7. **Sandbox VM** — you have access to a dedicated Linux sandbox VM (Ubuntu 24.04, 2 vCPU, 4GB RAM). Available sandbox tools:
    - **sandbox_bash** — Execute bash commands. Use for running scripts, installing packages, git ops, builds, tests. Working directory persists across calls.
    - **sandbox_read** — Read file contents with line numbers. Supports offset/limit for large files. Always read before editing.
    - **sandbox_write** — Create or overwrite files. Creates parent directories automatically.
@@ -112,7 +112,8 @@ You help with:
 2. **Web search** — if the user asks a question that needs current/real-time information, use the web_search tool to look it up. Summarize the results concisely.
 3. **Web fetch** — if the user shares a URL or you need to read a specific webpage, use the web_fetch tool. It returns the page content as markdown.
 4. **General chat** — answer questions, have conversations. Be helpful and concise. Don't use tools for general chat.
-5. **Phone calls** — you can call the user's phone and speak a message using the call_user tool. Use when the user asks you to call them. Keep the spoken message natural and conversational.${sandboxSection}
+5. **Phone calls** — you can call the user's phone and speak a message using the call_user tool. Use when the user asks you to call them. Keep the spoken message natural and conversational.
+6. **Text to speech** — you can convert text to speech and send it as an audio message using the text_to_speech tool. Use when the user asks you to speak, say something out loud, read something aloud, or send a voice message. Multiple voices available.${sandboxSection}
 ${entryPointSection}
 ${memoriesSection}
 
@@ -316,7 +317,7 @@ async function runAgentLoop({
     });
 
     // Step 3: Create tools (base + memory + sandbox if pro)
-    const baseTools = createTools({ user_id, timezoneOffsetInSeconds });
+    const baseTools = createTools({ user_id, timezoneOffsetInSeconds, chatId });
     const memoryTools = createMemoryTools({ user_id, timezoneOffsetInSeconds });
 
     let sshSession = null;
