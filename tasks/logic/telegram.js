@@ -264,6 +264,27 @@ ${!!reminder.reucrring ? "🔔 on" : "Due"} ${
     });
 }
 
+async function sendAudioToTelegram({ chatId, audioBuffer, filename, caption }) {
+    const FormData = require("form-data");
+    const form = new FormData();
+    form.append("chat_id", chatId);
+    form.append("audio", audioBuffer, { filename: filename || "speech.mp3", contentType: "audio/mpeg" });
+    if (caption) {
+        form.append("caption", caption);
+    }
+
+    const resp = await fetch(`${TELEGRAM_API}/sendAudio`, {
+        method: "POST",
+        body: form,
+        headers: form.getHeaders(),
+    });
+    const respBody = await resp.json();
+    if (!respBody.ok) {
+        console.log(`[Telegram API] sendAudio failed:`, JSON.stringify(respBody));
+    }
+    return respBody;
+}
+
 async function editMessageOnTelegram({
     chatId,
     message,
@@ -479,5 +500,6 @@ module.exports = {
     getMessageByIdFromContext,
     sendTypingActionToTelegram,
     sendReminderUnitToTelegram,
+    sendAudioToTelegram,
     fetchUserChats,
 };
