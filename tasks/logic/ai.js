@@ -738,6 +738,7 @@ async function readReminders({
     timezoneOffsetInSeconds,
     status,
     user_id,
+    silent = false,
 }) {
     // step 1: get all reminders that fit in this filters
     const fromDateTime = convertLocalTimeToUTC(
@@ -817,23 +818,25 @@ async function readReminders({
         (a, b) => a.duedate.getTime() - b.duedate.getTime()
     );
 
-    // step 3: then create a job with this data
-    uxQueue.add(
-        "reminder-digest",
-        {
-            reminders,
-            user_id,
-            timezoneOffsetInSeconds,
-            status,
-            fromDateTime,
-            toDateTime,
-        },
-        {
-            attempts: 2,
-            removeOnSuccess: true,
-            removeOnFail: true,
-        }
-    );
+    // step 3: then create a job with this data (skip UX notification in silent mode)
+    if (!silent) {
+        uxQueue.add(
+            "reminder-digest",
+            {
+                reminders,
+                user_id,
+                timezoneOffsetInSeconds,
+                status,
+                fromDateTime,
+                toDateTime,
+            },
+            {
+                attempts: 2,
+                removeOnSuccess: true,
+                removeOnFail: true,
+            }
+        );
+    }
 
     return { reminders, alerts };
 }
