@@ -9,9 +9,23 @@ const {
 } = require("./telegram");
 const db = require("../services/db");
 
+// Detect file type from URL extension
+function detectFileType(url) {
+    try {
+        const pathname = new URL(url).pathname.toLowerCase();
+        if (/\.(jpg|jpeg|png|webp|bmp)$/i.test(pathname)) return "photo";
+        if (/\.(gif)$/i.test(pathname)) return "animation";
+        if (/\.(mp4|mov|avi|mkv|webm)$/i.test(pathname)) return "video";
+        return "document";
+    } catch {
+        return "document";
+    }
+}
+
 // Entry point implementations
 const entryPointImpls = {
     telegram: {
+        supportedFileTypes: ["photo", "document", "video", "animation"],
         async sendMessage({ chatId, message, replyToMessageId }) {
             const fetch = require("node-fetch");
             const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}`;
@@ -70,6 +84,79 @@ const entryPointImpls = {
 
         async sendPhoto({ chatId, photoBuffer, filename, caption }) {
             return sendPhotoToTelegram({ chatId, photoBuffer, filename, caption });
+        },
+
+        async sendFile({ chatId, url, type, caption, replyToMessageId }) {
+            const fetch = require("node-fetch");
+            const FormData = require("form-data");
+            const path = require("path");
+            const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}`;
+
+            const fileType = type || detectFileType(url);
+            const methodMap = {
+                photo: "sendPhoto",
+                document: "sendDocument",
+                video: "sendVideo",
+                animation: "sendAnimation",
+            };
+            const fieldMap = {
+                photo: "photo",
+                document: "document",
+                video: "video",
+                animation: "animation",
+            };
+            const method = methodMap[fileType] || "sendDocument";
+            const field = fieldMap[fileType] || "document";
+
+            // Try URL-based sending first (no download needed)
+            const payload = {
+                chat_id: chatId,
+                [field]: url,
+                ...(caption && { caption, parse_mode: "HTML" }),
+                ...(replyToMessageId && { reply_to_message_id: replyToMessageId }),
+            };
+
+            const resp = await fetch(`${TELEGRAM_API}/${method}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const respBody = await resp.json();
+            if (respBody.ok && respBody.result) {
+                return { messageId: String(respBody.result.message_id) };
+            }
+
+            // Fallback: download file ourselves and upload as multipart
+            console.log(`[EntryPoint:telegram] sendFile URL failed, downloading and re-uploading...`);
+            try {
+                const dlResp = await fetch(url, { timeout: 30000 });
+                if (!dlResp.ok) {
+                    console.log(`[EntryPoint:telegram] Download failed: ${dlResp.status}`);
+                    return { messageId: null };
+                }
+                const buffer = await dlResp.buffer();
+                const filename = path.basename(new URL(url).pathname) || "file";
+
+                const form = new FormData();
+                form.append("chat_id", chatId);
+                form.append(field, buffer, { filename });
+                if (caption) form.append("caption", caption);
+                if (replyToMessageId) form.append("reply_to_message_id", replyToMessageId);
+
+                const uploadResp = await fetch(`${TELEGRAM_API}/${method}`, {
+                    method: "POST",
+                    body: form,
+                    headers: form.getHeaders(),
+                });
+                const uploadBody = await uploadResp.json();
+                if (uploadBody.ok && uploadBody.result) {
+                    return { messageId: String(uploadBody.result.message_id) };
+                }
+                console.log(`[EntryPoint:telegram] sendFile upload failed:`, JSON.stringify(uploadBody));
+            } catch (dlErr) {
+                console.log(`[EntryPoint:telegram] sendFile download error:`, dlErr.message);
+            }
+            return { messageId: null };
         },
     },
     // Future: whatsapp, discord, slack, web

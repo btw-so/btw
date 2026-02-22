@@ -13,8 +13,9 @@ const {
 const { convertLocalTimeToUTC, getNow } = require("../utils/utils");
 const { uxQueue } = require("../services/queue");
 const { sendAudioToTelegram, sendPhotoToTelegram } = require("./telegram");
+const { getEntryPoint } = require("./entryPoints");
 
-function createTools({ user_id, timezoneOffsetInSeconds, chatId }) {
+function createTools({ user_id, timezoneOffsetInSeconds, chatId, entryPoint }) {
     return [
         {
             name: "add_reminder",
@@ -748,6 +749,71 @@ function createTools({ user_id, timezoneOffsetInSeconds, chatId }) {
                                   error: "Image generation failed with all available providers.",
                               }),
                           };
+                      },
+                  },
+              ]
+            : []),
+        ...(chatId && entryPoint
+            ? [
+                  {
+                      name: "send_file",
+                      description:
+                          "Send a file (image, document, video, GIF) to the user via URL. Use when you have a direct URL to a file you want to share — e.g. an image from a web search, a PDF link, a video URL, etc.",
+                      parameters: Type.Object({
+                          url: Type.String({
+                              description: "Direct URL to the file (must be a publicly accessible URL).",
+                          }),
+                          type: Type.Optional(
+                              StringEnum(
+                                  ["photo", "document", "video", "animation"],
+                                  {
+                                      description:
+                                          "File type. Auto-detected from URL if omitted. Use 'photo' for images (jpg/png/webp), 'document' for PDFs/files, 'video' for videos, 'animation' for GIFs.",
+                                  }
+                              )
+                          ),
+                          caption: Type.Optional(
+                              Type.String({
+                                  description: "Optional caption to display with the file.",
+                              })
+                          ),
+                      }),
+                      execute: async (_toolCallId, args) => {
+                          const ep = getEntryPoint(entryPoint);
+                          if (!ep || !ep.sendFile) {
+                              return {
+                                  output: JSON.stringify({
+                                      success: false,
+                                      error: "Current endpoint does not support file sending.",
+                                  }),
+                              };
+                          }
+
+                          try {
+                              const result = await ep.sendFile({
+                                  chatId,
+                                  url: args.url,
+                                  type: args.type,
+                                  caption: args.caption,
+                              });
+
+                              return {
+                                  output: JSON.stringify({
+                                      success: !!result.messageId,
+                                      action: "send_file",
+                                      url: args.url,
+                                      type: args.type || "auto",
+                                  }),
+                              };
+                          } catch (err) {
+                              console.log(`[SendFile] Error:`, err.message);
+                              return {
+                                  output: JSON.stringify({
+                                      success: false,
+                                      error: err.message,
+                                  }),
+                              };
+                          }
                       },
                   },
               ]

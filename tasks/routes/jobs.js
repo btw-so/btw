@@ -912,6 +912,27 @@ sandboxQueue.process("destroy-sandbox", async (job, done) => {
 
 const { getUserEntryPoints } = require("../logic/entryPoints");
 const { saveTaskState } = require("../logic/messageRouter");
+const { ensureAllHeartbeats } = require("../logic/heartbeat");
+
+// Ensure heartbeat tasks exist for all users (runs every 5 minutes)
+agenticQueue.add(
+    "ensure-heartbeats",
+    {},
+    {
+        repeat: {
+            every: 5 * 60 * 1000,
+        },
+    }
+);
+
+agenticQueue.process("ensure-heartbeats", async (job, done) => {
+    try {
+        await ensureAllHeartbeats();
+    } catch (err) {
+        console.log("[Heartbeat] Error in ensure-heartbeats job:", err.message);
+    }
+    done();
+});
 
 // Poll every 60 seconds for due auto tasks
 agenticQueue.add(
@@ -963,7 +984,7 @@ agenticQueue.process("check-due-tasks", async (job, done) => {
                 }
             }
             // Schedule run immediately (delay=0), with jobId to deduplicate
-            scheduleAgenticRun(task.id, new Date());
+            await scheduleAgenticRun(task.id, new Date());
         }
     } catch (err) {
         console.log("[AgenticScheduler] Error checking due tasks:", err.message);
@@ -1076,6 +1097,10 @@ agenticQueue.process("run-agentic-task", async (job, done) => {
             }
         }
 
+        // Detect heartbeat type
+        const heartbeatType = task.system_type || null;
+        const isHeartbeat = heartbeatType && heartbeatType.startsWith("heartbeat_");
+
         // Run the agent loop with persisted state
         const { text, agentMessages, workingDirectory: newWd } = await runAgentLoop({
             input: task.instruction,
@@ -1094,10 +1119,18 @@ agenticQueue.process("run-agentic-task", async (job, done) => {
             workingDirectory: { current: taskWorkingDir },
             agenticInstruction: task.instruction,
             taskWorkspace,
+            heartbeatType,
         });
 
         // Save agent state back to task
-        if (agentMessages && agentMessages.length > 0) {
+        // Heartbeat runs: clear messages (each run is independent, no continuity needed)
+        if (isHeartbeat) {
+            await saveTaskState({
+                taskId,
+                messages: [],
+                workingDirectory: newWd,
+            });
+        } else if (agentMessages && agentMessages.length > 0) {
             await saveTaskState({
                 taskId,
                 messages: agentMessages,
@@ -1112,7 +1145,10 @@ agenticQueue.process("run-agentic-task", async (job, done) => {
         );
 
         // Broadcast result to ALL connected entry points (auto mode)
-        if (text) {
+        // Suppress for: daily heartbeat (always silent), or any [NO_MESSAGE] response
+        const isNoMessage = text && text.trim() === "[NO_MESSAGE]";
+        const isSilentHeartbeat = heartbeatType === "heartbeat_daily";
+        if (text && !isNoMessage && !isSilentHeartbeat) {
             const allEPs = await getUserEntryPoints(task.user_id);
             for (const ep of allEPs) {
                 try {
@@ -1124,6 +1160,8 @@ agenticQueue.process("run-agentic-task", async (job, done) => {
                     console.log(`[AgenticRunner] Failed to send to ${ep.entryPoint}:`, epErr.message);
                 }
             }
+        } else if (isHeartbeat) {
+            console.log(`[AgenticRunner] Heartbeat ${heartbeatType} task ${taskId}: ${isNoMessage ? "no message to send" : "silent run completed"}`);
         }
 
         // Schedule next run if recurring (chain scheduling for precise timing)
@@ -1147,7 +1185,7 @@ agenticQueue.process("run-agentic-task", async (job, done) => {
                         [taskId]
                     );
                 } else if (nextRunAt) {
-                    scheduleAgenticRun(taskId, nextRunAt);
+                    await scheduleAgenticRun(taskId, nextRunAt);
                 }
             } else {
                 console.log(`[AgenticRunner] Task ${taskId} no longer active, skipping next schedule`);

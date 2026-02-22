@@ -7,6 +7,8 @@ services:
         build: ../tasks
         depends_on:
             - db
+        env_file:
+            - ../tasks/.env
         volumes:
             - ../tasks/views:/tasks/views
             - ../tasks/services:/tasks/services
@@ -66,7 +68,6 @@ services:
             OPENAI_API_KEY:
             ANTHROPIC_API_KEY:
             GEMINI_API_KEY:
-            GOOGLE_GENERATIVE_AI_API_KEY:
             STRIPE_SECRET_KEY:
             STRIPE_WEBHOOK_SECRET:
             STRIPE_PRICE_ID:
