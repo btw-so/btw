@@ -11,6 +11,8 @@ const { loadUserSkills } = require("./skills");
 const { loadUserTools, formatCustomToolsForPrompt } = require("./customTools");
 const { loadMCPTools, formatMCPForPrompt } = require("./mcpClient");
 const { createAgenticTaskTools, createStopThisTaskTool } = require("./agenticTaskTools");
+const { createHeartbeatTools, createHeartbeatSettingsTool } = require("./heartbeat");
+const { createOnboardingTools } = require("./onboarding");
 const { SSHSession } = require("../services/ssh");
 const { fetchDBUnitsMain } = require("./ai");
 const {
@@ -24,10 +26,24 @@ const MAX_STEPS = 30;
 const MAX_MESSAGES_BEFORE_PRUNE = 40;
 
 // Model fallback order: cheapest first
-const MODEL_CONFIGS = [
+const ALL_MODEL_CONFIGS = [
     { provider: "google", model: "gemini-3-flash-preview" },
     { provider: "google", model: "gemini-2.5-flash" },
 ];
+
+// Filter to providers that have API keys configured
+const PROVIDER_KEY_MAP = {
+    google: () => process.env.GEMINI_API_KEY,
+    openai: () => process.env.OPENAI_API_KEY,
+    anthropic: () => process.env.ANTHROPIC_API_KEY,
+};
+
+function getAvailableModelConfigs() {
+    return ALL_MODEL_CONFIGS.filter((c) => {
+        const keyFn = PROVIDER_KEY_MAP[c.provider];
+        return keyFn ? !!keyFn() : false;
+    });
+}
 
 // ─── System Prompt ───────────────────────────────────────────────────────────
 
@@ -46,6 +62,7 @@ function buildSystemPrompt({
     isScheduledRun = false,
     agenticInstruction = "",
     taskWorkspace = null,
+    heartbeatType = null,
 }) {
     const now = new Date();
     const currentDate = getDDMMYYYYFromUTCToLocal(now, timezoneOffsetInSeconds);
@@ -121,7 +138,42 @@ The user is chatting with you via a Telegram bot.${userName ? ` Their name is ${
         .join("\n");
 
     let agenticTaskSection = "";
-    if (isScheduledRun) {
+    if (heartbeatType === "heartbeat_hourly") {
+        agenticTaskSection = `
+
+## HEARTBEAT CHECK (Hourly)
+You are running as an automatic hourly heartbeat. Your job is to review what you know about the user and decide if there's anything worth sharing right now.
+
+Guidelines:
+- Review your memories (soul, global, daily) — they are already included in this prompt above
+- Use **read_recent_activity** to see what the user has been doing recently
+- ONLY message the user if you have something genuinely useful, interesting, or timely to share
+- Examples of things worth messaging about: an upcoming reminder they might forget, an interesting follow-up to something they asked about, a proactive helpful suggestion based on their patterns, a timely observation
+- If nothing warrants a message, respond with exactly: [NO_MESSAGE]
+- Do NOT spam. Do NOT send generic greetings or "just checking in" messages. Do NOT repeat things you've already told them.
+- Keep messages brief and natural — like a thoughtful friend who noticed something, not a bot running on a schedule
+- You have access to web_search if you need to look up something relevant to the user's interests`;
+    } else if (heartbeatType === "heartbeat_daily") {
+        agenticTaskSection = `
+
+## DAILY REFLECTION (Silent)
+You are running a daily reflection pass. Your job is to review all user activity from the last 24 hours and update your memories. The user will NOT see any message from this run.
+
+Steps:
+1. Use **read_recent_activity** (with hours=24) to fetch all conversations and task runs from the last 24 hours
+2. Use **read_memories** to see the current state of your memories
+3. Analyze: What did you learn about the user today? Any new preferences, interests, patterns, facts?
+4. If you discovered personality traits, communication preferences, or relationship dynamics → update soul using **write_soul**
+5. If you learned factual things (their job, projects, tools, preferences, people they know) → update global memory using **write_global_memory**
+6. Write a concise summary of today's activity using **write_daily_memory**
+
+Rules:
+- This is a SILENT background process. The user will not receive any message.
+- After updating memories, respond with exactly: [NO_MESSAGE]
+- Be selective — only update memories with genuinely new insights, not noise
+- NEVER overwrite important existing memories — read them first and merge new info in
+- If there was no activity in the last 24 hours, just respond [NO_MESSAGE] without updating anything`;
+    } else if (isScheduledRun) {
         let workspaceSection = "";
         if (taskWorkspace) {
             workspaceSection = `
@@ -392,6 +444,7 @@ async function runAgentLoop({
     workingDirectory = null,    // Persisted working dir object { current: "/root" }
     agenticInstruction = "",    // For scheduled runs: the instruction to execute
     taskWorkspace = null,       // Dedicated sandbox workspace path (pro only)
+    heartbeatType = null,       // 'heartbeat_hourly' | 'heartbeat_daily' | null
 }) {
     if (!input && !imageBase64) {
         return { text: "", toolResults: [], agentMessages: [] };
@@ -419,7 +472,7 @@ async function runAgentLoop({
 
     // Step 2: Create tools — base + memory always, sandbox + extensions if pro
     const baseTools = adaptTools(
-        createTools({ user_id, timezoneOffsetInSeconds, chatId }),
+        createTools({ user_id, timezoneOffsetInSeconds, chatId, entryPoint }),
         chatId
     );
     const memoryTools = adaptTools(
@@ -428,18 +481,42 @@ async function runAgentLoop({
     );
 
     // Agentic task tools: CRUD tools in manual mode, stop_this_task in scheduled runs
-    const agenticTools = isScheduledRun
-        ? (agenticTaskId
+    // Heartbeat runs get no agentic task tools (they shouldn't create/modify tasks)
+    let agenticTools;
+    if (heartbeatType) {
+        agenticTools = [];
+    } else if (isScheduledRun) {
+        agenticTools = agenticTaskId
             ? adaptTools([createStopThisTaskTool({ agenticTaskId, user_id })], chatId)
-            : [])
-        : adaptTools(
-              createAgenticTaskTools({ user_id, timezoneOffsetInSeconds, chatId }),
+            : [];
+    } else {
+        agenticTools = adaptTools(
+            createAgenticTaskTools({ user_id, timezoneOffsetInSeconds, chatId }),
+            chatId
+        );
+    }
+
+    // Heartbeat-specific tools
+    const hbTools = heartbeatType
+        ? adaptTools(
+              createHeartbeatTools({ user_id, timezoneOffsetInSeconds, heartbeatType }),
               chatId
-          );
+          )
+        : [];
+
+    // Heartbeat settings tool — available in manual (non-scheduled) mode for user chat
+    const hbSettingsTools = !isScheduledRun
+        ? adaptTools([createHeartbeatSettingsTool({ user_id })], chatId)
+        : [];
+
+    // Onboarding tools — available in manual (non-scheduled, non-heartbeat) mode
+    const onboardingTools = (!isScheduledRun && !heartbeatType)
+        ? adaptTools(createOnboardingTools({ user_id }), chatId)
+        : [];
 
     let sshSession = null;
     let mcpCleanup = [];
-    let allTools = [...baseTools, ...memoryTools, ...agenticTools];
+    let allTools = [...baseTools, ...memoryTools, ...agenticTools, ...hbTools, ...hbSettingsTools, ...onboardingTools];
     const wdObj = workingDirectory || { current: "/root" };
 
     // Extension sections for system prompt
@@ -535,6 +612,9 @@ async function runAgentLoop({
                 ...baseTools,
                 ...memoryTools,
                 ...agenticTools,
+                ...hbTools,
+                ...hbSettingsTools,
+                ...onboardingTools,
                 ...sandboxTools,
                 ...customTools,
                 ...mcpTools,
@@ -568,12 +648,16 @@ async function runAgentLoop({
         isScheduledRun,
         agenticInstruction,
         taskWorkspace,
+        heartbeatType,
     });
 
     // Step 4: Build messages
     let finalMessages;
 
-    if (agenticTaskMessages && agenticTaskMessages.length > 0) {
+    // Heartbeat runs start fresh each time — no conversation continuity needed
+    const effectiveTaskMessages = heartbeatType ? null : agenticTaskMessages;
+
+    if (effectiveTaskMessages && effectiveTaskMessages.length > 0) {
         // Resume from saved task messages — filter out error/malformed messages
         const cleanMessages = agenticTaskMessages.filter((m) => {
             // Drop messages with error stopReason
@@ -668,8 +752,19 @@ async function runAgentLoop({
         // Step 5: Run agent with provider fallback
         let allToolResults = [];
         let lastError = null;
+        const modelConfigs = getAvailableModelConfigs();
 
-        for (const config of MODEL_CONFIGS) {
+        if (modelConfigs.length === 0) {
+            console.log("[Agent] No model providers have API keys configured");
+            return {
+                text: "No AI providers are configured. Please set GEMINI_API_KEY or another provider key.",
+                toolResults: [],
+                agentMessages: [],
+                workingDirectory: wdObj.current,
+            };
+        }
+
+        for (const config of modelConfigs) {
             try {
                 const model = getModel(config.provider, config.model);
                 console.log(

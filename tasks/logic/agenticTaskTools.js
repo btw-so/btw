@@ -30,9 +30,25 @@ function calculateNextRun(cronExpression, timezoneOffsetInSeconds = 0) {
 // Schedule a precise delayed Bull job for an agentic task run
 // Uses a stable jobId per task (no timestamp) so only one job can exist per task at a time.
 // This prevents double-firing from both the chain scheduler and failsafe poll.
-function scheduleAgenticRun(taskId, runAt) {
+// If a job already exists for this task, it is removed first to allow rescheduling.
+async function scheduleAgenticRun(taskId, runAt) {
     const delay = Math.max(0, runAt.getTime() - Date.now());
     const jobId = `agentic-run-${taskId}`;
+
+    // Remove existing delayed job if present (Bull ignores add() for existing jobIds)
+    try {
+        const existing = await agenticQueue.getJob(jobId);
+        if (existing) {
+            const state = await existing.getState();
+            if (state === "delayed" || state === "waiting") {
+                await existing.remove();
+                console.log(`[AgenticTasks] Removed existing ${state} job ${jobId} for reschedule`);
+            }
+        }
+    } catch (_) {
+        // Ignore errors during cleanup
+    }
+
     agenticQueue.add(
         "run-agentic-task",
         { taskId },
@@ -165,7 +181,7 @@ function createAgenticTaskTools({ user_id, timezoneOffsetInSeconds, chatId }) {
                     );
 
                     // Schedule precise delayed Bull job for the first run
-                    scheduleAgenticRun(task.id, nextRunAt);
+                    await scheduleAgenticRun(task.id, nextRunAt);
 
                     return {
                         output: JSON.stringify({
@@ -209,7 +225,7 @@ function createAgenticTaskTools({ user_id, timezoneOffsetInSeconds, chatId }) {
                     const statusFilter = args.status || "all";
 
                     let query = `SELECT id, name, instruction, cron_expression, next_run_at, status, created_at
-                                 FROM btw.agentic_tasks WHERE user_id = $1 AND mode = 'auto'`;
+                                 FROM btw.agentic_tasks WHERE user_id = $1 AND mode = 'auto' AND system_type IS NULL`;
                     const params = [user_id];
 
                     if (statusFilter !== "all") {
