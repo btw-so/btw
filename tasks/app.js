@@ -64,7 +64,7 @@ var userRouter = require("./routes/user");
 var a1Router = require("./routes/a1");
 var memoriesRouter = require("./routes/memories");
 var stripeRouter = require("./routes/stripe");
-var { baseQueue, alertsQueue, uxQueue, sandboxQueue } = require("./services/queue");
+var { baseQueue, alertsQueue, uxQueue, sandboxQueue, agenticQueue } = require("./services/queue");
 var { upsertNote, getNote } = require("./logic/notes");
 
 var {
@@ -122,6 +122,7 @@ const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
         new BullAdapter(alertsQueue),
         new BullAdapter(uxQueue),
         new BullAdapter(sandboxQueue),
+        new BullAdapter(agenticQueue),
     ],
     serverAdapter: serverAdapter,
 });

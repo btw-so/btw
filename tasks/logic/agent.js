@@ -1,9 +1,17 @@
-const { getModel, complete, validateToolCall } = require("@mariozechner/pi-ai");
+"use strict";
+
+const { Agent } = require("@mariozechner/pi-agent-core");
+const { getModel } = require("@mariozechner/pi-ai");
 const { createTools } = require("./tools");
 const { createSandboxTools } = require("./sandboxTools");
 const { createMemoryTools, getMemoriesForPrompt } = require("./memoryTools");
+const { createMCPManagementTools } = require("./mcpManagementTools");
+const { adaptTools } = require("./toolAdapter");
+const { loadUserSkills } = require("./skills");
+const { loadUserTools, formatCustomToolsForPrompt } = require("./customTools");
+const { loadMCPTools, formatMCPForPrompt } = require("./mcpClient");
+const { createAgenticTaskTools, createStopThisTaskTool } = require("./agenticTaskTools");
 const { SSHSession } = require("../services/ssh");
-const { requestApproval, waitForApproval } = require("./approval");
 const { fetchDBUnitsMain } = require("./ai");
 const {
     getDDMMYYYYFromUTCToLocal,
@@ -12,14 +20,16 @@ const {
     getReadableFromUTCToLocal,
 } = require("../utils/utils");
 
-const MAX_STEPS = 10;
+const MAX_STEPS = 30;
+const MAX_MESSAGES_BEFORE_PRUNE = 40;
 
 // Model fallback order: cheapest first
 const MODEL_CONFIGS = [
+    { provider: "google", model: "gemini-3-flash-preview" },
     { provider: "google", model: "gemini-2.5-flash" },
-    { provider: "openai", model: "gpt-4o-mini" },
-    { provider: "anthropic", model: "claude-haiku-4-5" },
 ];
+
+// ─── System Prompt ───────────────────────────────────────────────────────────
 
 function buildSystemPrompt({
     user_id,
@@ -30,6 +40,12 @@ function buildSystemPrompt({
     memories,
     entryPoint,
     userName,
+    skillsSection = "",
+    customToolsSection = "",
+    mcpSection = "",
+    isScheduledRun = false,
+    agenticInstruction = "",
+    taskWorkspace = null,
 }) {
     const now = new Date();
     const currentDate = getDDMMYYYYFromUTCToLocal(now, timezoneOffsetInSeconds);
@@ -99,6 +115,44 @@ The user is chatting with you via a Telegram bot.${userName ? ` Their name is ${
         }
     }
 
+    // Combine extension sections (skills, custom tools, MCPs)
+    const extensionSections = [skillsSection, customToolsSection, mcpSection]
+        .filter(Boolean)
+        .join("\n");
+
+    let agenticTaskSection = "";
+    if (isScheduledRun) {
+        let workspaceSection = "";
+        if (taskWorkspace) {
+            workspaceSection = `
+
+**Workspace:** \`${taskWorkspace}\`
+Your working directory is set to this workspace. It persists across runs.
+- Before starting, check if \`PROGRESS.md\` exists in the workspace using sandbox_read. If it does, it contains notes from your previous runs — read it to understand what you've already done.
+- After completing your work, update \`PROGRESS.md\` with a brief log entry for this run (date, what you did, key results). Keep it concise — append to the existing content, don't overwrite.
+- You can also store any files or artifacts in this workspace that might be useful for future runs.`;
+        }
+
+        agenticTaskSection = `
+
+## AUTONOMOUS TASK EXECUTION
+You are running as a scheduled autonomous task. This task runs on a recurring schedule.
+
+**Your instruction:**
+${agenticInstruction}
+${workspaceSection}
+
+Execute this instruction now. Use your available tools (web search, web fetch, etc.) as needed. Provide a complete response — the user will receive it as a notification.
+
+Important:
+- You are running autonomously — the user is not actively chatting. Do the work and provide the result.
+- If the instruction requires research, use web_search and web_fetch tools.
+- Be concise but thorough in your response.
+- Do NOT create new agentic tasks from within a task run.
+- If the task has a deadline or time limit and it has passed, call the **stop_this_task** tool to permanently stop this task. This prevents future runs.
+- **IMPORTANT: The conversation history above contains results from your PREVIOUS runs of this same task.** Review them carefully and DO NOT repeat the same content. For example, if you told a joke before, tell a different one. If you fetched news before, find new stories. Always provide fresh, varied content.`;
+    }
+
     return `You are A1, a personal AI assistant bot. Your persona is similar to Baymax from Big Hero 6 — warm, helpful, gentle, slightly quirky — but don't overdo it. Keep responses short and to the point.
 
 Current user ID: ${user_id}
@@ -113,9 +167,17 @@ You help with:
 3. **Web fetch** — if the user shares a URL or you need to read a specific webpage, use the web_fetch tool. It returns the page content as markdown.
 4. **General chat** — answer questions, have conversations. Be helpful and concise. Don't use tools for general chat.
 5. **Phone calls** — you can call the user's phone and speak a message using the call_user tool. Use when the user asks you to call them. Keep the spoken message natural and conversational.
-6. **Text to speech** — you can convert text to speech and send it as an audio message using the text_to_speech tool. Use when the user asks you to speak, say something out loud, read something aloud, or send a voice message. Multiple voices available.${sandboxSection}
+6. **Text to speech** — you can convert text to speech and send it as an audio message using the text_to_speech tool. Use when the user asks you to speak, say something out loud, read something aloud, or send a voice message. Multiple voices available.
+7. **Image generation** — you can generate images from text descriptions using the generate_image tool. Use when the user asks you to create, draw, generate, or make an image, picture, illustration, or artwork. Provide a detailed prompt for best results.${sandboxSection}
 ${entryPointSection}
+${extensionSections}
 ${memoriesSection}
+${agenticTaskSection}
+
+Reminders vs Agentic Tasks:
+- **Reminders** are simple notifications — they just show a text message at the scheduled time. Use for: "remind me to buy milk", "remind me about the meeting", "remind me to call mom at 5pm".
+- **Agentic tasks** are scheduled AI actions — they run a full agent loop at the scheduled time to DO something. Use for: "in 5 mins tell me top HN stories", "every morning find me a joke", "at 3pm research flights to Tokyo and send me a summary".
+- Rule of thumb: if the user wants you to **do work** at a future time (search, fetch, summarize, research), use create_agentic_task. If they just want a **notification/nudge**, use add_reminder.
 
 Rules:
 - When adding reminders, extract a SHORT, CRISP text (no filler words like "remind me to"). Example: "Buy milk", "Call mom", "Meeting with John".
@@ -128,6 +190,12 @@ Rules:
 - After performing actions, give a brief confirmation message. Don't repeat all the technical details.
 - If you can't do something or something seems wrong, just say so naturally.
 
+Research behavior:
+- When the user asks you to research, compare, or look something up — ALWAYS use web_search and web_fetch tools. Do multiple searches with different queries to get comprehensive information. Do NOT just acknowledge the request without using tools.
+- NEVER say "I'm looking into it" or "I'm still working on it" without actually using tools in the same response. You cannot do background work — each message is a separate request. Either do the work NOW with tools, or tell the user you need more specific instructions.
+- For comparison requests (e.g. "compare X vs Y pricing"), do at least 2-3 web searches and try to fetch the actual pricing pages with web_fetch.
+- When the user says "do deep research" or similar, make multiple web_search calls with different angles, fetch relevant pages, and provide a thorough answer with specifics (numbers, pricing tiers, feature comparisons).
+
 Memory management:
 - You have memory tools to remember things about the user across conversations.
 - **Soul**: When you notice personality traits, communication style, humor, tone, language patterns — update the soul. This is who the user IS.
@@ -139,12 +207,66 @@ Memory management:
 - Always read existing memory before overwriting to avoid losing content. Append to or edit the existing markdown.`;
 }
 
+// ─── Context Pruning ─────────────────────────────────────────────────────────
+
+function transformContext(messages) {
+    if (messages.length <= MAX_MESSAGES_BEFORE_PRUNE) {
+        return messages;
+    }
+
+    // Keep the system prompt (first message if role === 'system') and last 40 messages
+    const keepCount = MAX_MESSAGES_BEFORE_PRUNE;
+    const hasSystem = messages.length > 0 && messages[0].role === "system";
+    const systemMsg = hasSystem ? messages[0] : null;
+    const nonSystem = hasSystem ? messages.slice(1) : messages;
+
+    if (nonSystem.length <= keepCount) {
+        return messages;
+    }
+
+    const olderMessages = nonSystem.slice(0, nonSystem.length - keepCount);
+    const recentMessages = nonSystem.slice(nonSystem.length - keepCount);
+
+    // Summarize older messages: extract text content, truncate tool results
+    const summaryParts = [];
+    for (const msg of olderMessages) {
+        if (msg.role === "user") {
+            const text = typeof msg.content === "string"
+                ? msg.content
+                : Array.isArray(msg.content)
+                    ? msg.content.filter(b => b.type === "text").map(b => b.text).join(" ")
+                    : "";
+            if (text) summaryParts.push(`User: ${text.slice(0, 150)}`);
+        } else if (msg.role === "assistant") {
+            const text = Array.isArray(msg.content)
+                ? msg.content.filter(b => b.type === "text").map(b => b.text).join(" ")
+                : typeof msg.content === "string" ? msg.content : "";
+            if (text) summaryParts.push(`Assistant: ${text.slice(0, 150)}`);
+        }
+    }
+
+    const summaryMessage = {
+        role: "user",
+        content: `[Earlier conversation summary - ${olderMessages.length} messages truncated]\n${summaryParts.join("\n")}`,
+        timestamp: Date.now(),
+    };
+
+    const result = [];
+    if (systemMsg) result.push(systemMsg);
+    result.push(summaryMessage);
+    result.push(...recentMessages);
+
+    console.log(`[Agent] Pruned context: ${messages.length} → ${result.length} messages`);
+    return result;
+}
+
+// ─── Message Hydration & Conversion ──────────────────────────────────────────
+
 async function hydrateMessages({
     messages,
     user_id,
     timezoneOffsetInSeconds,
 }) {
-    // Extract dbUnits from message metadata to fetch live DB state
     let dbGroupsToFetch = [];
 
     for (let i = 0; i < messages.length; i++) {
@@ -176,7 +298,6 @@ async function hydrateMessages({
         dbUnits: dbGroupsToFetch,
     });
 
-    // Inject live DB data as dbText into messages
     for (let i = 0; i < messages.length; i++) {
         if (messages[i].id && groupedUnits[messages[i].id]) {
             let description = [];
@@ -218,8 +339,6 @@ function getMessageText(msg) {
 }
 
 function buildConversationMessages({ messages, timezoneOffsetInSeconds }) {
-    // Convert chat history to pi-ai message format
-    // pi-ai requires: user content = string, assistant content = [{type:"text", text:"..."}]
     let msgs = messages
         .map((x) => {
             const role = x.type === "bot" ? "assistant" : "user";
@@ -239,26 +358,18 @@ function buildConversationMessages({ messages, timezoneOffsetInSeconds }) {
         }
     }
 
-    // Take most recent messages within char limit
-    merged = merged.reverse();
-    let limitLeft = 2000;
-    let shortlist = [];
-    for (let i = 0; i < merged.length; i++) {
-        const toAdd = merged[i].text.length + 2;
-        if (limitLeft - toAdd < 0) break;
-        limitLeft -= toAdd;
-        shortlist.push(merged[i]);
-    }
-    shortlist = shortlist.reverse();
-
-    // Convert to pi-ai format
-    return shortlist.map((m) => ({
+    // Convert to pi-ai message format (pass all history — models handle large contexts natively)
+    return merged.map((m) => ({
         role: m.role,
-        content: m.role === "assistant"
-            ? [{ type: "text", text: m.text }]
-            : m.text,
+        content:
+            m.role === "assistant"
+                ? [{ type: "text", text: m.text }]
+                : m.text,
+        timestamp: Date.now(),
     }));
 }
+
+// ─── Agent Loop ──────────────────────────────────────────────────────────────
 
 async function runAgentLoop({
     input,
@@ -274,55 +385,67 @@ async function runAgentLoop({
     chatId = null,
     entryPoint = null,
     userName = null,
+    // Agentic task params
+    agenticTaskId = null,
+    agenticTaskMessages = null, // Restored pi-agent messages from DB (JSONB)
+    isScheduledRun = false,     // true if triggered by cron (auto mode)
+    workingDirectory = null,    // Persisted working dir object { current: "/root" }
+    agenticInstruction = "",    // For scheduled runs: the instruction to execute
+    taskWorkspace = null,       // Dedicated sandbox workspace path (pro only)
 }) {
     if (!input && !imageBase64) {
-        return { text: "", toolResults: [] };
+        return { text: "", toolResults: [], agentMessages: [] };
     }
 
-    // Step 1: Hydrate messages with live DB data (unpack reminder/alert units)
-    messages = await hydrateMessages({
-        messages,
-        user_id,
-        timezoneOffsetInSeconds,
-    });
-
-    // Step 2: Fetch memories and build system prompt
+    // Step 1: Fetch memories
     const nowForTz = new Date();
-    const localNow = new Date(nowForTz.getTime() + timezoneOffsetInSeconds * 1000);
+    const localNow = new Date(
+        nowForTz.getTime() + timezoneOffsetInSeconds * 1000
+    );
     const todayDate = localNow.toISOString().slice(0, 10);
     const localYesterday = new Date(localNow.getTime() - 86400000);
     const yesterdayDate = localYesterday.toISOString().slice(0, 10);
 
     let memories = null;
     try {
-        memories = await getMemoriesForPrompt({ user_id, todayDate, yesterdayDate });
+        memories = await getMemoriesForPrompt({
+            user_id,
+            todayDate,
+            yesterdayDate,
+        });
     } catch (err) {
         console.log(`[Agent] Failed to fetch memories: ${err.message}`);
     }
 
-    const systemPrompt = buildSystemPrompt({
-        user_id,
-        timezoneOffsetInSeconds,
-        familyUsers,
-        isPro,
-        hasSandbox: !!sandbox,
-        memories,
-        entryPoint,
-        userName,
-    });
+    // Step 2: Create tools — base + memory always, sandbox + extensions if pro
+    const baseTools = adaptTools(
+        createTools({ user_id, timezoneOffsetInSeconds, chatId }),
+        chatId
+    );
+    const memoryTools = adaptTools(
+        createMemoryTools({ user_id, timezoneOffsetInSeconds }),
+        chatId
+    );
 
-    const conversationHistory = buildConversationMessages({
-        messages,
-        timezoneOffsetInSeconds,
-    });
-
-    // Step 3: Create tools (base + memory + sandbox if pro)
-    const baseTools = createTools({ user_id, timezoneOffsetInSeconds, chatId });
-    const memoryTools = createMemoryTools({ user_id, timezoneOffsetInSeconds });
+    // Agentic task tools: CRUD tools in manual mode, stop_this_task in scheduled runs
+    const agenticTools = isScheduledRun
+        ? (agenticTaskId
+            ? adaptTools([createStopThisTaskTool({ agenticTaskId, user_id })], chatId)
+            : [])
+        : adaptTools(
+              createAgenticTaskTools({ user_id, timezoneOffsetInSeconds, chatId }),
+              chatId
+          );
 
     let sshSession = null;
-    let allTools = [...baseTools, ...memoryTools];
-    const workingDirectory = { current: "/root" };
+    let mcpCleanup = [];
+    let allTools = [...baseTools, ...memoryTools, ...agenticTools];
+    const wdObj = workingDirectory || { current: "/root" };
+
+    // Extension sections for system prompt
+    let skillsSection = "";
+    let customToolsSection = "";
+    let mcpSection = "";
 
     if (isPro && sandbox) {
         try {
@@ -332,208 +455,306 @@ async function runAgentLoop({
             });
             await sshSession.connect();
 
-            const sandboxTools = createSandboxTools({ sshSession, workingDirectory });
-            allTools = [...baseTools, ...memoryTools, ...sandboxTools];
-            console.log(`[Agent] SSH connected to sandbox at ${sandbox.ipv4}, ${sandboxTools.length} sandbox tools added`);
+            // Sandbox tools (adapted to AgentTool format)
+            // For scheduled runs, pass chatId=null to skip approval
+            const sandboxTools = adaptTools(
+                createSandboxTools({ sshSession, workingDirectory: wdObj }),
+                isScheduledRun ? null : chatId
+            );
+
+            // Load user skills → system prompt injection
+            try {
+                skillsSection = await loadUserSkills(sshSession);
+                if (skillsSection) {
+                    console.log(`[Agent] Skills loaded`);
+                }
+            } catch (err) {
+                console.log(`[Agent] Failed to load skills: ${err.message}`);
+            }
+
+            // Load custom tools from sandbox
+            let customTools = [];
+            try {
+                customTools = await loadUserTools({
+                    sshSession,
+                    workingDirectory: wdObj,
+                    chatId,
+                });
+                if (customTools.length > 0) {
+                    customToolsSection = formatCustomToolsForPrompt(
+                        customTools.map((t) => t.name)
+                    );
+                    console.log(
+                        `[Agent] ${customTools.length} custom tool(s) loaded`
+                    );
+                }
+            } catch (err) {
+                console.log(
+                    `[Agent] Failed to load custom tools: ${err.message}`
+                );
+            }
+
+            // Load MCP tools
+            let mcpTools = [];
+            try {
+                const mcpResult = await loadMCPTools({
+                    user_id,
+                    sandbox,
+                    sshSession,
+                    chatId,
+                });
+                mcpTools = mcpResult.tools;
+                mcpCleanup = mcpResult.cleanup;
+                if (mcpTools.length > 0) {
+                    // Get connected server names for prompt
+                    const serverNames = [
+                        ...new Set(
+                            mcpTools.map((t) =>
+                                t.name.replace(/^mcp_/, "").replace(/_.*$/, "")
+                            )
+                        ),
+                    ];
+                    mcpSection = formatMCPForPrompt(serverNames);
+                    console.log(
+                        `[Agent] ${mcpTools.length} MCP tool(s) loaded`
+                    );
+                }
+            } catch (err) {
+                console.log(
+                    `[Agent] Failed to load MCP tools: ${err.message}`
+                );
+            }
+
+            // MCP management tools (adapted from legacy format)
+            const mcpMgmtTools = adaptTools(
+                createMCPManagementTools({ user_id, sshSession }),
+                chatId
+            );
+
+            allTools = [
+                ...baseTools,
+                ...memoryTools,
+                ...agenticTools,
+                ...sandboxTools,
+                ...customTools,
+                ...mcpTools,
+                ...mcpMgmtTools,
+            ];
+
+            console.log(
+                `[Agent] SSH connected to sandbox at ${sandbox.ipv4}, ${allTools.length} total tools`
+            );
         } catch (err) {
-            console.log(`[Agent] Failed to connect to sandbox: ${err.message}`);
+            console.log(
+                `[Agent] Failed to connect to sandbox: ${err.message}`
+            );
             // Continue without sandbox tools
         }
     }
 
-    try {
-        // Step 4: Build initial context
-        // Build user content — multimodal if image is present
+    // Step 3: Build system prompt with extension sections
+    const systemPrompt = buildSystemPrompt({
+        user_id,
+        timezoneOffsetInSeconds,
+        familyUsers,
+        isPro,
+        hasSandbox: !!sandbox,
+        memories,
+        entryPoint,
+        userName,
+        skillsSection,
+        customToolsSection,
+        mcpSection,
+        isScheduledRun,
+        agenticInstruction,
+        taskWorkspace,
+    });
+
+    // Step 4: Build messages
+    let finalMessages;
+
+    if (agenticTaskMessages && agenticTaskMessages.length > 0) {
+        // Resume from saved task messages — filter out error/malformed messages
+        const cleanMessages = agenticTaskMessages.filter((m) => {
+            // Drop messages with error stopReason
+            if (m.stopReason === "error") return false;
+            // Drop assistant messages with empty content
+            if (m.role === "assistant" && Array.isArray(m.content) && m.content.length === 0) return false;
+            return true;
+        });
+        finalMessages = [...cleanMessages];
+
+        // Add new user message
         let userContent;
         if (imageBase64 && imageMimeType) {
             const parts = [];
-            if (input) {
-                parts.push({ type: "text", text: input });
-            }
+            if (input) parts.push({ type: "text", text: input });
             parts.push({ type: "image", data: imageBase64, mimeType: imageMimeType });
             userContent = parts;
         } else {
             userContent = input;
         }
 
-        let finalMessages = [...conversationHistory];
-        if (finalMessages.length > 0 && finalMessages[finalMessages.length - 1].role === "user") {
-            // Merge with previous user message
+        // Merge with last message if both user role (Gemini requires alternating)
+        if (
+            finalMessages.length > 0 &&
+            finalMessages[finalMessages.length - 1].role === "user" &&
+            typeof userContent === "string" &&
+            typeof finalMessages[finalMessages.length - 1].content === "string"
+        ) {
+            finalMessages[finalMessages.length - 1] = {
+                ...finalMessages[finalMessages.length - 1],
+                content: finalMessages[finalMessages.length - 1].content + "\n" + userContent,
+            };
+        } else {
+            finalMessages.push({
+                role: "user",
+                content: userContent,
+                timestamp: Date.now(),
+            });
+        }
+    } else {
+        // Legacy path: build from telegram chat history
+        const hydratedMessages = await hydrateMessages({
+            messages,
+            user_id,
+            timezoneOffsetInSeconds,
+        });
+
+        const conversationHistory = buildConversationMessages({
+            messages: hydratedMessages,
+            timezoneOffsetInSeconds,
+        });
+
+        let userContent;
+        if (imageBase64 && imageMimeType) {
+            const parts = [];
+            if (input) parts.push({ type: "text", text: input });
+            parts.push({ type: "image", data: imageBase64, mimeType: imageMimeType });
+            userContent = parts;
+        } else {
+            userContent = input;
+        }
+
+        finalMessages = [...conversationHistory];
+        if (
+            finalMessages.length > 0 &&
+            finalMessages[finalMessages.length - 1].role === "user"
+        ) {
             const prev = finalMessages[finalMessages.length - 1].content;
             if (typeof prev === "string" && typeof userContent === "string") {
                 finalMessages[finalMessages.length - 1] = {
                     role: "user",
                     content: prev + "\n" + userContent,
+                    timestamp: Date.now(),
                 };
             } else {
-                // Can't cleanly merge multimodal with string — add as new message
-                finalMessages.push({ role: "user", content: userContent });
+                finalMessages.push({
+                    role: "user",
+                    content: userContent,
+                    timestamp: Date.now(),
+                });
             }
         } else {
-            finalMessages.push({ role: "user", content: userContent });
+            finalMessages.push({
+                role: "user",
+                content: userContent,
+                timestamp: Date.now(),
+            });
         }
+    }
 
-        const context = {
-            systemPrompt,
-            messages: finalMessages,
-            tools: allTools,
-        };
-
-        // Step 5: Run the agent loop with provider fallback
+    try {
+        // Step 5: Run agent with provider fallback
         let allToolResults = [];
         let lastError = null;
 
         for (const config of MODEL_CONFIGS) {
             try {
                 const model = getModel(config.provider, config.model);
-                console.log(`[Agent] Trying ${config.provider}:${config.model}`);
+                console.log(
+                    `[Agent] Trying ${config.provider}:${config.model}`
+                );
 
-                let steps = 0;
+                const agent = new Agent({
+                    initialState: {
+                        systemPrompt,
+                        model,
+                        thinkingLevel: "off",
+                        tools: allTools,
+                        messages: finalMessages,
+                        transformContext,
+                    },
+                });
 
-                while (steps < MAX_STEPS) {
-                    steps++;
-                    const response = await complete(model, context);
-                    context.messages.push(response);
+                let finalText = "";
+                let turns = 0;
+                let fullMessages = [];
 
-                    // Check for tool calls
-                    const toolCalls = response.content.filter(
-                        (b) => b.type === "toolCall"
-                    );
-
-                    if (toolCalls.length === 0) {
-                        // No more tool calls - extract text response and return
-                        const textParts = response.content
-                            .filter((b) => b.type === "text")
-                            .map((b) => b.text);
-
-                        const text = textParts.join("\n").trim();
-
-                        console.log(
-                            `[Agent] Done after ${steps} step(s). Text length: ${text.length}. Text: "${text.slice(0, 200)}"`
-                        );
-
-                        return { text, toolResults: allToolResults };
-                    }
-
-                    // Execute tool calls
-                    for (const call of toolCalls) {
-                        const toolDef = allTools.find((t) => t.name === call.name);
-
-                        if (!toolDef) {
-                            context.messages.push({
-                                role: "toolResult",
-                                toolCallId: call.id,
-                                toolName: call.name,
-                                content: [
-                                    {
-                                        type: "text",
-                                        text: `Error: Unknown tool "${call.name}"`,
-                                    },
-                                ],
-                                isError: true,
-                                timestamp: Date.now(),
-                            });
-                            continue;
-                        }
-
-                        try {
-                            const validatedArgs = validateToolCall(
-                                allTools,
-                                call
-                            );
-                            console.log(
-                                `[Agent] Calling tool: ${call.name}`,
-                                JSON.stringify(validatedArgs)
-                            );
-
-                            // Check if tool requires approval
-                            if (toolDef.requiresApproval && chatId) {
-                                console.log(`[Agent] Requesting approval for ${call.name}`);
-                                const approvalId = await requestApproval({
-                                    chatId,
-                                    toolName: call.name,
-                                    toolArgs: validatedArgs,
-                                });
-
-                                const decision = await waitForApproval(approvalId);
-                                console.log(`[Agent] Approval decision for ${call.name}: ${decision}`);
-
-                                if (decision !== "approved") {
-                                    context.messages.push({
-                                        role: "toolResult",
-                                        toolCallId: call.id,
-                                        toolName: call.name,
-                                        content: [
-                                            {
-                                                type: "text",
-                                                text: "Tool execution was denied by the user.",
-                                            },
-                                        ],
-                                        isError: true,
-                                        timestamp: Date.now(),
-                                    });
-                                    continue;
-                                }
+                const unsubscribe = agent.subscribe((event) => {
+                    switch (event.type) {
+                        case "turn_start":
+                            turns++;
+                            if (turns > MAX_STEPS) {
+                                console.log(
+                                    `[Agent] Max steps (${MAX_STEPS}) reached, aborting`
+                                );
+                                agent.abort();
                             }
-
-                            const result = await toolDef.execute(
-                                call.id,
-                                validatedArgs
-                            );
-
-                            allToolResults.push({
-                                toolName: call.name,
-                                args: validatedArgs,
-                                result,
-                            });
-
-                            context.messages.push({
-                                role: "toolResult",
-                                toolCallId: call.id,
-                                toolName: call.name,
-                                content: [
-                                    { type: "text", text: result.output },
-                                ],
-                                isError: false,
-                                timestamp: Date.now(),
-                            });
-                        } catch (err) {
+                            break;
+                        case "tool_execution_start":
                             console.log(
-                                `[Agent] Tool error: ${call.name}`,
-                                err.message
+                                `[Agent] Tool: ${event.toolName}`,
+                                JSON.stringify(event.args).slice(0, 200)
                             );
-                            context.messages.push({
-                                role: "toolResult",
-                                toolCallId: call.id,
-                                toolName: call.name,
-                                content: [
-                                    {
-                                        type: "text",
-                                        text: `Error: ${err.message}`,
-                                    },
-                                ],
-                                isError: true,
-                                timestamp: Date.now(),
+                            break;
+                        case "tool_execution_end":
+                            allToolResults.push({
+                                toolName: event.toolName,
+                                result: event.result,
+                                isError: event.isError,
                             });
-                        }
+                            break;
+                        case "agent_end":
+                            // Capture full message state for persistence
+                            fullMessages = event.messages || [];
+                            // Extract text from the last assistant message
+                            const lastAssistant = fullMessages
+                                .filter((m) => m.role === "assistant")
+                                .pop();
+                            if (lastAssistant) {
+                                console.log(`[Agent] Last assistant stopReason: ${lastAssistant.stopReason}, content types: ${(lastAssistant.content || []).map(b => b.type).join(",")}`);
+                            }
+                            console.log(`[Agent] agent_end: ${fullMessages.length} messages, roles: ${fullMessages.map(m => m.role).join(",")}`);
+                            if (lastAssistant && lastAssistant.content) {
+                                finalText = lastAssistant.content
+                                    .filter((b) => b.type === "text")
+                                    .map((b) => b.text)
+                                    .join("\n")
+                                    .trim();
+                            }
+                            break;
                     }
-                }
+                });
 
-                // If we hit max steps, extract whatever text we have
-                const lastMsg =
-                    context.messages[context.messages.length - 1];
-                if (lastMsg.role === "assistant") {
-                    const text = lastMsg.content
-                        .filter((b) => b.type === "text")
-                        .map((b) => b.text)
-                        .join("\n")
-                        .trim();
-                    return { text: text || "Done!", toolResults: allToolResults };
-                }
+                // Use continue() since messages already include the user prompt
+                await agent.continue();
+                await agent.waitForIdle();
+                unsubscribe();
+
+                console.log(
+                    `[Agent] Done after ${turns} turn(s). Text length: ${finalText.length}. Text: "${finalText.slice(0, 200)}"`
+                );
+
+                // Combine initial messages with agent-generated messages for full history
+                // event.messages only contains NEW messages from the agent, not the initial ones
+                const allMessages = [...finalMessages, ...fullMessages];
 
                 return {
-                    text: "Done!",
+                    text: finalText || "Sorry, I couldn't process that. Please try again.",
                     toolResults: allToolResults,
+                    agentMessages: allMessages,
+                    workingDirectory: wdObj.current,
                 };
             } catch (err) {
                 console.log(
@@ -549,9 +770,16 @@ async function runAgentLoop({
         return {
             text: "I'm having trouble right now. Please try again in a moment.",
             toolResults: [],
+            agentMessages: [],
+            workingDirectory: wdObj.current,
         };
     } finally {
-        // Always close SSH session
+        // Always clean up MCP clients and SSH session
+        for (const closeFn of mcpCleanup) {
+            try {
+                await closeFn();
+            } catch (_) {}
+        }
         if (sshSession) {
             try {
                 await sshSession.close();

@@ -12,7 +12,7 @@ const {
 } = require("./ai");
 const { convertLocalTimeToUTC, getNow } = require("../utils/utils");
 const { uxQueue } = require("../services/queue");
-const { sendAudioToTelegram } = require("./telegram");
+const { sendAudioToTelegram, sendPhotoToTelegram } = require("./telegram");
 
 function createTools({ user_id, timezoneOffsetInSeconds, chatId }) {
     return [
@@ -606,6 +606,148 @@ function createTools({ user_id, timezoneOffsetInSeconds, chatId }) {
                                   }),
                               };
                           }
+                      },
+                  },
+              ]
+            : []),
+        ...((process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY) && chatId
+            ? [
+                  {
+                      name: "generate_image",
+                      description:
+                          "Generate an image from a text description and send it to the user. Use when the user asks you to create, draw, generate, or make an image, picture, illustration, or artwork.",
+                      parameters: Type.Object({
+                          prompt: Type.String({
+                              description:
+                                  "Detailed description of the image to generate. Be specific about subjects, style, colors, composition, and mood for best results.",
+                          }),
+                          aspect_ratio: Type.Optional(
+                              StringEnum(
+                                  ["1:1", "16:9", "9:16", "4:3", "3:4"],
+                                  {
+                                      description:
+                                          "Aspect ratio. Default: 1:1 (square). Use 16:9 for landscape, 9:16 for portrait/phone wallpaper, 4:3 for photo, 3:4 for portrait photo.",
+                                  }
+                              )
+                          ),
+                      }),
+                      execute: async (_toolCallId, args) => {
+                          const aspectRatio = args.aspect_ratio || "1:1";
+                          console.log(`[ImageGen] Generating: "${args.prompt.slice(0, 100)}..." (${aspectRatio})`);
+
+                          // Try Gemini first
+                          if (process.env.GEMINI_API_KEY) {
+                              try {
+                                  console.log(`[ImageGen] Trying Gemini...`);
+                                  const resp = await fetch(
+                                      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${process.env.GEMINI_API_KEY}`,
+                                      {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({
+                                              contents: [{ parts: [{ text: args.prompt }] }],
+                                              generationConfig: {
+                                                  responseModalities: ["IMAGE"],
+                                                  imageConfig: { aspectRatio },
+                                              },
+                                          }),
+                                      }
+                                  );
+
+                                  const data = await resp.json();
+
+                                  if (resp.ok && data.candidates?.[0]?.content?.parts) {
+                                      const imagePart = data.candidates[0].content.parts.find(
+                                          (p) => p.inlineData
+                                      );
+                                      if (imagePart) {
+                                          const imageBuffer = Buffer.from(imagePart.inlineData.data, "base64");
+                                          console.log(`[ImageGen] Gemini success: ${imageBuffer.length} bytes`);
+
+                                          await sendPhotoToTelegram({
+                                              chatId,
+                                              photoBuffer: imageBuffer,
+                                              filename: "generated.png",
+                                          });
+
+                                          return {
+                                              output: JSON.stringify({
+                                                  success: true,
+                                                  action: "generate_image",
+                                                  provider: "gemini",
+                                                  prompt: args.prompt,
+                                              }),
+                                          };
+                                      }
+                                  }
+
+                                  console.log(`[ImageGen] Gemini failed:`, JSON.stringify(data).slice(0, 300));
+                              } catch (err) {
+                                  console.log(`[ImageGen] Gemini error:`, err.message);
+                              }
+                          }
+
+                          // Fallback to OpenAI DALL-E 3
+                          if (process.env.OPENAI_API_KEY) {
+                              try {
+                                  console.log(`[ImageGen] Trying OpenAI DALL-E 3...`);
+                                  const sizeMap = {
+                                      "1:1": "1024x1024",
+                                      "16:9": "1792x1024",
+                                      "9:16": "1024x1792",
+                                      "4:3": "1792x1024",
+                                      "3:4": "1024x1792",
+                                  };
+
+                                  const resp = await fetch("https://api.openai.com/v1/images/generations", {
+                                      method: "POST",
+                                      headers: {
+                                          "Content-Type": "application/json",
+                                          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+                                      },
+                                      body: JSON.stringify({
+                                          model: "dall-e-3",
+                                          prompt: args.prompt,
+                                          size: sizeMap[aspectRatio] || "1024x1024",
+                                          response_format: "b64_json",
+                                          n: 1,
+                                      }),
+                                  });
+
+                                  const data = await resp.json();
+
+                                  if (resp.ok && data.data?.[0]?.b64_json) {
+                                      const imageBuffer = Buffer.from(data.data[0].b64_json, "base64");
+                                      console.log(`[ImageGen] OpenAI success: ${imageBuffer.length} bytes`);
+
+                                      await sendPhotoToTelegram({
+                                          chatId,
+                                          photoBuffer: imageBuffer,
+                                          filename: "generated.png",
+                                      });
+
+                                      return {
+                                          output: JSON.stringify({
+                                              success: true,
+                                              action: "generate_image",
+                                              provider: "openai",
+                                              prompt: args.prompt,
+                                          }),
+                                      };
+                                  }
+
+                                  console.log(`[ImageGen] OpenAI failed:`, JSON.stringify(data).slice(0, 300));
+                              } catch (err) {
+                                  console.log(`[ImageGen] OpenAI error:`, err.message);
+                              }
+                          }
+
+                          return {
+                              output: JSON.stringify({
+                                  success: false,
+                                  error: "Image generation failed with all available providers.",
+                              }),
+                          };
                       },
                   },
               ]

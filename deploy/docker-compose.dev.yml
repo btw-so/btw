@@ -77,6 +77,7 @@ services:
             TWILIO_ACCOUNT_SID:
             TWILIO_AUTH_TOKEN:
             TWILIO_PHONE_NUMBER:
+            ELEVENLABS_API_KEY:
         links:
             - redis
     list:

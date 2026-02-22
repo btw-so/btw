@@ -9,6 +9,62 @@ const { sendDiscordAlert } = require("../services/alerts");
 
 const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}`;
 
+// ─── Markdown → Telegram HTML converter ─────────────────────────────────────
+
+function escapeHTML(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function markdownToTelegramHTML(md) {
+    const placeholders = [];
+
+    function ph(html) {
+        const idx = placeholders.length;
+        placeholders.push(html);
+        return `\x00PH${idx}\x00`;
+    }
+
+    let text = md;
+
+    // 1. Fenced code blocks: ```lang\ncode\n```
+    text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+        const escaped = escapeHTML(code.trimEnd());
+        return ph(
+            lang
+                ? `<pre><code class="language-${lang}">${escaped}</code></pre>`
+                : `<pre>${escaped}</pre>`
+        );
+    });
+
+    // 2. Inline code: `code`
+    text = text.replace(/`([^`]+)`/g, (_, code) => ph(`<code>${escapeHTML(code)}</code>`));
+
+    // 3. Links: [label](url)
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) =>
+        ph(`<a href="${url}">${escapeHTML(label)}</a>`)
+    );
+
+    // 4. Escape HTML in remaining text
+    text = escapeHTML(text);
+
+    // 5. Bold: **text** (before italic)
+    text = text.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+
+    // 6. Italic: *text*
+    text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<i>$1</i>");
+
+    // 7. Strikethrough: ~~text~~
+    text = text.replace(/~~(.+?)~~/g, "<s>$1</s>");
+
+    // 8. Blockquotes: > text (after HTML escape, > becomes &gt;)
+    text = text.replace(/^&gt; (.+)$/gm, "<blockquote>$1</blockquote>");
+
+    // 9. Restore placeholders
+    text = text.replace(/\x00PH(\d+)\x00/g, (_, idx) => placeholders[parseInt(idx)]);
+
+    return text;
+}
+
 function splitMessage(text, maxLen = 4096) {
     if (text.length <= maxLen) return [text];
     const chunks = [];
@@ -33,9 +89,10 @@ async function sendMessageToUserOnTelegram({
     reply_markup,
     metadata = {},
 }) {
-    const chunks = splitMessage(message);
+    const html = markdownToTelegramHTML(message);
+    const chunks = splitMessage(html);
 
-    // Store the full message in chat history (once)
+    // Store the full message in chat history (once, raw text)
     const m = {
         chat_id: chatId,
         text: message,
@@ -55,6 +112,7 @@ async function sendMessageToUserOnTelegram({
         const payload = {
             chat_id: chatId,
             text: chunks[i],
+            parse_mode: "HTML",
             disable_web_page_preview: true,
             ...(isLast && reply_markup && { reply_markup }),
         };
@@ -66,6 +124,17 @@ async function sendMessageToUserOnTelegram({
         const respBody = await resp.json();
         if (!respBody.ok) {
             console.log(`[Telegram API] sendMessage failed:`, JSON.stringify(respBody));
+            // Fallback: retry without parse_mode if HTML parsing fails
+            if (respBody.description && respBody.description.includes("can't parse")) {
+                const fallbackPayload = { ...payload };
+                delete fallbackPayload.parse_mode;
+                fallbackPayload.text = chunks[i].replace(/<[^>]+>/g, ""); // strip tags
+                await fetch(`${TELEGRAM_API}/sendMessage`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(fallbackPayload),
+                });
+            }
         }
     }
 }
@@ -285,12 +354,34 @@ async function sendAudioToTelegram({ chatId, audioBuffer, filename, caption }) {
     return respBody;
 }
 
+async function sendPhotoToTelegram({ chatId, photoBuffer, filename, caption }) {
+    const FormData = require("form-data");
+    const form = new FormData();
+    form.append("chat_id", chatId);
+    form.append("photo", photoBuffer, { filename: filename || "image.png", contentType: "image/png" });
+    if (caption) {
+        form.append("caption", caption);
+    }
+
+    const resp = await fetch(`${TELEGRAM_API}/sendPhoto`, {
+        method: "POST",
+        body: form,
+        headers: form.getHeaders(),
+    });
+    const respBody = await resp.json();
+    if (!respBody.ok) {
+        console.log(`[Telegram API] sendPhoto failed:`, JSON.stringify(respBody));
+    }
+    return respBody;
+}
+
 async function editMessageOnTelegram({
     chatId,
     message,
     messageId,
     reply_markup,
 }) {
+    const html = markdownToTelegramHTML(message);
     await fetch(`${TELEGRAM_API}/editMessageText`, {
         method: "POST",
         headers: {
@@ -299,7 +390,8 @@ async function editMessageOnTelegram({
         body: JSON.stringify({
             chat_id: chatId,
             message_id: messageId,
-            text: message,
+            text: html,
+            parse_mode: "HTML",
             ...(reply_markup && { reply_markup }),
             disable_web_page_preview: true,
         }),
@@ -501,5 +593,8 @@ module.exports = {
     sendTypingActionToTelegram,
     sendReminderUnitToTelegram,
     sendAudioToTelegram,
+    sendPhotoToTelegram,
     fetchUserChats,
+    splitMessage,
+    markdownToTelegramHTML,
 };
