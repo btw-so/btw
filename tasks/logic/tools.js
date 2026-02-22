@@ -349,6 +349,7 @@ function createTools({ user_id, timezoneOffsetInSeconds, chatId, entryPoint }) {
                     timezoneOffsetInSeconds,
                     status: args.status || "incomplete",
                     user_id,
+                    silent: true,
                 });
 
                 return {
