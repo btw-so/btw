@@ -37,7 +37,17 @@ async function provisionSandbox({ user_id }) {
     // User data script to set up the sandbox
     const userData = `#!/bin/bash
 apt-get update -y
-apt-get install -y curl wget git build-essential python3 python3-pip nodejs npm
+apt-get install -y curl wget git build-essential python3 python3-pip
+
+# Install Node.js 20 (mcp-proxy requires Node >= 20)
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt-get install -y nodejs
+
+# Set up A1 extension directories
+mkdir -p /root/a1/skills /root/a1/tools
+
+# Install mcp-proxy for MCP server bridging (stdio → HTTP)
+npm install -g mcp-proxy
 `;
 
     // Create server

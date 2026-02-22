@@ -1,5 +1,5 @@
 var express = require("express");
-const { alertsQueue, baseQueue, uxQueue, sandboxQueue } = require("../services/queue");
+const { alertsQueue, baseQueue, uxQueue, sandboxQueue, agenticQueue } = require("../services/queue");
 const db = require("../services/db");
 var router = express.Router();
 
@@ -20,6 +20,8 @@ const {
 const { addNewAlertsForRecurringReminders } = require("../logic/ai");
 const { getUserFromId } = require("../logic/user");
 const { getReadableFromUTCToLocal } = require("../utils/utils");
+const { runAgentLoop } = require("../logic/agent");
+const { calculateNextRun, scheduleAgenticRun, createStopThisTaskTool } = require("../logic/agenticTaskTools");
 
 // const descrForReminder = (x, offset) => `${
 //     x.text
@@ -902,6 +904,279 @@ sandboxQueue.process("destroy-sandbox", async (job, done) => {
         console.log(`[SandboxQueue] Destroy error for user ${user_id}:`, err.message);
         done(err);
     }
+});
+
+// ============================================
+// Agentic Tasks: Scheduled Autonomous Agent Loops
+// ============================================
+
+const { getUserEntryPoints } = require("../logic/entryPoints");
+const { saveTaskState } = require("../logic/messageRouter");
+
+// Poll every 60 seconds for due auto tasks
+agenticQueue.add(
+    "check-due-tasks",
+    {},
+    {
+        repeat: {
+            every: 60 * 1000,
+        },
+    }
+);
+
+agenticQueue.process("check-due-tasks", async (job, done) => {
+    try {
+        const tasksDB = await db.getTasksDB();
+
+        // Failsafe poll: find any tasks that are due but haven't been picked up
+        // (normally tasks are scheduled as precise delayed jobs, this catches missed ones)
+        const { rows: dueTasks } = await tasksDB.query(
+            `SELECT t.id, t.cron_expression, t.end_at, u.settings
+             FROM btw.agentic_tasks t
+             JOIN btw.users u ON u.id = t.user_id
+             WHERE t.status = 'active' AND t.mode = 'auto' AND t.next_run_at <= NOW()`
+        );
+
+        if (dueTasks.length > 0) {
+            console.log(`[AgenticScheduler] Failsafe: found ${dueTasks.length} overdue task(s)`);
+        }
+
+        for (const task of dueTasks) {
+            // Check deadline: if end_at has passed, mark completed and skip
+            if (task.end_at && new Date(task.end_at) <= new Date()) {
+                console.log(`[AgenticScheduler] Task ${task.id} past deadline, marking completed`);
+                await tasksDB.query(
+                    `UPDATE btw.agentic_tasks SET status = 'completed', updated_at = NOW() WHERE id = $1`,
+                    [task.id]
+                );
+                continue;
+            }
+            // Advance next_run_at immediately to prevent re-pickup on next poll
+            if (task.cron_expression) {
+                const timezoneOffset = task.settings?.timezoneOffsetInSeconds || 0;
+                const nextRun = calculateNextRun(task.cron_expression, timezoneOffset);
+                if (nextRun) {
+                    await tasksDB.query(
+                        `UPDATE btw.agentic_tasks SET next_run_at = $1, updated_at = NOW() WHERE id = $2`,
+                        [nextRun, task.id]
+                    );
+                }
+            }
+            // Schedule run immediately (delay=0), with jobId to deduplicate
+            scheduleAgenticRun(task.id, new Date());
+        }
+    } catch (err) {
+        console.log("[AgenticScheduler] Error checking due tasks:", err.message);
+    }
+
+    done();
+});
+
+agenticQueue.process("run-agentic-task", async (job, done) => {
+    const { taskId } = job.data || {};
+
+    let runId = null;
+
+    try {
+        const tasksDB = await db.getTasksDB();
+
+        // Load the task and verify it's still active
+        const { rows: tasks } = await tasksDB.query(
+            `SELECT t.*, u.settings, u.pro, u.name as user_name
+             FROM btw.agentic_tasks t
+             JOIN btw.users u ON u.id = t.user_id
+             WHERE t.id = $1 AND t.status = 'active'`,
+            [taskId]
+        );
+
+        if (tasks.length === 0) {
+            console.log(`[AgenticRunner] Task ${taskId} not found or inactive, skipping`);
+            done();
+            return;
+        }
+
+        const task = tasks[0];
+
+        // Check deadline: if end_at has passed, mark completed and skip
+        if (task.end_at && new Date(task.end_at) <= new Date()) {
+            console.log(`[AgenticRunner] Task ${taskId} past deadline (${task.end_at}), marking completed`);
+            await tasksDB.query(
+                `UPDATE btw.agentic_tasks SET status = 'completed', updated_at = NOW() WHERE id = $1`,
+                [taskId]
+            );
+            done();
+            return;
+        }
+
+        console.log(`[AgenticRunner] Starting task ${taskId} "${task.name}" for user ${task.user_id}`);
+
+        // Immediately advance next_run_at to prevent failsafe poll from scheduling a duplicate
+        if (task.cron_expression) {
+            const timezoneOffset = task.settings?.timezoneOffsetInSeconds || 0;
+            const nextRun = calculateNextRun(task.cron_expression, timezoneOffset);
+            if (nextRun) {
+                await tasksDB.query(
+                    `UPDATE btw.agentic_tasks SET next_run_at = $1, updated_at = NOW() WHERE id = $2`,
+                    [nextRun, taskId]
+                );
+                console.log(`[AgenticRunner] Advanced next_run_at for task ${taskId} to ${nextRun.toISOString()}`);
+            }
+        }
+
+        // Create a task_runs audit row
+        const { rows: runRows } = await tasksDB.query(
+            `INSERT INTO btw.task_runs (task_id, user_id) VALUES ($1, $2) RETURNING id`,
+            [taskId, task.user_id]
+        );
+        runId = runRows[0].id;
+
+        // Load sandbox if pro
+        let sandbox = null;
+        if (task.pro) {
+            const { rows: sandboxes } = await tasksDB.query(
+                `SELECT * FROM btw.sandboxes WHERE user_id = $1 AND status = 'ready'`,
+                [task.user_id]
+            );
+            if (sandboxes.length > 0) {
+                sandbox = sandboxes[0];
+            }
+        }
+
+        // Load task's persisted message history
+        const agenticTaskMessages = task.messages || [];
+
+        // Set up workspace for pro+sandbox tasks
+        let taskWorkspace = task.workspace || null;
+        let taskWorkingDir = task.working_directory || "/root";
+
+        if (sandbox && !taskWorkspace) {
+            // First run: assign a workspace path and persist it
+            taskWorkspace = `/root/tasks/task_${taskId}`;
+            await tasksDB.query(
+                `UPDATE btw.agentic_tasks SET workspace = $1 WHERE id = $2`,
+                [taskWorkspace, taskId]
+            );
+        }
+
+        if (sandbox && taskWorkspace) {
+            // Create workspace dir on sandbox via SSH
+            try {
+                const { SSHSession } = require("../services/ssh");
+                const sshSetup = new SSHSession({
+                    host: sandbox.ipv4,
+                    privateKey: sandbox.ssh_private_key,
+                });
+                await sshSetup.connect();
+                await sshSetup.exec(`mkdir -p ${taskWorkspace}`);
+                await sshSetup.close();
+                // Use workspace as working directory
+                taskWorkingDir = taskWorkspace;
+            } catch (err) {
+                console.log(`[AgenticRunner] Failed to create workspace dir: ${err.message}`);
+            }
+        }
+
+        // Run the agent loop with persisted state
+        const { text, agentMessages, workingDirectory: newWd } = await runAgentLoop({
+            input: task.instruction,
+            user_id: task.user_id,
+            timezoneOffsetInSeconds: task.settings?.timezoneOffsetInSeconds || 0,
+            familyUsers: [],
+            timezone: task.settings?.timezone || "GMT",
+            isPro: !!task.pro,
+            sandbox,
+            chatId: null, // null = skip approval for auto tasks
+            entryPoint: task.entry_point || "telegram",
+            userName: task.user_name,
+            agenticTaskId: taskId,
+            agenticTaskMessages,
+            isScheduledRun: true,
+            workingDirectory: { current: taskWorkingDir },
+            agenticInstruction: task.instruction,
+            taskWorkspace,
+        });
+
+        // Save agent state back to task
+        if (agentMessages && agentMessages.length > 0) {
+            await saveTaskState({
+                taskId,
+                messages: agentMessages,
+                workingDirectory: newWd,
+            });
+        }
+
+        // Mark run as completed
+        await tasksDB.query(
+            `UPDATE btw.task_runs SET status = 'completed', completed_at = NOW() WHERE id = $1`,
+            [runId]
+        );
+
+        // Broadcast result to ALL connected entry points (auto mode)
+        if (text) {
+            const allEPs = await getUserEntryPoints(task.user_id);
+            for (const ep of allEPs) {
+                try {
+                    await ep.impl.sendMessage({
+                        chatId: ep.chatId,
+                        message: text,
+                    });
+                } catch (epErr) {
+                    console.log(`[AgenticRunner] Failed to send to ${ep.entryPoint}:`, epErr.message);
+                }
+            }
+        }
+
+        // Schedule next run if recurring (chain scheduling for precise timing)
+        // next_run_at was already advanced at the start of this run to prevent double-firing
+        if (task.cron_expression) {
+            // Re-check task status (agent may have called stop_this_task)
+            const { rows: updatedTask } = await tasksDB.query(
+                `SELECT next_run_at, status, end_at FROM btw.agentic_tasks WHERE id = $1`,
+                [taskId]
+            );
+
+            if (updatedTask.length > 0 && updatedTask[0].status === 'active') {
+                const nextRunAt = updatedTask[0].next_run_at ? new Date(updatedTask[0].next_run_at) : null;
+                const endAt = updatedTask[0].end_at ? new Date(updatedTask[0].end_at) : null;
+
+                // If next run would be past the deadline, complete the task
+                if (endAt && nextRunAt && nextRunAt >= endAt) {
+                    console.log(`[AgenticRunner] Task ${taskId} next run (${nextRunAt.toISOString()}) past deadline (${endAt.toISOString()}), completing`);
+                    await tasksDB.query(
+                        `UPDATE btw.agentic_tasks SET status = 'completed', updated_at = NOW() WHERE id = $1`,
+                        [taskId]
+                    );
+                } else if (nextRunAt) {
+                    scheduleAgenticRun(taskId, nextRunAt);
+                }
+            } else {
+                console.log(`[AgenticRunner] Task ${taskId} no longer active, skipping next schedule`);
+            }
+        } else {
+            // One-shot auto task — mark completed after running
+            await tasksDB.query(
+                `UPDATE btw.agentic_tasks SET status = 'completed', updated_at = NOW() WHERE id = $1`,
+                [taskId]
+            );
+        }
+
+        console.log(`[AgenticRunner] Task ${taskId} run ${runId} completed. Text: "${(text || "").slice(0, 100)}"`);
+    } catch (err) {
+        console.log(`[AgenticRunner] Task ${taskId} run ${runId} failed:`, err.message);
+
+        // Mark run as failed
+        if (runId) {
+            try {
+                const tasksDB = await db.getTasksDB();
+                await tasksDB.query(
+                    `UPDATE btw.task_runs SET status = 'failed', completed_at = NOW(), error = $1 WHERE id = $2`,
+                    [err.message, runId]
+                );
+            } catch (_) {}
+        }
+    }
+
+    done();
 });
 
 module.exports = router;

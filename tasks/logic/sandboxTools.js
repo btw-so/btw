@@ -4,6 +4,9 @@ function createSandboxTools({ sshSession, workingDirectory }) {
     // Helper: resolve path relative to working directory
     function resolvePath(p) {
         if (!p) return workingDirectory.current;
+        // Expand ~ to home directory (/root on sandbox)
+        if (p === "~") return "/root";
+        if (p.startsWith("~/")) p = "/root" + p.slice(1);
         return p.startsWith("/") ? p : `${workingDirectory.current}/${p}`;
     }
 

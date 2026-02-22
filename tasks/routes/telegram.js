@@ -44,6 +44,8 @@ const { uxQueue } = require("../services/queue");
 const { createCheckoutSession, cancelSubscription } = require("../logic/subscription");
 const { getSandbox } = require("../logic/sandbox");
 const { resolveApproval } = require("../logic/approval");
+const { routeMessage, createTask, loadTask, saveTaskState, generateTaskName } = require("../logic/messageRouter");
+const { getEntryPoint, trackMessage } = require("../logic/entryPoints");
 
 const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}`;
 
@@ -614,9 +616,12 @@ Want superpowers? Use /subscribe to get Pro — your own sandbox Linux VM to wri
                     let imageBase64 = null;
                     let imageMimeType = null;
                     const inputText = sentMessage || req.body.message.caption || "";
+                    const incomingMessageId = String(req.body.message.message_id);
+                    const replyToMessageId = req.body.message.reply_to_message
+                        ? String(req.body.message.reply_to_message.message_id)
+                        : null;
 
                     if (req.body.message.photo) {
-                        // Telegram sends multiple sizes; pick the largest (last in array)
                         const photos = req.body.message.photo;
                         const bestPhoto = photos[photos.length - 1];
                         const fileId = bestPhoto.file_id;
@@ -635,7 +640,6 @@ Want superpowers? Use /subscribe to get Pro — your own sandbox Linux VM to wri
                                 const imageBuffer = await imageResp.buffer();
                                 imageBase64 = imageBuffer.toString("base64");
 
-                                // Determine mime type from file extension
                                 const ext = fileData.result.file_path.split(".").pop().toLowerCase();
                                 const mimeMap = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif", webp: "image/webp" };
                                 imageMimeType = mimeMap[ext] || "image/jpeg";
@@ -644,18 +648,6 @@ Want superpowers? Use /subscribe to get Pro — your own sandbox Linux VM to wri
                             console.log(`[Telegram] Failed to download photo:`, err.message);
                         }
                     }
-
-                    let history = await fetchUserChats({
-                        userId: user_id,
-                        chatId,
-                        before: Date.now(),
-                    });
-
-                    history = history.chats || [];
-                    history = history.filter(
-                        (x) =>
-                            x.message.message_id !== req.body.message.message_id
-                    );
 
                     // Look up sandbox for pro users
                     let sandbox = null;
@@ -668,15 +660,56 @@ Want superpowers? Use /subscribe to get Pro — your own sandbox Linux VM to wri
                     }
 
                     // Respond immediately to Telegram, run agent loop async
-                    // This prevents Telegram from re-sending the webhook while
-                    // the agent loop might block waiting for tool approvals
                     success();
 
                     (async () => {
                         try {
-                            const { text } = await runAgentLoop({
+                            // Route message to existing or new task
+                            const route = await routeMessage({
+                                userId: user_id,
+                                chatId,
+                                entryPoint: "telegram",
+                                messageText: inputText,
+                                replyToMessageId,
+                            });
+
+                            let taskId;
+                            let task;
+
+                            if (route.action === "continue") {
+                                taskId = route.taskId;
+                                task = await loadTask(taskId);
+                            }
+
+                            if (!task) {
+                                // Create new task
+                                const taskName = await generateTaskName(inputText);
+                                taskId = await createTask({
+                                    userId: user_id,
+                                    chatId,
+                                    entryPoint: "telegram",
+                                    name: taskName,
+                                    mode: "manual",
+                                });
+                                task = await loadTask(taskId);
+                            }
+
+                            // Track the incoming user message
+                            await trackMessage({
+                                taskId,
+                                userId: user_id,
+                                entryPoint: "telegram",
+                                platformMessageId: incomingMessageId,
+                                chatId,
+                                role: "user",
+                            });
+
+                            // Load task messages for context
+                            const agenticTaskMessages = task.messages || [];
+                            const taskWorkingDir = task.working_directory || "/root";
+
+                            const { text, agentMessages, workingDirectory: newWd } = await runAgentLoop({
                                 input: inputText,
-                                messages: history,
                                 user_id,
                                 timezoneOffsetInSeconds:
                                     user.settings?.timezoneOffsetInSeconds,
@@ -689,15 +722,59 @@ Want superpowers? Use /subscribe to get Pro — your own sandbox Linux VM to wri
                                 chatId,
                                 entryPoint: "telegram",
                                 userName: user.name,
+                                agenticTaskId: taskId,
+                                agenticTaskMessages,
+                                workingDirectory: { current: taskWorkingDir },
                             });
 
-                            console.log(`[Telegram] Agent returned text: "${text?.slice(0, 200)}" (length: ${text?.length})`);
+                            // Save agent state back to task (only on success)
+                            if (text && agentMessages && agentMessages.length > 0) {
+                                await saveTaskState({
+                                    taskId,
+                                    messages: agentMessages,
+                                    workingDirectory: newWd,
+                                });
+                            }
+
+                            console.log(`[Telegram] Agent returned text: "${text?.slice(0, 200)}" (length: ${text?.length}) for task ${taskId}`);
                             if (text) {
-                                await sendMessageToUserOnTelegram({
+                                // Manual tasks: no reply threading, just send normally
+                                const ep = getEntryPoint("telegram");
+                                const { messageId: sentMsgId } = await ep.sendMessage({
                                     chatId,
                                     message: text,
                                 });
-                                console.log(`[Telegram] Message sent to chat ${chatId}`);
+
+                                // Track the bot's sent message for routing
+                                if (sentMsgId) {
+                                    await trackMessage({
+                                        taskId,
+                                        userId: user_id,
+                                        entryPoint: "telegram",
+                                        platformMessageId: sentMsgId,
+                                        chatId,
+                                        role: "bot",
+                                    });
+
+                                    // Set origin_message_id for future reply-to routing
+                                    if (!task.origin_message_id) {
+                                        const db = require("../services/db");
+                                        const tasksDB = await db.getTasksDB();
+                                        await tasksDB.query(
+                                            `UPDATE btw.agentic_tasks SET origin_message_id = $1 WHERE id = $2`,
+                                            [sentMsgId, taskId]
+                                        );
+                                    }
+                                }
+
+                                // Also store in chat history for legacy compatibility
+                                await addToTelegramChats({
+                                    chatId,
+                                    message: { text, message_id: sentMsgId },
+                                    type: "bot",
+                                });
+
+                                console.log(`[Telegram] Message sent to chat ${chatId} (task ${taskId})`);
                             } else {
                                 console.log(`[Telegram] No text to send`);
                             }
@@ -710,6 +787,10 @@ Want superpowers? Use /subscribe to get Pro — your own sandbox Linux VM to wri
                 } else if (req.body.message.voice || req.body.message.audio) {
                     const voiceOrAudio = req.body.message.voice || req.body.message.audio;
                     const fileId = voiceOrAudio.file_id;
+                    const incomingMessageId = String(req.body.message.message_id);
+                    const replyToMessageId = req.body.message.reply_to_message
+                        ? String(req.body.message.reply_to_message.message_id)
+                        : null;
 
                     if (!isTranscriptionSupported()) {
                         await sendMessageToUserOnTelegram({
@@ -754,19 +835,6 @@ Want superpowers? Use /subscribe to get Pro — your own sandbox Linux VM to wri
                         return;
                     }
 
-                    // Run the transcribed text through the agent, same as text messages
-                    let history = await fetchUserChats({
-                        userId: user_id,
-                        chatId,
-                        before: Date.now(),
-                    });
-
-                    history = history.chats || [];
-                    history = history.filter(
-                        (x) =>
-                            x.message.message_id !== req.body.message.message_id
-                    );
-
                     // Look up sandbox for pro users
                     let sandbox = null;
                     if (user.pro) {
@@ -782,9 +850,50 @@ Want superpowers? Use /subscribe to get Pro — your own sandbox Linux VM to wri
 
                     (async () => {
                         try {
-                            const { text } = await runAgentLoop({
+                            // Route message to existing or new task
+                            const route = await routeMessage({
+                                userId: user_id,
+                                chatId,
+                                entryPoint: "telegram",
+                                messageText: transcribedText,
+                                replyToMessageId,
+                            });
+
+                            let taskId;
+                            let task;
+
+                            if (route.action === "continue") {
+                                taskId = route.taskId;
+                                task = await loadTask(taskId);
+                            }
+
+                            if (!task) {
+                                const taskName = await generateTaskName(transcribedText);
+                                taskId = await createTask({
+                                    userId: user_id,
+                                    chatId,
+                                    entryPoint: "telegram",
+                                    name: taskName,
+                                    mode: "manual",
+                                });
+                                task = await loadTask(taskId);
+                            }
+
+                            // Track the incoming user message
+                            await trackMessage({
+                                taskId,
+                                userId: user_id,
+                                entryPoint: "telegram",
+                                platformMessageId: incomingMessageId,
+                                chatId,
+                                role: "user",
+                            });
+
+                            const agenticTaskMessages = task.messages || [];
+                            const taskWorkingDir = task.working_directory || "/root";
+
+                            const { text, agentMessages, workingDirectory: newWd } = await runAgentLoop({
                                 input: transcribedText,
-                                messages: history,
                                 user_id,
                                 timezoneOffsetInSeconds:
                                     user.settings?.timezoneOffsetInSeconds,
@@ -795,13 +904,52 @@ Want superpowers? Use /subscribe to get Pro — your own sandbox Linux VM to wri
                                 chatId,
                                 entryPoint: "telegram",
                                 userName: user.name,
+                                agenticTaskId: taskId,
+                                agenticTaskMessages,
+                                workingDirectory: { current: taskWorkingDir },
                             });
 
-                            console.log(`[Telegram] Agent returned text: "${text?.slice(0, 200)}" (length: ${text?.length})`);
+                            // Save agent state back to task (only on success)
+                            if (text && agentMessages && agentMessages.length > 0) {
+                                await saveTaskState({
+                                    taskId,
+                                    messages: agentMessages,
+                                    workingDirectory: newWd,
+                                });
+                            }
+
+                            console.log(`[Telegram] Agent returned text: "${text?.slice(0, 200)}" (length: ${text?.length}) for task ${taskId}`);
                             if (text) {
-                                await sendMessageToUserOnTelegram({
+                                const ep = getEntryPoint("telegram");
+                                const { messageId: sentMsgId } = await ep.sendMessage({
                                     chatId,
                                     message: text,
+                                });
+
+                                if (sentMsgId) {
+                                    await trackMessage({
+                                        taskId,
+                                        userId: user_id,
+                                        entryPoint: "telegram",
+                                        platformMessageId: sentMsgId,
+                                        chatId,
+                                        role: "bot",
+                                    });
+
+                                    if (!task.origin_message_id) {
+                                        const db = require("../services/db");
+                                        const tasksDB = await db.getTasksDB();
+                                        await tasksDB.query(
+                                            `UPDATE btw.agentic_tasks SET origin_message_id = $1 WHERE id = $2`,
+                                            [sentMsgId, taskId]
+                                        );
+                                    }
+                                }
+
+                                await addToTelegramChats({
+                                    chatId,
+                                    message: { text, message_id: sentMsgId },
+                                    type: "bot",
                                 });
                             }
                         } catch (err) {
