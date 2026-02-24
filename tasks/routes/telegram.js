@@ -4,7 +4,7 @@ var router = express.Router();
 var cors = require("cors");
 const moment = require("moment-timezone");
 var { generateOTP, validateOTP, deleteOTP } = require("../logic/otp");
-var LPN = require("google-libphonenumber");
+var { cleanPhoneNumber } = require("../logic/phone");
 var {
     createUser,
     createLoginToken,
@@ -306,44 +306,6 @@ function getTimezoneButtons() {
     return buttons;
 }
 
-const cleanPhoneNumber = (phone) => {
-    if (!phone) {
-        return {
-            success: false,
-            error: "Phone number is required",
-        };
-    }
-
-    if (!phone.startsWith("+")) {
-        phone = `+${phone}`;
-    }
-
-    // check if the number is valid without the country code
-    const phoneUtil = LPN.PhoneNumberUtil.getInstance();
-
-    try {
-        const number = phoneUtil.parse(phone);
-        if (phoneUtil.isValidNumber(number)) {
-            phone = phoneUtil.format(number, LPN.PhoneNumberFormat.E164);
-        } else {
-            return {
-                success: false,
-                error: "Invalid phone number",
-            };
-        }
-    } catch (err) {
-        return {
-            success: false,
-            error: "Invalid phone number",
-        };
-    }
-
-    return {
-        success: true,
-        phone,
-        email: `${phone}@a1number.com`,
-    };
-};
 
 const loginFlowFunction = async ({ chatId }) => {
     const user_id = await getUserForChatId(chatId);
@@ -380,6 +342,16 @@ router.post(
         origin: process.env.CORS_DOMAINS.split(","),
     }),
     async (req, res) => {
+        // Verify Telegram webhook secret token (skip if not configured yet)
+        if (process.env.TELEGRAM_WEBHOOK_SECRET) {
+            const secretToken = req.headers["x-telegram-bot-api-secret-token"];
+            if (!secretToken || secretToken !== process.env.TELEGRAM_WEBHOOK_SECRET) {
+                console.log("[Telegram] Webhook rejected: invalid secret token");
+                res.status(403).json({ error: "Forbidden" });
+                return;
+            }
+        }
+
         console.log(JSON.stringify(req.body));
 
         console.log("1");
@@ -994,12 +966,17 @@ Want superpowers? Use /subscribe to get Pro — your own sandbox Linux VM to wri
                 return;
             }
         } else if (req.body.callback_query) {
-            console.log(req.body);
-
             const callbackQuery = req.body.callback_query;
             const chatId = callbackQuery.message.chat.id;
             const messageId = callbackQuery.message.message_id;
-            const callbackData = callbackQuery.data; // This is the user's selected timezone
+            const callbackData = callbackQuery.data;
+
+            // Verify the callback sender matches the chat (prevent cross-user callback forgery)
+            if (callbackQuery.from.id !== chatId) {
+                console.log(`[Telegram] Callback sender ${callbackQuery.from.id} doesn't match chat ${chatId}`);
+                res.status(403).json({ error: "Forbidden" });
+                return;
+            }
 
             const user_id = await loginFlowFunction({ chatId });
 

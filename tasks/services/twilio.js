@@ -35,4 +35,22 @@ async function callAndSpeak({ to, message, voice }) {
     return { callSid: call.sid, status: call.status };
 }
 
-module.exports = { callAndSpeak };
+/**
+ * Send an SMS message.
+ */
+async function sendSMS({ to, body }) {
+    if (!twilio || !TWILIO_PHONE_NUMBER) {
+        throw new Error("Twilio is not configured");
+    }
+
+    const message = await twilio.messages.create({
+        to,
+        from: TWILIO_PHONE_NUMBER,
+        body,
+    });
+
+    console.log(`[Twilio] SMS sent: ${message.sid} to ${to}`);
+    return { messageSid: message.sid, status: message.status };
+}
+
+module.exports = { callAndSpeak, sendSMS };
