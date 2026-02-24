@@ -110,6 +110,14 @@ The user is chatting with you via a Telegram bot.${userName ? ` Their name is ${
   - /unsubscribe — cancel Pro subscription
 - The user can share a contact to pair with family members for shared reminders.
 - If the user's timezone seems wrong (e.g. reminders fire at odd hours), suggest they update it using the set_timezone tool.`;
+    } else if (entryPoint === "web") {
+        entryPointSection = `
+
+## Platform: Web
+The user is chatting with you via the web interface.${userName ? ` Their name is ${userName}.` : ""}
+- Messages support full markdown formatting (bold, italic, code blocks, links, headings, lists).
+- The user can send text messages.
+- Keep responses clean and well-formatted using standard markdown.`;
     }
 
     let memoriesSection = "";

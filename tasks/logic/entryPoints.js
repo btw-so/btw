@@ -159,7 +159,37 @@ const entryPointImpls = {
             return { messageId: null };
         },
     },
-    // Future: whatsapp, discord, slack, web
+    web: {
+        supportedFileTypes: [],
+        async sendMessage({ chatId, message }) {
+            // Store in Redis inbox for frontend polling
+            const redisClient = require("../services/redis");
+            const { v4: uuidv4 } = require("uuid");
+            const msgId = uuidv4();
+            const msgObj = JSON.stringify({
+                id: msgId,
+                text: message,
+                timestamp: Date.now(),
+            });
+            const key = `web:inbox:${chatId}`;
+            const client = redisClient.getClient();
+            await client.rpush(key, msgObj);
+            await client.expire(key, 86400);
+            return { messageId: msgId };
+        },
+        async sendTyping() {
+            // No-op for web
+        },
+        async sendAudio() {
+            return { messageId: null };
+        },
+        async sendPhoto() {
+            return { messageId: null };
+        },
+        async sendFile() {
+            return { messageId: null };
+        },
+    },
 };
 
 function getEntryPoint(name) {
@@ -182,6 +212,21 @@ async function getUserEntryPoints(userId) {
             entryPoint: "telegram",
             chatId: Number(row.chat_id),
             impl: entryPointImpls.telegram,
+        });
+    }
+
+    // Web — include if user has any active web tasks
+    const { rows: webRows } = await tasksDB.query(
+        `SELECT 1 FROM btw.agentic_tasks
+         WHERE user_id = $1 AND entry_point = 'web' AND status = 'active'
+         LIMIT 1`,
+        [userId]
+    );
+    if (webRows.length > 0) {
+        results.push({
+            entryPoint: "web",
+            chatId: userId,
+            impl: entryPointImpls.web,
         });
     }
 

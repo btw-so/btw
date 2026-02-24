@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        font-family: "Inter", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+}
+
+@layer components {
+    .btn-brand {
+        @apply inline-flex items-center justify-center rounded-full bg-brand px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand/50 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .btn-ghost {
+        @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 focus:outline-none;
+    }
+
+    .input-base {
+        @apply w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-brand focus:ring-1 focus:ring-brand/30;
+    }
+}
+
+/* Markdown rendered content */
+.prose-chat p {
+    margin-bottom: 0.5em;
+}
+.prose-chat p:last-child {
+    margin-bottom: 0;
+}
+.prose-chat ul,
+.prose-chat ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+}
+.prose-chat li {
+    margin-bottom: 0.25em;
+}
+.prose-chat code {
+    font-size: 0.85em;
+    background: #f3f4f6;
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+    font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
+}
+.prose-chat pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 1em;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 0.75em 0;
+}
+.prose-chat pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+}
+.prose-chat a {
+    color: #00b4d5;
+    text-decoration: underline;
+}
+.prose-chat h1, .prose-chat h2, .prose-chat h3 {
+    font-weight: 600;
+    margin: 0.75em 0 0.5em;
+}
+.prose-chat h1 { font-size: 1.25em; }
+.prose-chat h2 { font-size: 1.1em; }
+.prose-chat h3 { font-size: 1em; }
+.prose-chat blockquote {
+    border-left: 3px solid #d1d5db;
+    padding-left: 0.75em;
+    color: #6b7280;
+    margin: 0.5em 0;
+}
+.prose-chat strong {
+    font-weight: 600;
+}
+.prose-chat hr {
+    border-color: #e5e7eb;
+    margin: 1em 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
