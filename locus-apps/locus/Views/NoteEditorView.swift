@@ -114,7 +114,7 @@ struct TipTapWebView: NSViewRepresentable {
 
     func makeNSView(context: Context) -> WKWebView {
         let configuration = WKWebViewConfiguration()
-        configuration.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
+        configuration.preferences.setValue(false, forKey: "allowFileAccessFromFileURLs")
 
         // Add message handler for communication from JavaScript
         let contentController = WKUserContentController()
@@ -130,7 +130,7 @@ struct TipTapWebView: NSViewRepresentable {
 
             // Get authentication details
             guard let user = AuthManager.shared.currentUser,
-                  let token = UserDefaults.standard.string(forKey: "loginToken") else {
+                  let token = APIService.shared.loginTokenForEditor() else {
                 DispatchQueue.main.async {
                     viewModel.errorMessage = "Not authenticated"
                     viewModel.isLoading = false
@@ -256,7 +256,7 @@ struct TipTapWebView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> WKWebView {
         let configuration = WKWebViewConfiguration()
-        configuration.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
+        configuration.preferences.setValue(false, forKey: "allowFileAccessFromFileURLs")
 
         // Add message handler for communication from JavaScript
         let contentController = WKUserContentController()
@@ -272,7 +272,7 @@ struct TipTapWebView: UIViewRepresentable {
 
             // Get authentication details
             guard let user = AuthManager.shared.currentUser,
-                  let token = UserDefaults.standard.string(forKey: "loginToken") else {
+                  let token = APIService.shared.loginTokenForEditor() else {
                 DispatchQueue.main.async {
                     viewModel.errorMessage = "Not authenticated"
                     viewModel.isLoading = false

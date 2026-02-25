@@ -15,7 +15,8 @@ const setItem = (key, value, numberOfDays) => {
   // set the time to be now + numberOfDays
   now.setTime(now.getTime() + numberOfDays * 60 * 60 * 24 * 1000);
 
-  document.cookie = `${key}=${value}; expires=${now.toUTCString()}; path=/`;
+  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `${key}=${value}; expires=${now.toUTCString()}; path=/; SameSite=Lax${secure}`;
 };
 
 /**

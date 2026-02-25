@@ -78,12 +78,13 @@ router.post(
                 token: loginToken,
                 fingerprint,
             });
-            if (!user || !user.id || (user.id !== user_id)) {
+            if (!user || !user.id) {
                 throw new Error("User not found");
             }
+            // Always use authenticated user's ID, never trust user_id from request body
             const file_id = await addFile({
                 url,
-                user_id,
+                user_id: user.id,
                 name,
                 id
             });

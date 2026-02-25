@@ -253,20 +253,10 @@ router.post(
                 throw new Error("User not found");
             }
 
-            // access check. for now the access check requires user to own the note
-            // in future, we can add collaborators
-            if (user.id !== user_id) {
-                res.json({
-                    success: false,
-                    data: { notes: [] },
-                    error: "Access denied",
-                });
-                return;
-            }
-
+            // Always use authenticated user's ID, never trust user_id from request body
             await upsertNote({
                 id,
-                user_id,
+                user_id: user.id,
                 html,
             });
         } catch (e) {

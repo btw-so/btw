@@ -156,6 +156,7 @@ async function loadTask(taskId) {
 }
 
 // Save task messages and working directory after agent run
+// Note: column names in updates[] are hardcoded constants (not user input) — safe from SQL injection
 async function saveTaskState({ taskId, messages, workingDirectory, name }) {
     const tasksDB = await db.getTasksDB();
     const updates = [`messages = $1`, `updated_at = NOW()`];

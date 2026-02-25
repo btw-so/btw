@@ -1,9 +1,27 @@
 var express = require("express");
 var router = express.Router();
 var cors = require("cors");
+const rateLimit = require("express-rate-limit");
 var { generateOTP, validateOTP, deleteOTP } = require("../logic/otp");
 var { createUser, createLoginToken } = require("../logic/user");
 var { emailOTP } = require("../logic/email");
+
+// Rate limiters for OTP endpoints
+const otpGenerateLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 5, // 5 requests per hour per IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, error: "Too many OTP requests. Try again later." },
+});
+
+const otpValidateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // 10 attempts per 15 min per IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, error: "Too many verification attempts. Try again later." },
+});
 
 // create an api to generate otp
 router.options(
@@ -19,6 +37,7 @@ router.post(
         credentials: true,
         origin: process.env.CORS_DOMAINS.split(","),
     }),
+    otpGenerateLimiter,
     async (req, res) => {
         let { email } = req.body;
 
@@ -73,6 +92,7 @@ router.post(
         credentials: true,
         origin: process.env.CORS_DOMAINS.split(","),
     }),
+    otpValidateLimiter,
     async (req, res) => {
         const { email, otp, fingerprint } = req.body;
         const isValid = await validateOTP({ email, otp });
@@ -116,7 +136,8 @@ router.post(
                 ? {
                       domain: `.${process.env.ROOT_DOMAIN}`,
                       secure: true,
-                      //   httpOnly: true,
+                      httpOnly: true,
+                      sameSite: "lax",
                   }
                 : {}),
         });
