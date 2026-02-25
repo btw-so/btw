@@ -109,9 +109,30 @@ function createCustomTool({ def, sshSession, workingDirectory, chatId }) {
 
             let cmd;
             if (def.type === "script") {
-                cmd = `${envSetup}bash "${def.script}"`;
+                // Validate script path is within allowed directories
+                const scriptPath = def.script || "";
+                const resolvedScript = scriptPath.startsWith("/")
+                    ? scriptPath
+                    : `/root/a1/tools/${scriptPath}`;
+                if (
+                    !resolvedScript.startsWith("/root/a1/") &&
+                    !resolvedScript.startsWith("/root/tasks/")
+                ) {
+                    return {
+                        content: [
+                            {
+                                type: "text",
+                                text: JSON.stringify({
+                                    error: "Script path must be within /root/a1/ or /root/tasks/",
+                                }),
+                            },
+                        ],
+                        details: { denied: true },
+                    };
+                }
+                cmd = `${envSetup}bash "${resolvedScript}"`;
             } else {
-                // type: "command" (default)
+                // type: "command" (default) — runs in user's sandbox, inherent execution risk accepted
                 cmd = `${envSetup}cd "${workingDirectory.current}" && ${def.command}`;
             }
 

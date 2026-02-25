@@ -7,6 +7,7 @@
 
 import Foundation
 import CommonCrypto
+import Security
 
 class APIService {
     static let shared = APIService()
@@ -14,8 +15,56 @@ class APIService {
     private let session: URLSession
     private var loginToken: String?
 
-    // Encryption key for generating share hashes
+    // SECURITY: Hardcoded encryption key — should be moved to server-side key management
     let encryptionKey = "listsiddg.com"
+
+    // MARK: - Keychain Helpers
+
+    private func keychainSave(key: String, value: String) {
+        guard let data = value.data(using: .utf8) else { return }
+
+        // Delete any existing item first
+        keychainDelete(key: key)
+
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: key,
+            kSecAttrService as String: "com.locus.app",
+            kSecValueData as String: data
+        ]
+
+        SecItemAdd(query as CFDictionary, nil)
+    }
+
+    private func keychainLoad(key: String) -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: key,
+            kSecAttrService as String: "com.locus.app",
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+
+        guard status == errSecSuccess, let data = result as? Data,
+              let string = String(data: data, encoding: .utf8) else {
+            return nil
+        }
+
+        return string
+    }
+
+    private func keychainDelete(key: String) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: key,
+            kSecAttrService as String: "com.locus.app"
+        ]
+
+        SecItemDelete(query as CFDictionary)
+    }
 
     private init() {
         // Create URLSession with cookie storage
@@ -24,27 +73,27 @@ class APIService {
         config.httpShouldSetCookies = true
         self.session = URLSession(configuration: config)
 
-        // Try to load saved login token
-        self.loginToken = UserDefaults.standard.string(forKey: "loginToken")
+        // Try to load saved login token from Keychain
+        self.loginToken = keychainLoad(key: "loginToken")
     }
 
     private func saveLoginToken(_ token: String) {
         self.loginToken = token
-        UserDefaults.standard.set(token, forKey: "loginToken")
+        keychainSave(key: "loginToken", value: token)
     }
 
     private func clearLoginToken() {
         self.loginToken = nil
-        UserDefaults.standard.removeObject(forKey: "loginToken")
+        keychainDelete(key: "loginToken")
     }
 
     func generateFingerprint() -> String {
         // For simplicity, use a stored UUID. In production, use a proper fingerprinting library
-        if let stored = UserDefaults.standard.string(forKey: "deviceFingerprint") {
+        if let stored = keychainLoad(key: "deviceFingerprint") {
             return stored
         } else {
             let uuid = UUID().uuidString
-            UserDefaults.standard.set(uuid, forKey: "deviceFingerprint")
+            keychainSave(key: "deviceFingerprint", value: uuid)
             return uuid
         }
     }
@@ -89,23 +138,20 @@ class APIService {
         }
 
         // Extract loginToken from Set-Cookie header
-        print("🔍 Response headers: \(httpResponse.allHeaderFields)")
         if let headerFields = httpResponse.allHeaderFields as? [String: String],
            let url = response.url {
             let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
-            print("🍪 Found cookies: \(cookies)")
             for cookie in cookies {
-                print("🍪 Cookie name: \(cookie.name), value: \(cookie.value)")
                 if cookie.name == "btw_uuid" {
-                    print("✅ Saving loginToken: \(cookie.value)")
+                    print("Login token saved")
                     saveLoginToken(cookie.value)
                     break
                 }
             }
         }
 
-        // Also check if loginToken was saved
-        print("💾 Current loginToken: \(loginToken ?? "nil")")
+        // Check if loginToken was saved
+        print("Login token present: \(loginToken != nil)")
 
         let result = try JSONDecoder().decode(OTPValidationResponse.self, from: data)
         return result.success && result.data.isValid
@@ -119,10 +165,7 @@ class APIService {
 
         // Manually set cookie header with loginToken
         if let token = loginToken {
-            print("🔐 Sending loginToken: \(token)")
             request.setValue("btw_uuid=\(token)", forHTTPHeaderField: "Cookie")
-        } else {
-            print("⚠️ No loginToken available!")
         }
 
         let body = ["fingerprint": generateFingerprint()]
@@ -133,21 +176,16 @@ class APIService {
             throw URLError(.badServerResponse)
         }
 
-        // Debug response
-        if let responseString = String(data: data, encoding: .utf8) {
-            print("📥 User response (status \(httpResponse.statusCode)): \(responseString)")
-        }
-
         // Check status code
         guard httpResponse.statusCode == 200 else {
-            print("❌ Bad status code: \(httpResponse.statusCode)")
+            print("getUser failed with status: \(httpResponse.statusCode)")
             throw URLError(.badServerResponse)
         }
 
         // Try to decode the response
         do {
             let result = try JSONDecoder().decode(UserResponse.self, from: data)
-            print("✅ User result - success: \(result.success), user: \(result.data.user?.email ?? "nil")")
+            print("getUser success: \(result.success), user found: \(result.data.user != nil)")
 
             // If user not found, clear the token
             if !result.success || result.data.user == nil {
@@ -180,6 +218,12 @@ class APIService {
         clearLoginToken()
     }
 
+    /// Provides read-only access to the current login token for views that need it (e.g. NoteEditorView).
+    /// Returns the in-memory token (which was loaded from Keychain at init).
+    func loginTokenForEditor() -> String? {
+        return loginToken
+    }
+
     // MARK: - List Management
 
     func getList(id: String, after: Int64 = 0, page: Int = 1, limit: Int = 200) async throws -> ListResponse.ListData {
@@ -190,9 +234,6 @@ class APIService {
 
         if let token = loginToken {
             request.setValue("btw_uuid=\(token)", forHTTPHeaderField: "Cookie")
-            print("🔐 getList - Sending loginToken: \(token)")
-        } else {
-            print("⚠️ getList - No loginToken available!")
         }
 
         let body = [
@@ -889,10 +930,7 @@ class APIService {
             body["thumbnail"] = thumbnail
         }
 
-        print("🔧 upsertScribblePage - URL: \(url.absoluteString)")
-        print("   scribble_id: \(scribbleId), page_number: \(pageNumber)")
-        print("   loginToken: \(loginToken ?? "nil")")
-        print("   fingerprint: \(generateFingerprint())")
+        print("upsertScribblePage - scribble_id: \(scribbleId), page_number: \(pageNumber)")
 
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
@@ -1105,20 +1143,14 @@ class APIService {
         let F1 = String(fingerprint.prefix(splitPoint))
         let F2 = String(fingerprint.suffix(fingerprint.count - splitPoint))
 
-        print("🔐 Generating private note URL - F1 length: \(F1.count), F2 length: \(F2.count)")
-
         // Create timestamp + loginToken payload
         let timestamp = Int64(Date().timeIntervalSince1970 * 1000) // milliseconds
         let payload = "\(timestamp):\(loginToken)"
-
-        print("📦 Payload: \(payload)")
 
         // Encrypt payload using F1 as the key (AES-256-CBC)
         guard let encrypted = encryptAES256(payload: payload, key: F1) else {
             throw NSError(domain: "APIError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Encryption failed"])
         }
-
-        print("🔒 Encrypted payload")
 
         // Combine encrypted payload with F2: {encrypted}:::{F2}
         let combined = "\(encrypted):::\(F2)"

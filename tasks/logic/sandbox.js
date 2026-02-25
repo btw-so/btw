@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const db = require("../services/db");
 const { createServer, deleteServer, getServer, createSSHKey, deleteSSHKey } = require("../services/hetzner");
+const { encrypt, decrypt } = require("./encryption");
 
 async function provisionSandbox({ user_id }) {
     console.log(`[Sandbox] Provisioning sandbox for user ${user_id}`);
@@ -74,7 +75,7 @@ npm install -g mcp-proxy
             server.id,
             serverName,
             server.public_net?.ipv4?.ip || "pending",
-            privateKey,
+            encrypt(privateKey),
             sshPubKey,
         ]
     );
@@ -147,6 +148,9 @@ async function getSandbox({ user_id }) {
         `SELECT * FROM btw.sandboxes WHERE user_id = $1 AND status = 'ready'`,
         [user_id]
     );
+    if (rows[0]) {
+        rows[0].ssh_private_key = decrypt(rows[0].ssh_private_key);
+    }
     return rows[0] || null;
 }
 

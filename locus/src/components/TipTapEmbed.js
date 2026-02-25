@@ -83,6 +83,7 @@ setTimeout(sendHeightToParent, 1000);
         frameBorder="0"
         allowFullScreen={false}
         scrolling="no"
+        sandbox="allow-scripts"
         id={iframeId}
         selectable="false"
         className="w-full"

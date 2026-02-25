@@ -57,43 +57,102 @@ router.post(
                 return;
             }
 
-            user_id = Number(user_id);
+            // Default to authenticated user's own ID; only admins may specify another user_id
+            const requestedUserId = user_id ? Number(user_id) : user.id;
+            if (isNaN(requestedUserId) || requestedUserId <= 0) {
+                res.json({ success: false, error: "Invalid user_id" });
+                return;
+            }
 
-            if (!isAdminEmail(user.email) && user_id !== user.id) {
+            if (!isAdminEmail(user.email) && requestedUserId !== user.id) {
                 res.json({
                     success: false,
-                    error: "User not authorized",
+                    error: "Access denied",
                 });
                 return;
             }
+
+            // Validate limit
+            const safeLimit = Math.max(1, Math.min(parseInt(limit) || 20, 50));
 
             const {
                 success,
                 chats,
                 chatId: potentialNewChatId,
             } = await fetchUserChats({
-                userId: user_id || user.id,
+                userId: requestedUserId,
                 chatId: chat_id,
                 before,
                 after,
-                limit,
+                limit: safeLimit,
             });
 
             res.json({
                 success,
                 chats,
-                userId: user_id || user.id,
+                userId: requestedUserId,
                 chatId: potentialNewChatId,
             });
         } catch (e) {
-            console.log(e);
+            console.log("[a1] Error:", e.message);
             res.json({
                 success: false,
-                error: e.message,
+                error: "An error occurred",
             });
             return;
         }
     },
+);
+
+// Migration endpoint: encrypt existing plaintext SSH keys
+router.options(
+    "/migrate/encrypt-ssh-keys",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+);
+router.post(
+    "/migrate/encrypt-ssh-keys",
+    cors({
+        credentials: true,
+        origin: process.env.CORS_DOMAINS.split(","),
+    }),
+    async (req, res) => {
+        const { fingerprint, loginToken: bodyToken } = req.body || {};
+        const loginToken = bodyToken || req.cookies[process.env.SD_UUID_KEY || "sd_uuid"];
+
+        try {
+            const user = await getUserFromToken({ token: loginToken, fingerprint });
+            if (!user || !isAdminEmail(user.email)) {
+                return res.status(403).json({ success: false, error: "Admin access required" });
+            }
+
+            const db = require("../services/db");
+            const { encrypt } = require("../logic/encryption");
+            const tasksDB = await db.getTasksDB();
+
+            // Find all sandboxes with plaintext keys (not in encrypted format iv:authTag:ciphertext)
+            const { rows } = await tasksDB.query(
+                `SELECT id, ssh_private_key FROM btw.sandboxes WHERE ssh_private_key IS NOT NULL AND ssh_private_key NOT LIKE '%:%:%'`
+            );
+
+            let migrated = 0;
+            for (const row of rows) {
+                const encrypted = encrypt(row.ssh_private_key);
+                await tasksDB.query(
+                    `UPDATE btw.sandboxes SET ssh_private_key = $1 WHERE id = $2`,
+                    [encrypted, row.id]
+                );
+                migrated++;
+            }
+
+            res.json({ success: true, migrated, total: rows.length });
+        } catch (e) {
+            console.log("[Migration] encrypt-ssh-keys error:", e.message);
+            res.status(500).json({ success: false, error: "Migration failed" });
+        }
+    }
 );
 
 module.exports = router;

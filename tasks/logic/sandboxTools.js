@@ -1,13 +1,24 @@
 const { Type } = require("@mariozechner/pi-ai");
+const path = require("path");
+
+const SANDBOX_ALLOWED_ROOTS = ["/root", "/tmp", "/home", "/var", "/opt", "/usr/local"];
 
 function createSandboxTools({ sshSession, workingDirectory }) {
-    // Helper: resolve path relative to working directory
+    // Helper: resolve path relative to working directory, with traversal protection
     function resolvePath(p) {
         if (!p) return workingDirectory.current;
         // Expand ~ to home directory (/root on sandbox)
         if (p === "~") return "/root";
         if (p.startsWith("~/")) p = "/root" + p.slice(1);
-        return p.startsWith("/") ? p : `${workingDirectory.current}/${p}`;
+        const resolved = p.startsWith("/") ? p : `${workingDirectory.current}/${p}`;
+        // Normalize to prevent directory traversal (resolves ../ sequences)
+        const normalized = path.posix.normalize(resolved);
+        // Block access to sensitive system paths
+        const blocked = ["/etc/shadow", "/etc/sudoers", "/proc", "/sys"];
+        if (blocked.some((b) => normalized === b || normalized.startsWith(b + "/"))) {
+            throw new Error(`Access denied: ${normalized}`);
+        }
+        return normalized;
     }
 
     // Helper: run a command with error handling
@@ -271,13 +282,13 @@ function createSandboxTools({ sshSession, workingDirectory }) {
                 const searchPath = resolvePath(args.path);
 
                 // Use find with -name or -path depending on pattern
-                const pattern = args.pattern;
+                // Sanitize pattern: only allow glob chars *, ?, [], and path separators
+                const pattern = args.pattern.replace(/[^a-zA-Z0-9_\-.*?/[\]{}]/g, "");
                 let command;
 
                 if (pattern.includes("**/")) {
-                    // Recursive glob — use find with -path
-                    const namePattern = pattern.replace("**/", "*/");
-                    command = `find "${searchPath}" -type f -path "*/${pattern.replace("**/", "")}" 2>/dev/null | head -200`;
+                    const subPattern = pattern.replace("**/", "");
+                    command = `find "${searchPath}" -type f -path "*/${subPattern}" 2>/dev/null | head -200`;
                 } else if (pattern.includes("/")) {
                     command = `find "${searchPath}" -type f -path "*${pattern}" 2>/dev/null | head -200`;
                 } else {
@@ -334,10 +345,18 @@ function createSandboxTools({ sshSession, workingDirectory }) {
                 const searchPath = resolvePath(args.path);
 
                 let command = `grep -rn`;
-                if (args.context) command += ` -C ${args.context}`;
-                if (args.include) command += ` --include="${args.include}"`;
-                const escapedPattern = args.pattern.replace(/"/g, '\\"');
-                command += ` "${escapedPattern}" "${searchPath}" 2>/dev/null`;
+                if (args.context) command += ` -C ${Math.max(0, Math.min(parseInt(args.context) || 0, 20))}`;
+                if (args.include) command += ` --include=${JSON.stringify(args.include)}`;
+                // Use -- to end options, and -e for the pattern to prevent injection
+                // Escape shell metacharacters: $, `, \, !, ", newlines
+                const safePattern = args.pattern
+                    .replace(/\\/g, '\\\\')
+                    .replace(/"/g, '\\"')
+                    .replace(/\$/g, '\\$')
+                    .replace(/`/g, '\\`')
+                    .replace(/!/g, '\\!')
+                    .replace(/\n/g, '');
+                command += ` -e "${safePattern}" -- "${searchPath}" 2>/dev/null`;
 
                 const { stdout, exitCode } = await run(command);
 
