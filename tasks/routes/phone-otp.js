@@ -7,16 +7,44 @@ var {
     createLoginToken,
     setUserPhone,
     setUserTimezone,
+    getUserByPhone,
 } = require("../logic/user");
 var { cleanPhoneNumber } = require("../logic/phone");
 var { sendSMS } = require("../services/twilio");
+var db = require("../services/db");
 
 const corsOptions = {
     credentials: true,
     origin: process.env.CORS_DOMAINS.split(","),
 };
 
-// Send OTP to phone number via SMS
+// Try to send OTP via Telegram if user has a linked Telegram account
+async function sendOTPViaTelegram({ userId, otp }) {
+    const tasksDB = await db.getTasksDB();
+    const { rows } = await tasksDB.query(
+        `SELECT telegram_id FROM btw.telegram_user_map WHERE user_id = $1 LIMIT 1`,
+        [userId]
+    );
+    if (rows.length === 0) return false;
+
+    const chatId = rows[0].telegram_id;
+    const fetch = require("node-fetch");
+    const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}`;
+
+    const resp = await fetch(`${TELEGRAM_API}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            chat_id: chatId,
+            text: `🔐 Your A1 web login code is: <b>${otp}</b>\n\nThis code expires in 10 minutes. Do not share it with anyone.`,
+            parse_mode: "HTML",
+        }),
+    });
+    const body = await resp.json();
+    return body.ok === true;
+}
+
+// Send OTP to phone number — prefer Telegram, fall back to SMS
 router.options("/send", cors(corsOptions));
 router.post("/send", cors(corsOptions), async (req, res) => {
     const { phone } = req.body;
@@ -34,6 +62,21 @@ router.post("/send", cors(corsOptions), async (req, res) => {
 
     const otp = await generateOTP({ email });
 
+    // Check if user exists and has Telegram linked
+    const existingUser = await getUserByPhone({ phone: cleanedPhone });
+    if (existingUser) {
+        try {
+            const sent = await sendOTPViaTelegram({ userId: existingUser.id, otp });
+            if (sent) {
+                console.log(`[PhoneOTP] OTP sent via Telegram for ${cleanedPhone}`);
+                return res.json({ success: true, method: "telegram" });
+            }
+        } catch (err) {
+            console.log(`[PhoneOTP] Telegram send failed, falling back to SMS:`, err.message);
+        }
+    }
+
+    // Fall back to SMS
     try {
         await sendSMS({
             to: cleanedPhone,
@@ -44,7 +87,7 @@ router.post("/send", cors(corsOptions), async (req, res) => {
         return res.json({ success: false, error: "Failed to send SMS" });
     }
 
-    res.json({ success: true });
+    res.json({ success: true, method: "sms" });
 });
 
 // Verify OTP and create/login user
