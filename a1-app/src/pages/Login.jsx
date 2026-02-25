@@ -11,6 +11,7 @@ export default function Login() {
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [otpMethod, setOtpMethod] = useState("sms"); // sms | telegram
     const otpRefs = useRef([]);
 
     useEffect(() => {
@@ -26,6 +27,7 @@ export default function Login() {
         try {
             const res = await sendOTP(phone.trim());
             if (res.success) {
+                setOtpMethod(res.method || "sms");
                 setStep("otp");
                 setTimeout(() => otpRefs.current[0]?.focus(), 50);
             } else {
@@ -147,12 +149,25 @@ export default function Login() {
 
                 {step === "otp" && (
                     <div>
-                        <p className="mb-1 text-sm text-gray-600">
-                            Enter the 6-digit code sent to
-                        </p>
-                        <p className="mb-6 text-sm font-medium text-gray-900">
-                            {phone}
-                        </p>
+                        {otpMethod === "telegram" ? (
+                            <>
+                                <p className="mb-1 text-sm text-gray-600">
+                                    We sent a code to your <span className="font-medium text-[#0088cc]">Telegram</span>
+                                </p>
+                                <p className="mb-6 text-sm text-gray-500">
+                                    Check your A1 bot chat for the 6-digit code
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <p className="mb-1 text-sm text-gray-600">
+                                    Enter the 6-digit code sent to
+                                </p>
+                                <p className="mb-6 text-sm font-medium text-gray-900">
+                                    {phone}
+                                </p>
+                            </>
+                        )}
 
                         <div className="mb-4 flex justify-between gap-2">
                             {otp.map((digit, i) => (
