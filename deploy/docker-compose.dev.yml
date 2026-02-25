@@ -79,6 +79,8 @@ services:
             TWILIO_AUTH_TOKEN:
             TWILIO_PHONE_NUMBER:
             ELEVENLABS_API_KEY:
+            SSH_KEY_ENCRYPTION_KEY:
+            TELEGRAM_WEBHOOK_SECRET:
         links:
             - redis
     list:
