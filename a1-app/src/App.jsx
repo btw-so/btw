@@ -43,8 +43,10 @@ export default function App() {
                 toastOptions={{
                     duration: 3000,
                     style: {
-                        fontSize: "14px",
-                        borderRadius: "10px",
+                        fontSize: "13px",
+                        borderRadius: "8px",
+                        background: "#171717",
+                        color: "#fff",
                     },
                 }}
             />

@@ -66,6 +66,7 @@ var memoriesRouter = require("./routes/memories");
 var stripeRouter = require("./routes/stripe");
 var phoneOtpRouter = require("./routes/phone-otp");
 var webChatRouter = require("./routes/web-chat");
+var sandboxFsRouter = require("./routes/sandbox-fs");
 var { baseQueue, alertsQueue, uxQueue, sandboxQueue, agenticQueue } = require("./services/queue");
 var { upsertNote, getNote } = require("./logic/notes");
 
@@ -117,6 +118,7 @@ app.use("/jobs", jobsRouter);
 app.use("/memories", memoriesRouter);
 app.use("/phone-otp", phoneOtpRouter);
 app.use("/web-chat", webChatRouter);
+app.use("/sandbox-fs", sandboxFsRouter);
 
 // Queue monitor
 const serverAdapter = new ExpressAdapter();

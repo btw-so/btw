@@ -21,7 +21,12 @@ export async function sendOTP(phone) {
     return data;
 }
 
-export async function verifyOTP({ phone, otp, timezone, timezoneOffsetInSeconds }) {
+export async function verifyOTP({
+    phone,
+    otp,
+    timezone,
+    timezoneOffsetInSeconds,
+}) {
     const fingerprint = getFingerprint();
     const { data } = await api.post("/phone-otp/verify", {
         phone,
@@ -61,6 +66,72 @@ export function setAuthToken(token) {
     } else {
         delete api.defaults.headers.common["Authorization"];
     }
+}
+
+// ---------- Sandbox filesystem ----------
+
+function getAuthHeaders() {
+    const headers = {};
+    const token = api.defaults.headers.common["Authorization"];
+    if (token) headers["Authorization"] = token;
+    headers["X-Fingerprint"] = getFingerprint();
+    return headers;
+}
+
+export async function listSandboxDirectory(dirPath, showHidden = false) {
+    const params = new URLSearchParams({ path: dirPath });
+    if (showHidden) params.set("showHidden", "true");
+    const { data } = await api.get(`/sandbox-fs/list?${params.toString()}`);
+    return data;
+}
+
+export async function readSandboxFile(filePath) {
+    const params = new URLSearchParams({ path: filePath });
+    const { data } = await api.get(`/sandbox-fs/read?${params.toString()}`);
+    return data;
+}
+
+export async function fetchSandboxRawBlob(filePath) {
+    const params = new URLSearchParams({ path: filePath });
+    const url = `${API_URL}/sandbox-fs/raw?${params.toString()}`;
+
+    const response = await fetch(url, {
+        headers: getAuthHeaders(),
+        credentials: "include",
+    });
+
+    if (!response.ok) throw new Error(`Failed: ${response.status}`);
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+}
+
+export async function downloadSandboxPath(targetPath) {
+    const params = new URLSearchParams({ path: targetPath });
+    const url = `${API_URL}/sandbox-fs/download?${params.toString()}`;
+
+    const response = await fetch(url, {
+        headers: getAuthHeaders(),
+        credentials: "include",
+    });
+
+    if (!response.ok) throw new Error(`Failed: ${response.status}`);
+
+    const blob = await response.blob();
+    const disposition = response.headers.get("Content-Disposition");
+    let filename = "download";
+    if (disposition) {
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        if (match) filename = match[1];
+    }
+
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(objectUrl);
 }
 
 export default api;
