@@ -72,7 +72,6 @@ export default function Login() {
 
     const handleOtpChange = (index, value) => {
         if (value.length > 1) {
-            // Paste handling
             const digits = value.replace(/\D/g, "").slice(0, 6).split("");
             const next = [...otp];
             digits.forEach((d, i) => {
@@ -104,21 +103,23 @@ export default function Login() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+        <div className="flex min-h-screen items-center justify-center bg-white px-4">
             <div className="w-full max-w-sm">
                 {/* Logo */}
                 <div className="mb-10 text-center">
-                    <h1 className="font-display text-3xl font-bold tracking-tight text-gray-900">
-                        A1
-                    </h1>
-                    <p className="mt-2 text-sm text-gray-500">
-                        Your personal AI assistant
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-900">
+                        <span className="text-lg font-bold text-white tracking-tight">
+                            A1
+                        </span>
+                    </div>
+                    <p className="text-sm text-neutral-500">
+                        Sign in to your account
                     </p>
                 </div>
 
                 {step === "phone" && (
                     <form onSubmit={handleSendOTP}>
-                        <label className="mb-2 block text-sm font-medium text-gray-700">
+                        <label className="mb-2 block text-sm font-medium text-neutral-700">
                             Phone number
                         </label>
                         <input
@@ -131,18 +132,20 @@ export default function Login() {
                         />
 
                         {error && (
-                            <p className="mb-4 text-sm text-red-500">{error}</p>
+                            <p className="mb-4 text-sm text-red-600">
+                                {error}
+                            </p>
                         )}
 
                         <button
                             type="submit"
-                            className="btn-brand w-full"
+                            className="btn-primary w-full"
                             disabled={loading || phone.trim().length < 8}
                         >
                             {loading ? (
                                 <i className="ri-loader-4-line animate-spin mr-2" />
                             ) : null}
-                            Send verification code
+                            Continue
                         </button>
                     </form>
                 )}
@@ -151,19 +154,22 @@ export default function Login() {
                     <div>
                         {otpMethod === "telegram" ? (
                             <>
-                                <p className="mb-1 text-sm text-gray-600">
-                                    We sent a code to your <span className="font-medium text-[#0088cc]">Telegram</span>
+                                <p className="mb-1 text-sm text-neutral-600">
+                                    We sent a code to your{" "}
+                                    <span className="font-medium text-neutral-900">
+                                        Telegram
+                                    </span>
                                 </p>
-                                <p className="mb-6 text-sm text-gray-500">
+                                <p className="mb-6 text-sm text-neutral-500">
                                     Check your A1 bot chat for the 6-digit code
                                 </p>
                             </>
                         ) : (
                             <>
-                                <p className="mb-1 text-sm text-gray-600">
+                                <p className="mb-1 text-sm text-neutral-600">
                                     Enter the 6-digit code sent to
                                 </p>
-                                <p className="mb-6 text-sm font-medium text-gray-900">
+                                <p className="mb-6 text-sm font-medium text-neutral-900">
                                     {phone}
                                 </p>
                             </>
@@ -177,7 +183,7 @@ export default function Login() {
                                     type="text"
                                     inputMode="numeric"
                                     maxLength={6}
-                                    className="h-12 w-12 rounded-lg border border-gray-200 text-center text-lg font-semibold outline-none transition-colors focus:border-brand focus:ring-1 focus:ring-brand/30"
+                                    className="h-12 w-12 rounded-lg border border-neutral-300 text-center text-lg font-semibold outline-none transition-all focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900/10"
                                     value={digit}
                                     onChange={(e) =>
                                         handleOtpChange(i, e.target.value)
@@ -188,18 +194,20 @@ export default function Login() {
                         </div>
 
                         {error && (
-                            <p className="mb-4 text-sm text-red-500">{error}</p>
+                            <p className="mb-4 text-sm text-red-600">
+                                {error}
+                            </p>
                         )}
 
                         {loading && (
-                            <div className="flex items-center justify-center py-2 text-sm text-gray-500">
+                            <div className="flex items-center justify-center py-2 text-sm text-neutral-500">
                                 <i className="ri-loader-4-line animate-spin mr-2" />
                                 Verifying...
                             </div>
                         )}
 
                         <button
-                            className="btn-ghost mt-2 w-full text-brand"
+                            className="btn-secondary mt-2 w-full"
                             onClick={() => {
                                 setStep("phone");
                                 setOtp(["", "", "", "", "", ""]);

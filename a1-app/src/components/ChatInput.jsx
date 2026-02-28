@@ -33,12 +33,12 @@ export default function ChatInput({ onSend, disabled }) {
     };
 
     return (
-        <div className="border-t border-gray-100 bg-white px-4 py-3">
+        <div className="border-t border-neutral-200 bg-white px-4 py-3">
             <div className="mx-auto flex max-w-3xl items-end gap-2">
                 <textarea
                     ref={textareaRef}
                     rows={1}
-                    className="flex-1 resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm outline-none transition-colors placeholder-gray-400 focus:border-brand focus:bg-white focus:ring-1 focus:ring-brand/30"
+                    className="flex-1 resize-none rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm outline-none transition-all placeholder-neutral-400 focus:border-neutral-400 focus:bg-white focus:ring-1 focus:ring-neutral-900/5"
                     placeholder="Message A1..."
                     value={text}
                     onChange={(e) => {
@@ -51,9 +51,9 @@ export default function ChatInput({ onSend, disabled }) {
                 <button
                     onClick={handleSubmit}
                     disabled={!text.trim() || disabled}
-                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-brand text-white transition-colors hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-neutral-900 text-white transition-all hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                    <i className="ri-send-plane-2-fill text-base" />
+                    <i className="ri-arrow-up-line text-base" />
                 </button>
             </div>
         </div>
