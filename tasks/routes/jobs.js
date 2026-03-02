@@ -805,7 +805,7 @@ router.get("/admin/run-add-missing-recurring-alerts", async (req, res) => {
 // Sandbox Queue Processors
 // ============================================
 
-const { provisionSandbox, checkSandboxReady, destroySandbox } = require("../logic/sandbox");
+const { provisionSandbox, checkSandboxReady, destroySandbox, getSandbox } = require("../logic/sandbox");
 
 sandboxQueue.process("provision-sandbox", async (job, done) => {
     const { user_id, chat_id } = job.data || {};
@@ -1051,16 +1051,10 @@ agenticQueue.process("run-agentic-task", async (job, done) => {
         );
         runId = runRows[0].id;
 
-        // Load sandbox if pro
+        // Load sandbox if pro (getSandbox decrypts the SSH private key)
         let sandbox = null;
         if (task.pro) {
-            const { rows: sandboxes } = await tasksDB.query(
-                `SELECT * FROM btw.sandboxes WHERE user_id = $1 AND status = 'ready'`,
-                [task.user_id]
-            );
-            if (sandboxes.length > 0) {
-                sandbox = sandboxes[0];
-            }
+            sandbox = await getSandbox({ user_id: task.user_id });
         }
 
         // Load task's persisted message history
