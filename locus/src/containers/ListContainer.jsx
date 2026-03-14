@@ -944,7 +944,8 @@ function ListContainer(props) {
   const filesState = useAppSelector(selectFiles);
   const { changed } = useTreeChanges(userState);
 
-  const [token, setToken] = useCookie(
+  const isLoggedIn = userState.user.isLoggedIn;
+  const [token] = useCookie(
     process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
     ""
   );
@@ -1243,7 +1244,7 @@ function ListContainer(props) {
 
   return (
     <AppWrapper {...props} listPage={true}>
-      {token && props.userId ? (
+      {isLoggedIn && props.userId ? (
         <div className="pt-4 pb-8 md:pt-6 md:pb-0 h-full flex flex-col list-canvas relative">
           {/* Breadcrumb and Heading - always visible */}
           <nav className="block pl-6 pr-16 md:pr-6" aria-label="Breadcrumb">

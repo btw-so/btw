@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Tiptap from "../components/Tiptap";
-import useCookie from "../hooks/useCookie";
-import { selectNotes, selectNoteActions } from "../selectors";
+import { selectUser, selectNotes, selectNoteActions } from "../selectors";
 import { useAppSelector } from "modules/hooks";
 import useInterval from "beautiful-react-hooks/useInterval";
 import { useDispatch } from "react-redux";
@@ -20,10 +19,8 @@ import {
 } from "../actions";
 
 function Sidebar(props) {
-  const [token, setToken] = useCookie(
-    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
-    ""
-  );
+  const userState = useAppSelector(selectUser);
+  const isLoggedIn = userState.user.isLoggedIn;
   const notesState = useAppSelector(selectNotes);
   const notesActions = useAppSelector(selectNoteActions);
   const dispatch = useDispatch();
@@ -57,7 +54,7 @@ function Sidebar(props) {
   );
 
   useInterval(() => {
-    if (token && notesState.notesList.status !== STATUS.RUNNING) {
+    if (isLoggedIn && notesState.notesList.status !== STATUS.RUNNING) {
       dispatch(
         getNotes({
           after: notesState.notesList.lastSuccessAt || 0,
@@ -69,7 +66,7 @@ function Sidebar(props) {
   // if there is a connection failure earlier, which can be seen from yjsConnectionToastId variable, then we can increase the interval.
   useInterval(() => {
     if (
-      token &&
+      isLoggedIn &&
       notesState.notesList.status !== STATUS.RUNNING &&
       window.yjsConnectionToastId
     ) {
@@ -82,14 +79,14 @@ function Sidebar(props) {
   }, 4000);
 
   useEffect(() => {
-    if (token) {
+    if (isLoggedIn) {
       dispatch(
         getNotes({
           after: notesState.notesList.lastSuccessAt || 0,
         })
       );
     }
-  }, [token]);
+  }, [isLoggedIn]);
 
   var noteLists = [
     {
@@ -142,7 +139,7 @@ function Sidebar(props) {
     };
   }, []);
 
-  if (token) {
+  if (isLoggedIn) {
     return (
       <>
         {contextMenu && notesState.notesMap[contextNoteId].ydoc ? (

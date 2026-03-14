@@ -3,7 +3,6 @@ import { useAppSelector } from "modules/hooks";
 import useInterval from "beautiful-react-hooks/useInterval";
 import { useDispatch } from "react-redux";
 import { STATUS } from "../literals";
-import useCookie from "../hooks/useCookie";
 import UppyComponent from "../components/Uppy";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { selectUser, selectOtp } from "../selectors";
@@ -20,10 +19,7 @@ function SettingsContainer(props) {
   const { user } = userState;
   const { changed } = useTreeChanges(userState);
   const actions = useAppSelector(selectOtp);
-  const [token, setToken] = useCookie(
-    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
-    ""
-  );
+  const isLoggedIn = user.isLoggedIn;
 
   const isUserPro = !!(user.data || {}).pro;
   const isAdmin =
@@ -132,7 +128,7 @@ function SettingsContainer(props) {
 
   return (
     <AppWrapper {...props} settingsPage={true}>
-      {token && props.userId ? (
+      {isLoggedIn && props.userId ? (
         <div className={`flex-grow p-4 flex flex-col overflow-y-scroll`}>
           <div className={`h-4 sm:hidden`}></div>
           <div className="mb-4 max-w-lg">

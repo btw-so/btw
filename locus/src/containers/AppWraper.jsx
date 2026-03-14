@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
-import useCookie from "../hooks/useCookie";
 import { useDispatch } from "react-redux";
+import { useAppSelector } from "modules/hooks";
+import { selectUser } from "selectors";
 import { changeSelectedNode } from "../actions";
 import Sidebar from "../components/Sidebar";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { useNavigate } from "react-router-dom";
 
 function AppWrapper(props) {
-  const [token, setToken] = useCookie(
-    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
-    ""
-  );
+  const userState = useAppSelector(selectUser);
+  const isLoggedIn = userState.user.isLoggedIn;
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useLocalStorage("sidebarCollapsed", false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  if (token) {
+  if (isLoggedIn) {
     return (
       <div className="w-full h-full flex flex-col flex-grow">
         <div className="w-full h-full flex flex-grow max-h-screen">
