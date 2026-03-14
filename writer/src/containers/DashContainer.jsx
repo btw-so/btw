@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import Tiptap from "../components/Tiptap";
 import useCookie from "../hooks/useCookie";
-import { selectNotes, selectNoteActions } from "../selectors";
+import { selectUser, selectNotes, selectNoteActions } from "../selectors";
 import { useAppSelector } from "modules/hooks";
 import useInterval from "beautiful-react-hooks/useInterval";
 import { useDispatch } from "react-redux";
@@ -32,7 +32,9 @@ if (requireCustomFile.keys()?.length > 0) {
 
 function Dash(props) {
   const navigate = useNavigate();
-  const [token, setToken] = useCookie(
+  const userState = useAppSelector(selectUser);
+  const isLoggedIn = userState.user.isLoggedIn;
+  const [token] = useCookie(
     process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
     ""
   );
@@ -109,10 +111,10 @@ function Dash(props) {
     }
   }, [reviewerMode, selectedNote?.id]);
 
-  if (token) {
+  if (isLoggedIn) {
     return (
       <AppWrapper {...props}>
-        {token && props.userId && notesState.selectedNoteId ? (
+        {isLoggedIn && props.userId && notesState.selectedNoteId ? (
           <div className="flex flex-grow flex-col max-h-screen">
             <div className="mb-2 px-2 border-b-2 border-gray-200 py-2 flex">
               <div className="flex flex-grow">

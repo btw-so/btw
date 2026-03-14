@@ -3,7 +3,6 @@ import { useAppSelector } from "modules/hooks";
 import useInterval from "beautiful-react-hooks/useInterval";
 import { useDispatch } from "react-redux";
 import { STATUS } from "../literals";
-import useCookie from "../hooks/useCookie";
 import UppyComponent from "../components/Uppy";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { selectUser, selectList } from "../selectors";
@@ -692,10 +691,7 @@ function ListContainer(props) {
 
   const { changed } = useTreeChanges(userState);
 
-  const [token, setToken] = useCookie(
-    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
-    ""
-  );
+  const isLoggedIn = userState.user.isLoggedIn;
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -805,7 +801,7 @@ function ListContainer(props) {
 
   return (
     <AppWrapper {...props} listPage={true}>
-      {token && props.userId ? (
+      {isLoggedIn && props.userId ? (
         <div className="p-6 h-full overflow-y-auto">
           <nav className="flex" aria-label="Breadcrumb">
             <ol role="list" className="flex items-center space-x-1">

@@ -2,6 +2,7 @@ import React, { useEffect, useCallback, useState } from "react";
 import { useAppSelector } from "modules/hooks";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { selectUser } from "../selectors";
 import useCookie from "../hooks/useCookie";
 import { getPinnedNodes, changeSelectedNode, upsertListNode, batchPushNodes } from "../actions";
 import { selectNotes } from "../selectors";
@@ -13,6 +14,8 @@ function Dash(props) {
   const navigate = useNavigate();
   const pinnedNodes = useAppSelector((state) => state.list.pinnedNodes);
   const notesState = useAppSelector(selectNotes);
+  const userState = useAppSelector(selectUser);
+  const isLoggedIn = userState.user.isLoggedIn;
   const [token] = useCookie(
     process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
     ""

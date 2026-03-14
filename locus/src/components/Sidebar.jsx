@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Tiptap from "../components/Tiptap";
-import useCookie from "../hooks/useCookie";
 import { useAppSelector } from "modules/hooks";
+import { selectUser } from "../selectors";
 import useInterval from "beautiful-react-hooks/useInterval";
 import { useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -23,10 +23,8 @@ function Sidebar(props) {
   const isIntelligencePage = !!props.isIntelligencePage;
   const isDashPage = !!props.isDashPage;
   const showSelectedNode = !is4000Page && !isIntelligencePage && !props.settingsPage && !isDashPage;
-  const [token, setToken] = useCookie(
-    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
-    ""
-  );
+  const userState = useAppSelector(selectUser);
+  const isLoggedIn = userState.user.isLoggedIn;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -183,7 +181,7 @@ function Sidebar(props) {
   const searchResultsNodes =
     searchResults.status === STATUS.SUCCESS ? searchResults.data?.nodes : [];
 
-  if (token) {
+  if (isLoggedIn) {
     return (
       <>
         <div className="space-x-2 w-full mb-2 border-gray-100 sidebar-toolkit flex items-center">

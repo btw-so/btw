@@ -136,7 +136,6 @@ router.post(
                 ? {
                       domain: `.${process.env.ROOT_DOMAIN}`,
                       secure: true,
-                      httpOnly: true,
                       sameSite: "lax",
                   }
                 : {}),

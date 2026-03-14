@@ -1,20 +1,19 @@
 import React, { useEffect } from "react";
-import useCookie from "../hooks/useCookie";
+import { useAppSelector } from "modules/hooks";
+import { selectUser } from "selectors";
 import Sidebar from "../components/Sidebar";
 import useLocalStorage from "../hooks/useLocalStorage";
 
 function AppWrapper(props) {
-  const [token, setToken] = useCookie(
-    process.env.REACT_APP_BTW_UUID_KEY || "btw_uuid",
-    ""
-  );
+  const userState = useAppSelector(selectUser);
+  const isLoggedIn = userState.user.isLoggedIn;
 
   const [sidebarIsOpen, setSidebarIsOpen] = useLocalStorage(
     "sidebarIsOpen",
     false
   );
 
-  if (token) {
+  if (isLoggedIn) {
     return (
       <div className="w-full h-full flex flex-col flex-grow">
         <div className="w-full h-full flex flex-grow max-h-screen">
