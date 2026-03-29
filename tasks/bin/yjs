@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+
+// Render web services expose a single port via process.env.PORT.
+// Use that same port for Yjs unless explicitly overridden.
+process.env.YJS_PORT = process.env.YJS_PORT || process.env.PORT || '9211';
+
+// app.js initializes routers/config at import time and expects these env vars.
+process.env.CORS_DOMAINS = process.env.CORS_DOMAINS || 'http://localhost';
+process.env.COMPANION_CLIENT_ORIGINS =
+  process.env.COMPANION_CLIENT_ORIGINS || 'http://localhost';
+
+var app = require('../app');
+
+if (typeof app.startYjsServer !== 'function') {
+  throw new Error('Yjs server bootstrap is not available on app');
+}
+
+app.startYjsServer();

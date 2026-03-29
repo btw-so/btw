@@ -1,0 +1,180 @@
+services:
+  - type: web
+    runtime: node
+    name: btw-tasks
+    rootDir: tasks
+    buildCommand: npm ci
+    startCommand: npm run start:render:api
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEBUG
+        value: "0"
+      - key: HTTPS_DOMAIN
+        value: "1"
+      - key: DOMAIN
+        sync: false
+      - key: ROOT_DOMAIN
+        sync: false
+      - key: DOMAIN_QUERY_PARAM
+        value: domain
+      - key: TASKS_DATABASE_URL
+        sync: false
+      - key: TASKS_REDIS_URL
+        sync: false
+      - key: PUBLISHER_SERVER_URL
+        sync: false
+      - key: SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: CORS_DOMAINS
+        sync: false
+      - key: COMPANION_CLIENT_ORIGINS
+        sync: false
+      - key: COMPANION_UPLOAD_URLS
+        sync: false
+      - key: COMPANION_AWS_ACL
+        value: public-read
+      - key: TURN_OFF_SINGLE_USER_MODE
+        value: "0"
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_SLUG
+        sync: false
+      - key: ADMIN_OTP
+        sync: false
+      - key: BTW_UUID_KEY
+        value: btw_uuid
+      - key: LIST_DOMAIN
+        sync: false
+      - key: WRITER_DOMAIN
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_KEY
+        sync: false
+      - key: S3_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: CLAUDE_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: WHATSAPP_API_TOKEN
+        sync: false
+      - key: WHATSAPP_NUMBER_ID
+        sync: false
+      - key: UMAMI_SOURCE
+        sync: false
+      - key: UMAMI_TOKEN
+        sync: false
+
+  - type: web
+    runtime: node
+    name: btw-tasks-yjs
+    rootDir: tasks
+    buildCommand: npm ci
+    startCommand: npm run start:render:yjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEBUG
+        value: "0"
+      - key: TASKS_DATABASE_URL
+        sync: false
+      - key: CORS_DOMAINS
+        sync: false
+      - key: COMPANION_CLIENT_ORIGINS
+        sync: false
+      - key: TURN_OFF_SINGLE_USER_MODE
+        value: "0"
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_SLUG
+        sync: false
+
+  - type: web
+    runtime: node
+    name: btw-publisher
+    rootDir: publisher
+    buildCommand: npm ci
+    startCommand: npm run start:production
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEBUG
+        value: "0"
+      - key: HTTPS_DOMAIN
+        value: "1"
+      - key: ROOT_DOMAIN
+        sync: false
+      - key: DOMAIN_QUERY_PARAM
+        value: domain
+      - key: TASKS_DATABASE_URL
+        sync: false
+      - key: TASKS_URL
+        sync: false
+      - key: TURN_OFF_SINGLE_USER_MODE
+        value: "0"
+      - key: ADMIN_SLUG
+        sync: false
+      - key: UMAMI_SOURCE
+        sync: false
+
+  - type: web
+    runtime: static
+    name: btw-writer
+    rootDir: writer
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./build
+    envVars:
+      - key: REACT_APP_TASKS_PUBLIC_URL
+        sync: false
+      - key: REACT_APP_UPPY_COMPANION_URL
+        sync: false
+      - key: REACT_APP_YJS_DOMAIN
+        sync: false
+      - key: REACT_APP_S3_ENDPOINT
+        sync: false
+      - key: REACT_APP_BTW_UUID_KEY
+        value: btw_uuid
+      - key: REACT_APP_ENCRYPTION_KEY
+        sync: false
+
+  - type: web
+    runtime: static
+    name: btw-list
+    rootDir: list
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./build
+    envVars:
+      - key: REACT_APP_TASKS_PUBLIC_URL
+        sync: false
+      - key: REACT_APP_UPPY_COMPANION_URL
+        sync: false
+      - key: REACT_APP_YJS_DOMAIN
+        sync: false
+      - key: REACT_APP_S3_ENDPOINT
+        sync: false
+      - key: REACT_APP_BTW_UUID_KEY
+        value: btw_uuid
+      - key: REACT_APP_ENCRYPTION_KEY
+        sync: false

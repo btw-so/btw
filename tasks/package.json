@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "start:render:api": "DISABLE_YJS=1 node ./bin/www",
+    "start:render:yjs": "node ./bin/yjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.289.0",

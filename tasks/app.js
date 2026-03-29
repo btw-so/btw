@@ -340,6 +340,14 @@ const yjsServer = Server.configure({
     ],
 });
 
-yjsServer.listen();
+let yjsStarted = false;
+app.startYjsServer = () => {
+    if (yjsStarted) {
+        return;
+    }
+
+    yjsServer.listen();
+    yjsStarted = true;
+};
 
 module.exports = app;
