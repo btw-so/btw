@@ -226,67 +226,53 @@ Ex: Just say "Remind ${requester.name} to take their meds at 8pm"`,
     done();
 });
 
-alertsQueue.process("reminder-alert", async (job, done) => {
-    console.log("Processing reminder-alert job");
-    const { user_id, reminder_id, id, duedate } = job.data || {};
-
-    const tasksDB = await db.getTasksDB();
-
-    let { rows: reminders } = await tasksDB.query(
-        `SELECT * FROM btw.reminders WHERE id = $1 AND user_id = $2`,
-        [reminder_id, user_id]
-    );
-
-    let { rows: alerts } = await tasksDB.query(
-        `SELECT * FROM btw.alerts WHERE id = $1 AND user_id = $2`,
-        [id, user_id]
-    );
-
-    reminders = reminders.filter((x) => !x.completed);
-
-    if (reminders.length > 0 && alerts.length > 0) {
-        const reminder = reminders[0];
-        const alert = alerts[0];
-
-        const { rows: users } = await tasksDB.query(
-            `SELECT * FROM btw.users WHERE id = $1`,
-            [user_id]
-        );
-
-        if (users.length > 0) {
-            // For now we send reminders on telegram
-            const { rows: telegrams } = await tasksDB.query(
-                `SELECT * FROM btw.telegram_user_map WHERE user_id = $1`,
-                [user_id]
-            );
-
-            const { rows: whatsapps } = await tasksDB.query(
-                `SELECT * FROM btw.whatsapp_user_map WHERE user_id = $1`,
-                [user_id]
-            );
-
-            for (var i = 0; i < telegrams.length; i++) {
-                await sendAlertUnitToTelegram({
-                    chatId: telegrams[i].telegram_id,
-                    alert,
-                    reminder,
-                });
-            }
-
-            for (var i = 0; i < whatsapps.length; i++) {
-                const chatId = whatsapps[i].whatsapp_id;
-
-                await sendAlertUnitToWhatsapp({
-                    chatId,
-                    alert,
-                    reminder,
-                });
-            }
-        }
-    }
-
-    done();
-});
+// alertsQueue.process("reminder-alert", async (job, done) => {
+//     const { user_id, reminder_id, id, duedate } = job.data || {};
+//     const tasksDB = await db.getTasksDB();
+//     let { rows: reminders } = await tasksDB.query(
+//         `SELECT * FROM btw.reminders WHERE id = $1 AND user_id = $2`,
+//         [reminder_id, user_id]
+//     );
+//     let { rows: alerts } = await tasksDB.query(
+//         `SELECT * FROM btw.alerts WHERE id = $1 AND user_id = $2`,
+//         [id, user_id]
+//     );
+//     reminders = reminders.filter((x) => !x.completed);
+//     if (reminders.length > 0 && alerts.length > 0) {
+//         const reminder = reminders[0];
+//         const alert = alerts[0];
+//         const { rows: users } = await tasksDB.query(
+//             `SELECT * FROM btw.users WHERE id = $1`,
+//             [user_id]
+//         );
+//         if (users.length > 0) {
+//             const { rows: telegrams } = await tasksDB.query(
+//                 `SELECT * FROM btw.telegram_user_map WHERE user_id = $1`,
+//                 [user_id]
+//             );
+//             const { rows: whatsapps } = await tasksDB.query(
+//                 `SELECT * FROM btw.whatsapp_user_map WHERE user_id = $1`,
+//                 [user_id]
+//             );
+//             for (var i = 0; i < telegrams.length; i++) {
+//                 await sendAlertUnitToTelegram({
+//                     chatId: telegrams[i].telegram_id,
+//                     alert,
+//                     reminder,
+//                 });
+//             }
+//             for (var i = 0; i < whatsapps.length; i++) {
+//                 const chatId = whatsapps[i].whatsapp_id;
+//                 await sendAlertUnitToWhatsapp({
+//                     chatId,
+//                     alert,
+//                     reminder,
+//                 });
+//             }
+//         }
+//     }
+//     done();
+// });
 
 uxQueue.process("new-reminders-child", async (job, done) => {
     let {
@@ -994,6 +980,7 @@ agenticQueue.process("check-due-tasks", async (job, done) => {
 });
 
 agenticQueue.process("run-agentic-task", async (job, done) => {
+    done(); return; // disabled: stop AI task loops to save tokens
     const { taskId } = job.data || {};
 
     let runId = null;
