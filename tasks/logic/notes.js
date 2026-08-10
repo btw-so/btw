@@ -13,22 +13,15 @@ const Y = require('yjs');
 // this will refresh the cache for the user
 const noteCacheHelper = (user_id) => {
     console.log("refreshing note cache for user", user_id);
-    const publisherServerUrl = process.env.PUBLISHER_SERVER_URL;
-    if (publisherServerUrl) {
-        try {
-            const publisherServerRefreshUrl = `http${
-                !!Number(process.env.HTTPS_DOMAIN) ? "s" : ""
-            }://${publisherServerUrl}/internal/cache/refresh/notes`;
-            const publisherServerRefreshResponse = axios.post(
-                publisherServerRefreshUrl,
-                {
-                    user_id,
-                }
-            );
-        } catch (e) {
-            console.log("error in refreshing cache", e);
-        }
-    }
+    const publisherServerUrl = process.env.PUBLISHER_INTERNAL_URL
+        ? `http://${process.env.PUBLISHER_INTERNAL_URL}`
+        : process.env.PUBLISHER_SERVER_URL
+        ? `http${!!Number(process.env.HTTPS_DOMAIN) ? "s" : ""}://${process.env.PUBLISHER_SERVER_URL}`
+        : null;
+    if (!publisherServerUrl) return;
+    axios
+        .post(`${publisherServerUrl}/internal/cache/refresh/notes`, { user_id })
+        .catch((e) => console.log("error refreshing note cache", e.message));
 };
 
 baseQueue.add(
