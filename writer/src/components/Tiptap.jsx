@@ -355,48 +355,65 @@ class Tiptap extends React.Component {
             {this.state.words || "0"} words
           </div>
         )}
-        <div
-          className={`w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center ${
-            this.state.showImageUpload ? "absolute" : "absolute hidden"
-          }`}
-          onClick={() => {
-            this.setState({ showImageUpload: false });
-          }}
-        >
+        {/* rendered only while open so uppy unmounts on close and each upload
+            starts from a fresh instance instead of replaying the last failure */}
+        {!this.state.showImageUpload ? null : (
           <div
-            className=""
-            onClick={(e) => {
-              e.stopPropagation();
+            className="w-full h-full backdrop-blur-sm bg-white/30 top-0 left-0 flex flex-col items-center justify-center absolute"
+            onClick={() => {
+              this.setState({ showImageUpload: false });
             }}
           >
-            <UppyComponent
-              allowedFileTypes={[
-                "image/png",
-                "image/gif",
-                "image/jpeg",
-                "image/webp",
-                "image/svg+xml",
-              ]}
-              onResults={(res) => {
-                if (this.editor) {
-                  const images = res.urls.map((originalUrl) => {
-                    let url = originalUrl;
-                    if (process.env.REACT_APP_S3_ENDPOINT) {
-                      url = url
-                        .split(
-                          `${process.env.REACT_APP_S3_ENDPOINT}/${process.env.REACT_APP_S3_ENDPOINT}`
-                        )
-                        .join(process.env.REACT_APP_S3_ENDPOINT);
-                    }
-                    return { type: "image", attrs: { src: url } };
-                  });
-                  this.editor.chain().focus().insertContent(images).run();
-                }
-                this.setState({ showImageUpload: false });
+            <div
+              className=""
+              onClick={(e) => {
+                e.stopPropagation();
               }}
-            />
+            >
+              <UppyComponent
+                allowedFileTypes={[
+                  "image/png",
+                  "image/gif",
+                  "image/jpeg",
+                  "image/webp",
+                  "image/svg+xml",
+                ]}
+                onResults={(res) => {
+                  const urls = res.urls || [];
+
+                  // nothing uploaded: leave the overlay open so uppy's own error
+                  // panel stays on screen instead of closing silently
+                  if (!urls.length) {
+                    return;
+                  }
+
+                  if (this.editor) {
+                    const images = urls.map((originalUrl) => {
+                      let url = originalUrl;
+                      if (process.env.REACT_APP_S3_ENDPOINT) {
+                        url = url
+                          .split(
+                            `${process.env.REACT_APP_S3_ENDPOINT}/${process.env.REACT_APP_S3_ENDPOINT}`
+                          )
+                          .join(process.env.REACT_APP_S3_ENDPOINT);
+                      }
+                      return { type: "image", attrs: { src: url } };
+                    });
+                    this.editor.chain().focus().insertContent(images).run();
+                  }
+
+                  // some files uploaded but others didn't: keep the overlay open
+                  // so the failures stay visible and can be retried
+                  if (res.failed) {
+                    return;
+                  }
+
+                  this.setState({ showImageUpload: false });
+                }}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
   }
