@@ -31,6 +31,10 @@ class UppyComponent extends React.Component {
       timeout: ms("1 minute"),
       limit: 100,
       companionUrl: process.env.REACT_APP_UPPY_COMPANION_URL,
+      // companion runs on a different origin than the app, so uppy's default
+      // "same-origin" credentials rule drops the httpOnly btw_uuid cookie that
+      // /companion's requireAuth needs, and every upload 401s
+      companionCookiesRule: "include",
       acl: "public-read",
     });
 
@@ -41,6 +45,7 @@ class UppyComponent extends React.Component {
       this.props.onResults &&
         this.props.onResults({
           urls: (res.successful || []).map((x) => x.uploadURL),
+          failed: (res.failed || []).length,
         });
     });
   }
